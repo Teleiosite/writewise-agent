@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
   BookmarkIcon,
 } from "lucide-react";
 import type { TemplateType } from "./DocumentTemplates";
+import { CitationManager } from "./CitationManager";
 
 interface WritingEditorProps {
   onClose: () => void;
@@ -34,6 +34,7 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
+  const [showCitations, setShowCitations] = useState(false);
 
   useEffect(() => {
     if (template) {
@@ -52,17 +53,22 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
       section.id === sectionId ? { ...section, content } : section
     ));
 
-    // Calculate word count and reading time
     const words = content.trim().split(/\s+/).length;
     setWordCount(words);
     setReadingTime(Math.ceil(words / 200)); // Assuming 200 words per minute reading speed
 
-    // In a real implementation, we would make API calls here to get AI suggestions
     setSuggestions([
       "Consider adding more details about the methodology",
       "The introduction could be more engaging",
       "Add supporting evidence for this claim",
     ]);
+  };
+
+  const handleInsertCitation = (citation: string) => {
+    const newContent = currentSection?.content + "\n" + citation;
+    if (currentSection) {
+      handleContentChange(currentSection.id, newContent);
+    }
   };
 
   const currentSection = sections.find(s => s.id === activeSection);
@@ -98,7 +104,7 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         <div className="md:col-span-3">
-          <Card className="glass-card p-4">
+          <Card className="glass-card p-4 space-y-4">
             <div className="flex items-center space-x-2 mb-4">
               <BookmarkIcon className="h-5 w-5 text-blue-600" />
               <h3 className="font-semibold">Sections</h3>
@@ -125,7 +131,11 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">{currentSection?.title || projectName}</h2>
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCitations(!showCitations)}
+                >
                   <Quote className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm">
@@ -133,6 +143,11 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
                 </Button>
               </div>
             </div>
+            {showCitations && (
+              <div className="mb-4">
+                <CitationManager onInsertCitation={handleInsertCitation} />
+              </div>
+            )}
             <Textarea
               value={currentSection?.content || ""}
               onChange={(e) => handleContentChange(activeSection, e.target.value)}
