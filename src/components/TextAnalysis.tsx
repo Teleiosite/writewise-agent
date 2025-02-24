@@ -51,19 +51,19 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
       switch (type) {
         case 'writing':
           result = await getWritingSuggestions(content);
-          setAnalysis(prev => ({ ...prev, suggestions: JSON.parse(result.content) }));
+          setAnalysis(prev => ({ ...prev, suggestions: [result.content] }));
           break;
         case 'grammar':
           result = await getGrammarAnalysis(content);
-          setAnalysis(prev => ({ ...prev, grammarIssues: JSON.parse(result.content) }));
+          setAnalysis(prev => ({ ...prev, grammarIssues: [result.content] }));
           break;
         case 'structure':
           result = await getContentStructure(content);
-          setAnalysis(prev => ({ ...prev, structure: JSON.parse(result.content) }));
+          setAnalysis(prev => ({ ...prev, structure: result.content }));
           break;
         case 'semantics':
           result = await getSemanticAnalysis(content);
-          setAnalysis(prev => ({ ...prev, semantics: JSON.parse(result.content) }));
+          setAnalysis(prev => ({ ...prev, semantics: result.content }));
           break;
         case 'chat':
           result = await getChatbotResponse(content);
