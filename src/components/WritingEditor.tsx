@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import type { TemplateType } from "./DocumentTemplates";
 import { CitationManager } from "./CitationManager";
+import { TextAnalysis } from "./TextAnalysis";
 
 interface WritingEditorProps {
   onClose: () => void;
@@ -32,7 +32,6 @@ interface Section {
 export function WritingEditor({ onClose, projectName, template }: WritingEditorProps) {
   const [activeSection, setActiveSection] = useState<string>("");
   const [sections, setSections] = useState<Section[]>([]);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
   const [showCitations, setShowCitations] = useState(false);
@@ -56,18 +55,19 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
 
     const words = content.trim().split(/\s+/).length;
     setWordCount(words);
-    setReadingTime(Math.ceil(words / 200)); // Assuming 200 words per minute reading speed
-
-    setSuggestions([
-      "Consider adding more details about the methodology",
-      "The introduction could be more engaging",
-      "Add supporting evidence for this claim",
-    ]);
+    setReadingTime(Math.ceil(words / 200));
   };
 
   const handleInsertCitation = (citation: string) => {
     const newContent = currentSection?.content + "\n" + citation;
     if (currentSection) {
+      handleContentChange(currentSection.id, newContent);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    if (currentSection) {
+      const newContent = currentSection.content + "\n\nSuggested improvement: " + suggestion;
       handleContentChange(currentSection.id, newContent);
     }
   };
@@ -159,24 +159,10 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
         </div>
 
         <div className="md:col-span-3">
-          <Card className="glass-card p-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <PenTool className="h-5 w-5 text-blue-600" />
-              <h3 className="font-semibold">AI Suggestions</h3>
-            </div>
-            <ScrollArea className="h-[500px]">
-              <div className="space-y-4">
-                {suggestions.map((suggestion, index) => (
-                  <Card
-                    key={index}
-                    className="p-3 hover:bg-blue-50 transition-colors cursor-pointer"
-                  >
-                    <p className="text-sm text-gray-600">{suggestion}</p>
-                  </Card>
-                ))}
-              </div>
-            </ScrollArea>
-          </Card>
+          <TextAnalysis
+            content={currentSection?.content || ""}
+            onSuggestionClick={handleSuggestionClick}
+          />
         </div>
       </div>
     </div>
