@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,20 @@ import {
   Quote,
   BookOpen,
   ChevronLeft,
-  PenTool,
   Clock,
   BookmarkIcon,
+  Download,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { TemplateType } from "./DocumentTemplates";
 import { CitationManager } from "./CitationManager";
 import { TextAnalysis } from "./TextAnalysis";
+import { downloadDocument, formatContent, type ExportFormat } from "@/utils/documentExport";
 
 interface WritingEditorProps {
   onClose: () => void;
@@ -41,7 +47,6 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load saved content from localStorage when component mounts
     const savedContent = localStorage.getItem(`draft-${projectName}`);
     if (savedContent) {
       const parsed = JSON.parse(savedContent);
@@ -96,6 +101,15 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
     }
   };
 
+  const handleExport = (format: ExportFormat) => {
+    const content = formatContent(sections, format);
+    downloadDocument(content, projectName, format);
+    toast({
+      title: "Document exported",
+      description: `Your document has been exported as ${format.toUpperCase()}`,
+    });
+  };
+
   const currentSection = sections.find(s => s.id === activeSection);
   const formattedLastSaved = lastSaved 
     ? new Intl.DateTimeFormat('en-US', {
@@ -137,10 +151,28 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
             <Save className="h-4 w-4" />
             Save Draft
           </Button>
-          <Button>
-            <FileText className="mr-2 h-4 w-4" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <FileText className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExport('txt')}>
+                <Download className="mr-2 h-4 w-4" />
+                Plain Text (.txt)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('md')}>
+                <Download className="mr-2 h-4 w-4" />
+                Markdown (.md)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('html')}>
+                <Download className="mr-2 h-4 w-4" />
+                HTML (.html)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
