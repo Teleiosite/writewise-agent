@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,8 @@ import {
   BookmarkIcon,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
+import { getChatbotResponse } from "@/lib/chatbot";
 
 export type CitationType = {
   id: string;
@@ -48,8 +49,53 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
   const [citations, setCitations] = useState<CitationType[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<CitationStyle>("APA");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const { toast } = useToast();
 
   const styles: CitationStyle[] = ["APA", "MLA", "Chicago", "Harvard"];
+
+  const searchPapers = async (query: string) => {
+    setIsSearching(true);
+    try {
+      const response = await getChatbotResponse(
+        `Find academic papers related to: ${query}. Format the response as JSON array with fields: title, authors (array), year, source. Only include high-quality academic sources.`
+      );
+
+      const papers = JSON.parse(response.content);
+      
+      const newCitations = papers.map((paper: any) => ({
+        id: Date.now().toString() + Math.random(),
+        title: paper.title,
+        authors: paper.authors,
+        year: paper.year,
+        source: paper.source,
+        type: "journal"
+      }));
+
+      setCitations((prev) => [...prev, ...newCitations]);
+      
+      toast({
+        title: "Search completed",
+        description: `Found ${newCitations.length} relevant papers`,
+      });
+    } catch (error) {
+      console.error('Error searching papers:', error);
+      toast({
+        title: "Search failed",
+        description: "Could not find relevant papers. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      searchPapers(searchQuery);
+    }
+  };
 
   const handleAddCitation = (citation: CitationType) => {
     setCitations([...citations, citation]);
@@ -87,15 +133,22 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <form onSubmit={handleSearch} className="flex items-center space-x-2">
           <Search className="w-4 h-4 text-gray-400" />
           <Input
-            placeholder="Search citations..."
+            placeholder="Search for papers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1"
           />
-        </div>
+          <Button 
+            type="submit"
+            variant="secondary"
+            disabled={isSearching}
+          >
+            {isSearching ? "Searching..." : "Search"}
+          </Button>
+        </form>
 
         <ScrollArea className="h-[300px] border rounded-md p-2">
           <div className="space-y-2">
