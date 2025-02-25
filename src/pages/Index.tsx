@@ -1,16 +1,42 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronRight, BookText, FileText, BookOpen, PenTool } from "lucide-react";
+import { ChevronRight, BookText, FileText, BookOpen, PenTool, Trash2 } from "lucide-react";
 import { WritingEditor } from "@/components/WritingEditor";
 import { DocumentTemplates, type TemplateType } from "@/components/DocumentTemplates";
+import { useToast } from "@/components/ui/use-toast";
+
+interface SavedDraft {
+  name: string;
+  lastSaved: string;
+}
 
 const Index = () => {
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | undefined>();
   const [showTemplates, setShowTemplates] = useState(false);
+  const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Load all saved drafts from localStorage
+    const drafts: SavedDraft[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('draft-')) {
+        const draftData = JSON.parse(localStorage.getItem(key) || '{}');
+        drafts.push({
+          name: key.replace('draft-', ''),
+          lastSaved: draftData.lastSaved,
+        });
+      }
+    }
+    // Sort drafts by last saved date, most recent first
+    drafts.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime());
+    setSavedDrafts(drafts);
+  }, []);
 
   const handleNewProject = () => {
     setShowTemplates(true);
@@ -20,6 +46,15 @@ const Index = () => {
     setSelectedTemplate(template);
     setActiveProject("new");
     setShowTemplates(false);
+  };
+
+  const handleDeleteDraft = (draftName: string) => {
+    localStorage.removeItem(`draft-${draftName}`);
+    setSavedDrafts(savedDrafts.filter(draft => draft.name !== draftName));
+    toast({
+      title: "Draft deleted",
+      description: "Your draft has been deleted successfully.",
+    });
   };
 
   return (
@@ -70,21 +105,42 @@ const Index = () => {
                     <div className="p-3 rounded-full bg-indigo-100">
                       <BookText className="w-6 h-6 text-indigo-600" />
                     </div>
-                    <h2 className="text-xl font-semibold">Recent Projects</h2>
+                    <h2 className="text-xl font-semibold">Saved Drafts</h2>
                   </div>
-                  <ScrollArea className="h-[100px]">
+                  <ScrollArea className="h-[200px]">
                     <div className="space-y-2">
-                      {["Research Paper", "Technical Documentation", "Project Analysis"].map((project) => (
-                        <Button
-                          key={project}
-                          variant="ghost"
-                          className="w-full justify-start text-left hover:bg-indigo-50"
-                          onClick={() => setActiveProject(project)}
-                        >
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          {project}
-                        </Button>
-                      ))}
+                      {savedDrafts.length > 0 ? (
+                        savedDrafts.map((draft) => (
+                          <div 
+                            key={draft.name}
+                            className="flex items-center justify-between p-2 hover:bg-indigo-50 rounded-lg group"
+                          >
+                            <Button
+                              variant="ghost"
+                              className="flex-1 justify-start text-left hover:bg-transparent"
+                              onClick={() => setActiveProject(draft.name)}
+                            >
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              <div className="flex flex-col">
+                                <span>{draft.name}</span>
+                                <span className="text-xs text-gray-500">
+                                  Last edited: {new Date(draft.lastSaved).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="opacity-0 group-hover:opacity-100"
+                              onClick={() => handleDeleteDraft(draft.name)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-500 text-center p-4">No saved drafts yet</p>
+                      )}
                     </div>
                   </ScrollArea>
                 </Card>
@@ -125,6 +181,20 @@ const Index = () => {
           onClose={() => {
             setActiveProject(null);
             setSelectedTemplate(undefined);
+            // Refresh the drafts list when closing the editor
+            const drafts = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key?.startsWith('draft-')) {
+                const draftData = JSON.parse(localStorage.getItem(key) || '{}');
+                drafts.push({
+                  name: key.replace('draft-', ''),
+                  lastSaved: draftData.lastSaved,
+                });
+              }
+            }
+            drafts.sort((a, b) => new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime());
+            setSavedDrafts(drafts);
           }}
           projectName={activeProject}
           template={selectedTemplate}
