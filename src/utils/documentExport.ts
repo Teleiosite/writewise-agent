@@ -1,7 +1,10 @@
 
-export type ExportFormat = 'txt' | 'md' | 'html';
+import { Document, Packer, Paragraph, HeadingLevel } from "docx";
+import { jsPDF } from "jspdf";
 
-export function formatContent(sections: Array<{ title: string; content: string }>, format: ExportFormat): string {
+export type ExportFormat = 'txt' | 'md' | 'html' | 'pdf' | 'doc';
+
+export function formatContent(sections: Array<{ title: string; content: string }>, format: ExportFormat): string | Blob {
   switch (format) {
     case 'txt':
       return sections
@@ -30,17 +33,91 @@ export function formatContent(sections: Array<{ title: string; content: string }
 ${htmlSections}
 </body>
 </html>`;
+
+    case 'pdf':
+      const pdf = new jsPDF();
+      let yOffset = 10;
+      const pageWidth = pdf.internal.pageSize.width;
+      const margin = 20;
+      const lineHeight = 7;
+
+      sections.forEach((section) => {
+        // Add title
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        
+        // Check if we need a new page
+        if (yOffset > pdf.internal.pageSize.height - 20) {
+          pdf.addPage();
+          yOffset = 20;
+        }
+        
+        pdf.text(section.title, margin, yOffset);
+        yOffset += lineHeight * 2;
+
+        // Add content
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'normal');
+        
+        const contentLines = pdf.splitTextToSize(section.content, pageWidth - 2 * margin);
+        contentLines.forEach((line: string) => {
+          if (yOffset > pdf.internal.pageSize.height - 20) {
+            pdf.addPage();
+            yOffset = 20;
+          }
+          pdf.text(line, margin, yOffset);
+          yOffset += lineHeight;
+        });
+        
+        yOffset += lineHeight * 2;
+      });
+
+      return pdf.output('blob');
+
+    case 'doc':
+      const doc = new Document({
+        sections: [{
+          children: sections.flatMap(section => [
+            new Paragraph({
+              text: section.title,
+              heading: HeadingLevel.HEADING_1,
+              spacing: {
+                after: 200,
+              },
+            }),
+            new Paragraph({
+              text: section.content,
+              spacing: {
+                after: 400,
+              },
+            }),
+          ]),
+        }],
+      });
+
+      return Packer.toBlob(doc);
+
+    default:
+      return '';
   }
 }
 
-export function downloadDocument(content: string, filename: string, format: ExportFormat) {
+export async function downloadDocument(content: string | Blob, filename: string, format: ExportFormat) {
   const extensions = {
     txt: 'txt',
     md: 'md',
-    html: 'html'
+    html: 'html',
+    pdf: 'pdf',
+    doc: 'docx'
   };
 
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  let blob;
+  if (content instanceof Blob) {
+    blob = content;
+  } else {
+    blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  }
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

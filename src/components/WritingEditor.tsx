@@ -101,9 +101,9 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
     }
   };
 
-  const handleExport = (format: ExportFormat) => {
-    const content = formatContent(sections, format);
-    downloadDocument(content, projectName, format);
+  const handleExport = async (format: ExportFormat) => {
+    const content = await formatContent(sections, format);
+    await downloadDocument(content, projectName, format);
     toast({
       title: "Document exported",
       description: `Your document has been exported as ${format.toUpperCase()}`,
@@ -170,6 +170,14 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
               <DropdownMenuItem onClick={() => handleExport('html')}>
                 <Download className="mr-2 h-4 w-4" />
                 HTML (.html)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                <Download className="mr-2 h-4 w-4" />
+                PDF Document (.pdf)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('doc')}>
+                <Download className="mr-2 h-4 w-4" />
+                Word Document (.docx)
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
