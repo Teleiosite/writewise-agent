@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Save,
   FileText,
@@ -35,9 +37,17 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
   const [showCitations, setShowCitations] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (template) {
+    // Load saved content from localStorage when component mounts
+    const savedContent = localStorage.getItem(`draft-${projectName}`);
+    if (savedContent) {
+      const parsed = JSON.parse(savedContent);
+      setSections(parsed.sections);
+      setLastSaved(new Date(parsed.lastSaved));
+    } else if (template) {
       const initialSections = template.sections.map((title) => ({
         id: title.toLowerCase().replace(/\s+/g, '-'),
         title,
@@ -46,7 +56,7 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
       setSections(initialSections);
       setActiveSection(initialSections[0]?.id || "");
     }
-  }, [template]);
+  }, [template, projectName]);
 
   const handleContentChange = (sectionId: string, content: string) => {
     setSections(sections.map(section => 
@@ -56,6 +66,20 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
     const words = content.trim().split(/\s+/).length;
     setWordCount(words);
     setReadingTime(Math.ceil(words / 200));
+  };
+
+  const handleSave = () => {
+    const currentTime = new Date();
+    const saveData = {
+      sections,
+      lastSaved: currentTime.toISOString(),
+    };
+    localStorage.setItem(`draft-${projectName}`, JSON.stringify(saveData));
+    setLastSaved(currentTime);
+    toast({
+      title: "Draft saved",
+      description: "Your progress has been saved successfully.",
+    });
   };
 
   const handleInsertCitation = (citation: string) => {
@@ -73,6 +97,13 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
   };
 
   const currentSection = sections.find(s => s.id === activeSection);
+  const formattedLastSaved = lastSaved 
+    ? new Intl.DateTimeFormat('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }).format(lastSaved)
+    : null;
 
   return (
     <div className="max-w-7xl mx-auto animate-fadeIn space-y-4">
@@ -91,9 +122,19 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
             <span>{readingTime} min read</span>
             <span>•</span>
             <span>{wordCount} words</span>
+            {formattedLastSaved && (
+              <>
+                <span>•</span>
+                <span>Last saved at {formattedLastSaved}</span>
+              </>
+            )}
           </div>
-          <Button variant="outline">
-            <Save className="mr-2 h-4 w-4" />
+          <Button 
+            variant="outline"
+            onClick={handleSave}
+            className="gap-2"
+          >
+            <Save className="h-4 w-4" />
             Save Draft
           </Button>
           <Button>
