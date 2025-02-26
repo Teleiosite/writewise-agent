@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
-import { getChatbotResponse } from "@/lib/chatbot";
+import { getChatbotResponse } from "@/services/ai-services";
 
 export type CitationType = {
   id: string;
