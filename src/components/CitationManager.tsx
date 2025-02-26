@@ -1,20 +1,14 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  BookOpen,
-  Quote,
-  FileText,
-  Plus,
-  Search,
-  BookmarkIcon,
-} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+import { Search, Plus, Quote } from "lucide-react";
 import { getChatbotResponse } from "@/services/ai-services";
 
-export type CitationType = {
+type CitationType = {
   id: string;
   title: string;
   authors: string[];
@@ -22,28 +16,14 @@ export type CitationType = {
   source: string;
   type: "journal" | "book" | "conference" | "website";
   url?: string;
+  doi?: string;
 };
 
-export type CitationStyle = "APA" | "MLA" | "Chicago" | "Harvard";
+type CitationStyle = "APA" | "MLA" | "Chicago" | "Harvard";
 
 interface CitationManagerProps {
   onInsertCitation: (citation: string) => void;
 }
-
-const formatCitation = (citation: CitationType, style: CitationStyle): string => {
-  switch (style) {
-    case "APA":
-      return `${citation.authors.join(", ")} (${citation.year}). ${citation.title}. ${citation.source}.`;
-    case "MLA":
-      return `${citation.authors[0].split(",")[0]} et al. "${citation.title}." ${citation.source}, ${citation.year}.`;
-    case "Chicago":
-      return `${citation.authors.join(" and ")}. "${citation.title}." ${citation.source} (${citation.year}).`;
-    case "Harvard":
-      return `${citation.authors.join(" and ")} ${citation.year}, '${citation.title}', ${citation.source}.`;
-    default:
-      return `${citation.authors.join(", ")} (${citation.year}). ${citation.title}.`;
-  }
-};
 
 export function CitationManager({ onInsertCitation }: CitationManagerProps) {
   const [citations, setCitations] = useState<CitationType[]>([]);
@@ -54,22 +34,44 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
 
   const styles: CitationStyle[] = ["APA", "MLA", "Chicago", "Harvard"];
 
+  const formatCitation = (citation: CitationType, style: CitationStyle): string => {
+    switch (style) {
+      case "APA":
+        return `${citation.authors.join(", ")} (${citation.year}). ${citation.title}. ${citation.source}.${citation.doi ? ` https://doi.org/${citation.doi}` : ""}`;
+      case "MLA":
+        return `${citation.authors.join(", ")}. "${citation.title}." ${citation.source}, ${citation.year}.`;
+      case "Chicago":
+        return `${citation.authors.join(" and ")}. "${citation.title}." ${citation.source} (${citation.year}).`;
+      case "Harvard":
+        return `${citation.authors.join(", ")} ${citation.year}, '${citation.title}', ${citation.source}.`;
+      default:
+        return `${citation.authors.join(", ")} (${citation.year}). ${citation.title}. ${citation.source}.`;
+    }
+  };
+
   const searchPapers = async (query: string) => {
     setIsSearching(true);
     try {
-      const response = await getChatbotResponse(
-        `Find academic papers related to: ${query}. Format the response as JSON array with fields: title, authors (array), year, source. Only include high-quality academic sources.`
-      );
-
-      const papers = JSON.parse(response.content);
+      const prompt = `Find academic papers related to: ${query}. Return response as JSON array with fields: title, authors (array), year, source, doi (if available). Include only high-quality academic sources. Limit 5 papers.`;
       
+      const response = await getChatbotResponse(prompt);
+      let papers;
+      
+      try {
+        papers = JSON.parse(response.content);
+      } catch (e) {
+        console.error('Failed to parse AI response:', e);
+        throw new Error('Invalid response format');
+      }
+
       const newCitations = papers.map((paper: any) => ({
         id: Date.now().toString() + Math.random(),
         title: paper.title,
         authors: paper.authors,
         year: paper.year,
         source: paper.source,
-        type: "journal"
+        type: "journal",
+        doi: paper.doi
       }));
 
       setCitations((prev) => [...prev, ...newCitations]);
@@ -98,21 +100,23 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
   };
 
   const handleAddCitation = (citation: CitationType) => {
-    setCitations([...citations, citation]);
+    setCitations((prev) => [...prev, citation]);
+    toast({
+      title: "Citation added",
+      description: "The citation has been added to your list.",
+    });
   };
 
   const handleInsertCitation = (citation: CitationType) => {
     const formattedCitation = formatCitation(citation, selectedStyle);
     onInsertCitation(formattedCitation);
+    toast({
+      title: "Citation inserted",
+      description: `Citation inserted in ${selectedStyle} format.`,
+    });
   };
 
-  const filteredCitations = citations.filter(
-    (citation) =>
-      citation.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      citation.authors.some((author) =>
-        author.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-  );
+  const filteredCitations = citations;
 
   return (
     <Card className="p-4">
@@ -155,7 +159,7 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
             {filteredCitations.map((citation) => (
               <Card
                 key={citation.id}
-                className="p-3 hover:bg-gray-50 cursor-pointer"
+                className="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                 onClick={() => handleInsertCitation(citation)}
               >
                 <div className="flex items-start justify-between">
@@ -165,6 +169,9 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
                       {citation.authors.join(", ")} • {citation.year}
                     </p>
                     <p className="text-sm text-gray-500">{citation.source}</p>
+                    {citation.doi && (
+                      <p className="text-xs text-blue-600">DOI: {citation.doi}</p>
+                    )}
                   </div>
                   <Quote className="w-4 h-4 text-gray-400" />
                 </div>
@@ -179,16 +186,16 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
           onClick={() =>
             handleAddCitation({
               id: Date.now().toString(),
-              title: "Sample Citation",
-              authors: ["Author, A.", "Author, B."],
-              year: "2024",
-              source: "Journal of Examples",
+              title: "Manual Citation Entry",
+              authors: ["Author, A."],
+              year: new Date().getFullYear().toString(),
+              source: "Enter source",
               type: "journal",
             })
           }
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add New Citation
+          Add Manual Citation
         </Button>
       </div>
     </Card>
