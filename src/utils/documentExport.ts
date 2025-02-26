@@ -4,7 +4,7 @@ import { jsPDF } from "jspdf";
 
 export type ExportFormat = 'txt' | 'md' | 'html' | 'pdf' | 'doc';
 
-export function formatContent(sections: Array<{ title: string; content: string }>, format: ExportFormat): string | Blob {
+export async function formatContent(sections: Array<{ title: string; content: string }>, format: ExportFormat): Promise<string | Blob> {
   switch (format) {
     case 'txt':
       return sections
@@ -95,7 +95,7 @@ ${htmlSections}
         }],
       });
 
-      return Packer.toBlob(doc);
+      return await Packer.toBlob(doc);
 
     default:
       return '';
