@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 interface AIResponse {
@@ -226,6 +225,44 @@ export async function getSemanticAnalysis(text: string): Promise<AIResponse> {
       }),
       source: 'Fallback Semantic Analysis',
       confidence: 0.7
+    };
+  }
+}
+
+export async function generateSectionContent(title: string, section: string): Promise<AIResponse> {
+  try {
+    const response = await fetch('https://chatgpt-api-free.puter.com/v1/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: [
+          { 
+            role: 'system', 
+            content: `You are an expert academic writer. Generate a well-structured ${section} section for an academic paper. Follow academic writing conventions and maintain a formal tone.` 
+          },
+          { role: 'user', content: `Write a ${section} section for a paper titled: "${title}"` }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Text generation failed');
+    }
+
+    const data = await response.json();
+    return {
+      content: data.choices[0].message.content,
+      source: 'AI Text Generator',
+      confidence: 0.9
+    };
+  } catch (error) {
+    console.error('Error in text generation:', error);
+    return {
+      content: `Sample ${section} content. Please try again later.`,
+      source: 'Fallback Generator',
+      confidence: 0.5
     };
   }
 }
