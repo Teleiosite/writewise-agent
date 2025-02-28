@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, BookOpen, FileText, Trash2, Edit, Calendar, Users } from "lucide-react";
+import { Plus, BookOpen, FileText, Trash2, Edit, Calendar, Users, AlertTriangle, FileText2, ZapIcon } from "lucide-react";
 import { WritingDashboard } from "@/components/WritingDashboard";
 import { documentTemplates, type TemplateType } from "@/components/DocumentTemplates";
 
@@ -149,6 +149,12 @@ export default function Index() {
       case "Research Assistant":
         templateToUse = documentTemplates[2]; // Case Study
         break;
+      case "AI Detector":
+        templateToUse = documentTemplates[0]; // Research Paper
+        break;
+      case "Text Humanizer":
+        templateToUse = documentTemplates[0]; // Research Paper
+        break;
       default:
         templateToUse = documentTemplates[0];
     }
@@ -211,6 +217,40 @@ export default function Index() {
         </p>
       </div>
       
+      {/* Create Project Section - Now at the top with animation */}
+      <div className="mb-8 animate-pulse hover:animate-none">
+        <Card className="border-2 border-blue-400 shadow-lg animate-scale-in">
+          <CardHeader className="bg-blue-50">
+            <CardTitle className="flex items-center gap-2 text-blue-700">
+              <Plus className="h-5 w-5 text-blue-600" />
+              Create New Project
+            </CardTitle>
+            <CardDescription>
+              Start a new writing project with our AI-powered tools
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-3">
+              <Input
+                placeholder="Enter your project name..."
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                className="flex-grow focus:ring-2 focus:ring-blue-400"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+              />
+              <Button 
+                onClick={handleCreateProject}
+                className="bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105"
+                size="lg"
+              >
+                <Plus className="h-5 w-5 mr-2 animate-bounce" />
+                Create Project
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-2/3">
           <Card className="w-full glass-card mb-6">
@@ -233,12 +273,12 @@ export default function Index() {
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-4">
                     {projects.map((project) => (
-                      <Card key={project.id} className="overflow-hidden">
+                      <Card key={project.id} className="overflow-hidden transition-all duration-300 hover:shadow-md">
                         <div className="p-6">
                           <div className="flex items-start justify-between">
                             <div>
                               <h3 
-                                className="text-lg font-semibold mb-1 hover:text-blue-600 cursor-pointer"
+                                className="text-lg font-semibold mb-1 hover:text-blue-600 cursor-pointer transition-colors"
                                 onClick={() => handleOpenProject(project.name)}
                               >
                                 {project.name}
@@ -266,13 +306,14 @@ export default function Index() {
                                 variant="outline" 
                                 size="sm"
                                 onClick={() => handleOpenProject(project.name)}
+                                className="hover:bg-blue-50 transition-colors"
                               >
                                 <Edit className="h-4 w-4 mr-1" /> Open
                               </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
                                 onClick={() => handleDeleteProject(project.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -286,18 +327,6 @@ export default function Index() {
                 </ScrollArea>
               )}
             </CardContent>
-            <CardFooter className="flex gap-2">
-              <Input
-                placeholder="New project name"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                className="flex-grow"
-              />
-              <Button onClick={handleCreateProject}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Project
-              </Button>
-            </CardFooter>
           </Card>
         </div>
         
@@ -315,7 +344,7 @@ export default function Index() {
             <CardContent>
               <div className="space-y-4">
                 <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
                   onClick={() => handleFeatureClick("AI-Powered Editor")}
                 >
                   <div className="bg-blue-100 text-blue-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
@@ -330,7 +359,7 @@ export default function Index() {
                 </div>
                 
                 <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
                   onClick={() => handleFeatureClick("Citation Manager")}
                 >
                   <div className="bg-green-100 text-green-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
@@ -345,7 +374,7 @@ export default function Index() {
                 </div>
                 
                 <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
                   onClick={() => handleFeatureClick("Progress Tracking")}
                 >
                   <div className="bg-purple-100 text-purple-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
@@ -360,7 +389,7 @@ export default function Index() {
                 </div>
                 
                 <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
                   onClick={() => handleFeatureClick("Research Assistant")}
                 >
                   <div className="bg-amber-100 text-amber-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
@@ -370,6 +399,38 @@ export default function Index() {
                     <h3 className="font-medium mb-1">Research Assistant</h3>
                     <p className="text-sm text-gray-600">
                       AI-powered research tools to find relevant sources and generate insights.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* New AI Detector Feature */}
+                <div 
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1 animate-fade-in"
+                  onClick={() => handleFeatureClick("AI Detector")}
+                >
+                  <div className="bg-red-100 text-red-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-1">AI Detector</h3>
+                    <p className="text-sm text-gray-600">
+                      Analyze text to determine if it was likely created by AI. Perfect for educators and reviewers.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* New Text Humanizer Feature */}
+                <div 
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1 animate-fade-in"
+                  onClick={() => handleFeatureClick("Text Humanizer")}
+                >
+                  <div className="bg-indigo-100 text-indigo-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-1">Text Humanizer</h3>
+                    <p className="text-sm text-gray-600">
+                      Transform AI-generated content into natural-sounding text that passes AI detection.
                     </p>
                   </div>
                 </div>

@@ -7,7 +7,9 @@ import { WritingEditor } from "@/components/WritingEditor";
 import { ChatAssistant } from "@/components/ChatAssistant";
 import { WritingStats } from "@/components/WritingStats";
 import { WritingTracker } from "@/components/WritingTracker";
-import { FileText, MessageSquare, BarChart2, Target, ChevronLeft } from "lucide-react";
+import { AIDetector } from "@/components/AIDetector";
+import { TextHumanizer } from "@/components/TextHumanizer";
+import { FileText, MessageSquare, BarChart2, Target, ChevronLeft, AlertTriangle, FileText2 } from "lucide-react";
 import type { TemplateType } from "./DocumentTemplates";
 
 interface WritingDashboardProps {
@@ -38,6 +40,12 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
         case "Research Assistant":
           setActiveTab("assistant");
           break;
+        case "AI Detector":
+          setActiveTab("ai-detector");
+          break;
+        case "Text Humanizer":
+          setActiveTab("humanizer");
+          break;
         default:
           setActiveTab("editor");
       }
@@ -59,7 +67,7 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-4 gap-2">
+        <TabsList className="grid grid-cols-6 gap-2">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span>Editor</span>
@@ -75,6 +83,14 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
           <TabsTrigger value="goals" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span>Goals</span>
+          </TabsTrigger>
+          <TabsTrigger value="ai-detector" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            <span>AI Detector</span>
+          </TabsTrigger>
+          <TabsTrigger value="humanizer" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Humanizer</span>
           </TabsTrigger>
         </TabsList>
         
@@ -128,6 +144,14 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
         
         <TabsContent value="goals">
           <WritingTracker projectName={projectName} />
+        </TabsContent>
+        
+        <TabsContent value="ai-detector">
+          <AIDetector />
+        </TabsContent>
+        
+        <TabsContent value="humanizer">
+          <TextHumanizer />
         </TabsContent>
       </Tabs>
     </div>
