@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ interface WritingEditorProps {
   onClose: () => void;
   projectName: string;
   template?: TemplateType;
+  showCitations?: boolean;
 }
 
 interface Section {
@@ -37,12 +39,12 @@ interface Section {
   content: string;
 }
 
-export function WritingEditor({ onClose, projectName, template }: WritingEditorProps) {
+export function WritingEditor({ onClose, projectName, template, showCitations = false }: WritingEditorProps) {
   const [activeSection, setActiveSection] = useState<string>("");
   const [sections, setSections] = useState<Section[]>([]);
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
-  const [showCitations, setShowCitations] = useState(false);
+  const [showCitationsPanel, setShowCitationsPanel] = useState(showCitations);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const { toast } = useToast();
 
@@ -52,6 +54,9 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
       const parsed = JSON.parse(savedContent);
       setSections(parsed.sections);
       setLastSaved(new Date(parsed.lastSaved));
+      if (parsed.sections.length > 0) {
+        setActiveSection(parsed.sections[0].id);
+      }
     } else if (template) {
       const initialSections = template.sections.map((title) => ({
         id: title.toLowerCase().replace(/\s+/g, '-'),
@@ -59,9 +64,19 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
         content: "",
       }));
       setSections(initialSections);
-      setActiveSection(initialSections[0]?.id || "");
+      if (initialSections.length > 0) {
+        setActiveSection(initialSections[0]?.id || "");
+      }
     }
-  }, [template, projectName]);
+    
+    // Check if we should show the citation manager
+    const shouldShowCitations = localStorage.getItem("show-citation-manager") === "true";
+    if (shouldShowCitations) {
+      setShowCitationsPanel(true);
+      // Clear the flag
+      localStorage.removeItem("show-citation-manager");
+    }
+  }, [template, projectName, showCitations]);
 
   const handleContentChange = (sectionId: string, content: string) => {
     setSections(sections.map(section => 
@@ -214,9 +229,9 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
               <h2 className="text-xl font-semibold">{currentSection?.title || projectName}</h2>
               <div className="flex items-center space-x-2">
                 <Button
-                  variant="ghost"
+                  variant={showCitationsPanel ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => setShowCitations(!showCitations)}
+                  onClick={() => setShowCitationsPanel(!showCitationsPanel)}
                 >
                   <Quote className="h-4 w-4" />
                 </Button>
@@ -225,7 +240,7 @@ export function WritingEditor({ onClose, projectName, template }: WritingEditorP
                 </Button>
               </div>
             </div>
-            {showCitations && (
+            {showCitationsPanel && (
               <div className="mb-4">
                 <CitationManager onInsertCitation={handleInsertCitation} />
               </div>

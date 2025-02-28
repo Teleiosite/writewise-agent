@@ -1,15 +1,14 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BookOpen, PenTool, MessageSquare, Zap, Brain, FileText } from "lucide-react";
+import { BookOpen, PenTool, MessageSquare, Zap, Brain, FileText, Loader2 } from "lucide-react";
 import {
   getWritingSuggestions,
   getGrammarAnalysis,
   getContentStructure,
   getSemanticAnalysis,
-  getChatbotResponse,
   generateSectionContent
 } from "@/services/ai-services";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +23,7 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("writing");
   const [generatedContent, setGeneratedContent] = useState<string>("");
+  const [lastAnalyzedContent, setLastAnalyzedContent] = useState<string>("");
   const { toast } = useToast();
 
   const academicSections = [
@@ -35,6 +35,25 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
     "Discussion",
     "Conclusion"
   ];
+
+  // Auto-analyze content when it changes (with debounce)
+  useEffect(() => {
+    // Skip empty content
+    if (!content.trim()) return;
+    
+    // Skip if content hasn't changed enough
+    if (content.length > 0 && 
+        lastAnalyzedContent.length > 0 && 
+        Math.abs(content.length - lastAnalyzedContent.length) < 20) return;
+    
+    // Set a timeout to avoid too frequent analyses
+    const timer = setTimeout(() => {
+      analyzeText("writing");
+      setLastAnalyzedContent(content);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [content]);
 
   const generateSection = async (section: string) => {
     setIsLoading(true);
@@ -61,11 +80,13 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
 
   const analyzeText = async (type: string) => {
     if (!content.trim()) {
-      toast({
-        title: "Empty Content",
-        description: "Please enter some text to analyze.",
-        variant: "destructive",
-      });
+      if (type !== "generate") {
+        toast({
+          title: "Empty Content",
+          description: "Please enter some text to analyze.",
+          variant: "destructive",
+        });
+      }
       return;
     }
     
@@ -83,20 +104,26 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
           break;
         case 'structure':
           result = await getContentStructure(content);
-          setAnalysis(prev => ({ ...prev, structure: result.content }));
+          const parsedStructure = typeof result.content === 'string' ? 
+            JSON.parse(result.content) : result.content;
+          setAnalysis(prev => ({ ...prev, structure: parsedStructure }));
           break;
         case 'generate':
           setActiveTab('generate');
           return;
         default:
           result = await getSemanticAnalysis(content);
-          setAnalysis(prev => ({ ...prev, semantics: result.content }));
+          const parsedSemantics = typeof result.content === 'string' ? 
+            JSON.parse(result.content) : result.content;
+          setAnalysis(prev => ({ ...prev, semantics: parsedSemantics }));
       }
       
-      toast({
-        title: "Analysis Complete",
-        description: `Analysis from ${result.source} completed successfully.`,
-      });
+      if (type !== "generate") {
+        toast({
+          title: "Analysis Complete",
+          description: `Analysis from ${result.source || 'AI Assistant'} completed successfully.`,
+        });
+      }
     } catch (error) {
       console.error('Error analyzing text:', error);
       toast({
@@ -154,7 +181,14 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
       </div>
 
       <ScrollArea className="h-[400px] mt-4">
-        {activeTab === "generate" ? (
+        {isLoading && (
+          <div className="flex items-center justify-center p-4">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-600 mr-2" />
+            <span>Analyzing your text...</span>
+          </div>
+        )}
+
+        {!isLoading && activeTab === "generate" ? (
           <div className="space-y-4">
             <h4 className="font-medium">Generate Paper Sections</h4>
             <div className="grid grid-cols-2 gap-2">
@@ -176,10 +210,11 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
               </Card>
             )}
           </div>
-        ) : (
+        ) : !isLoading && (
           <div className="space-y-4">
             {activeTab === "writing" && analysis.suggestions && (
               <div className="space-y-2">
+                <h4 className="font-medium mb-2">Writing Suggestions</h4>
                 {analysis.suggestions.map((suggestion: string, index: number) => (
                   <Card
                     key={index}
@@ -194,11 +229,47 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
 
             {activeTab === "grammar" && analysis.grammarIssues && (
               <div className="space-y-2">
+                <h4 className="font-medium mb-2">Grammar Analysis</h4>
                 {analysis.grammarIssues.map((issue: string, index: number) => (
                   <Card key={index} className="p-2 bg-red-50">
                     <p className="text-sm text-red-600">{issue}</p>
                   </Card>
                 ))}
+              </div>
+            )}
+
+            {activeTab === "writing" && analysis.structure && (
+              <div className="mt-4 space-y-2">
+                <h4 className="font-medium mb-2">Structure Analysis</h4>
+                <Card className="p-3 bg-blue-50">
+                  <h5 className="text-sm font-medium mb-1">Detected Sections</h5>
+                  <ul className="text-sm list-disc pl-5 mb-2">
+                    {analysis.structure.sections.map((section: string, i: number) => (
+                      <li key={i}>{section}</li>
+                    ))}
+                  </ul>
+                  <h5 className="text-sm font-medium mb-1">Improvement Suggestions</h5>
+                  <ul className="text-sm list-disc pl-5">
+                    {analysis.structure.suggestions.map((suggestion: string, i: number) => (
+                      <li key={i} className="cursor-pointer hover:text-blue-600" onClick={() => onSuggestionClick(suggestion)}>
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              </div>
+            )}
+
+            {!isLoading && content.length > 0 && !analysis.suggestions && activeTab === "writing" && (
+              <div className="p-3 text-center text-gray-500">
+                <p>Analyzing your writing...</p>
+                <p className="text-xs mt-1">Real-time feedback will appear here.</p>
+              </div>
+            )}
+
+            {!isLoading && content.length === 0 && (
+              <div className="p-3 text-center text-gray-500">
+                <p>Start writing to get AI-powered suggestions.</p>
               </div>
             )}
           </div>

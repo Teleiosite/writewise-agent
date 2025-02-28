@@ -23,6 +23,7 @@ export default function Index() {
   const [newProjectName, setNewProjectName] = useState("");
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | undefined>(undefined);
+  const [activeFeature, setActiveFeature] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -125,6 +126,7 @@ export default function Index() {
 
   const handleOpenProject = (projectName: string) => {
     setActiveProject(projectName);
+    setActiveFeature(null);
     // In a real app, you'd load project data here
   };
 
@@ -174,6 +176,7 @@ export default function Index() {
     }
     
     setActiveProject(featureDemoName);
+    setActiveFeature(feature);
   };
 
   const formatDate = (date: Date) => {
@@ -188,8 +191,12 @@ export default function Index() {
     return (
       <WritingDashboard 
         projectName={activeProject}
-        onClose={() => setActiveProject(null)}
+        onClose={() => {
+          setActiveProject(null);
+          setActiveFeature(null);
+        }}
         template={selectedTemplate}
+        activeFeature={activeFeature}
       />
     );
   }

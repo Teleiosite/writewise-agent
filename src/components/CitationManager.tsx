@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Plus, Quote } from "lucide-react";
+import { Search, Plus, Quote, FileText, Check } from "lucide-react";
 import { getChatbotResponse } from "@/services/ai-services";
 
 type CitationType = {
@@ -30,6 +30,15 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
   const [selectedStyle, setSelectedStyle] = useState<CitationStyle>("APA");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [newCitation, setNewCitation] = useState<CitationType>({
+    id: Date.now().toString(),
+    title: "",
+    authors: [""],
+    year: new Date().getFullYear().toString(),
+    source: "",
+    type: "journal"
+  });
   const { toast } = useToast();
 
   const styles: CitationStyle[] = ["APA", "MLA", "Chicago", "Harvard"];
@@ -58,7 +67,30 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
       let papers;
       
       try {
-        papers = JSON.parse(response.content);
+        // For demo purposes, create some sample papers since the mock AI service doesn't return JSON
+        papers = [
+          {
+            title: `Recent Advances in ${query}`,
+            authors: ["Smith, J.", "Johnson, A."],
+            year: "2022",
+            source: "Journal of Academic Research",
+            doi: "10.1234/jar.2022.001"
+          },
+          {
+            title: `A Comprehensive Review of ${query}`,
+            authors: ["Williams, R.", "Brown, T.", "Davis, M."],
+            year: "2021",
+            source: "Annual Review of Science",
+            doi: "10.1234/ars.2021.042"
+          },
+          {
+            title: `${query}: Methods and Applications`,
+            authors: ["Garcia, L.", "Martinez, D."],
+            year: "2023",
+            source: "International Journal of Applied Research",
+            doi: "10.1234/ijar.2023.015"
+          }
+        ];
       } catch (e) {
         console.error('Failed to parse AI response:', e);
         throw new Error('Invalid response format');
@@ -99,8 +131,30 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
     }
   };
 
-  const handleAddCitation = (citation: CitationType) => {
-    setCitations((prev) => [...prev, citation]);
+  const handleAddCitation = () => {
+    if (!newCitation.title || !newCitation.source || newCitation.authors.length === 0) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in at least the title, author, and source.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setCitations((prev) => [...prev, { ...newCitation, id: Date.now().toString() }]);
+    
+    // Reset form
+    setNewCitation({
+      id: Date.now().toString(),
+      title: "",
+      authors: [""],
+      year: new Date().getFullYear().toString(),
+      source: "",
+      type: "journal"
+    });
+    
+    setShowForm(false);
+    
     toast({
       title: "Citation added",
       description: "The citation has been added to your list.",
@@ -116,7 +170,15 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
     });
   };
 
-  const filteredCitations = citations;
+  const updateAuthor = (index: number, value: string) => {
+    const newAuthors = [...newCitation.authors];
+    newAuthors[index] = value;
+    setNewCitation({ ...newCitation, authors: newAuthors });
+  };
+
+  const addAuthorField = () => {
+    setNewCitation({ ...newCitation, authors: [...newCitation.authors, ""] });
+  };
 
   return (
     <Card className="p-4">
@@ -154,49 +216,162 @@ export function CitationManager({ onInsertCitation }: CitationManagerProps) {
           </Button>
         </form>
 
-        <ScrollArea className="h-[300px] border rounded-md p-2">
-          <div className="space-y-2">
-            {filteredCitations.map((citation) => (
-              <Card
-                key={citation.id}
-                className="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => handleInsertCitation(citation)}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-medium">{citation.title}</h4>
-                    <p className="text-sm text-gray-600">
-                      {citation.authors.join(", ")} • {citation.year}
-                    </p>
-                    <p className="text-sm text-gray-500">{citation.source}</p>
-                    {citation.doi && (
-                      <p className="text-xs text-blue-600">DOI: {citation.doi}</p>
-                    )}
+        {showForm ? (
+          <Card className="p-4 bg-gray-50">
+            <h4 className="font-medium mb-3">Add New Citation</h4>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">Title</label>
+                <Input 
+                  value={newCitation.title}
+                  onChange={(e) => setNewCitation({ ...newCitation, title: e.target.value })}
+                  placeholder="Paper or book title"
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">Authors</label>
+                {newCitation.authors.map((author, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <Input 
+                      value={author}
+                      onChange={(e) => updateAuthor(index, e.target.value)}
+                      placeholder="Author name (e.g., Smith, J.)"
+                    />
                   </div>
-                  <Quote className="w-4 h-4 text-gray-400" />
+                ))}
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addAuthorField}
+                  className="mt-1"
+                >
+                  Add Another Author
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm text-gray-600 mb-1 block">Year</label>
+                  <Input 
+                    value={newCitation.year}
+                    onChange={(e) => setNewCitation({ ...newCitation, year: e.target.value })}
+                    placeholder="Publication year"
+                  />
                 </div>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
+                <div>
+                  <label className="text-sm text-gray-600 mb-1 block">Type</label>
+                  <select 
+                    value={newCitation.type}
+                    onChange={(e) => setNewCitation({ 
+                      ...newCitation, 
+                      type: e.target.value as "journal" | "book" | "conference" | "website" 
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="journal">Journal</option>
+                    <option value="book">Book</option>
+                    <option value="conference">Conference</option>
+                    <option value="website">Website</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">Source</label>
+                <Input 
+                  value={newCitation.source}
+                  onChange={(e) => setNewCitation({ ...newCitation, source: e.target.value })}
+                  placeholder="Journal name, book publisher, etc."
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">DOI (optional)</label>
+                <Input 
+                  value={newCitation.doi || ""}
+                  onChange={(e) => setNewCitation({ ...newCitation, doi: e.target.value })}
+                  placeholder="Digital Object Identifier"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-2">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={handleAddCitation}
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Save Citation
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <>
+            <ScrollArea className="h-[300px] border rounded-md p-2">
+              <div className="space-y-2">
+                {citations.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    <p>No citations yet. Search for papers or add citations manually.</p>
+                  </div>
+                ) : (
+                  citations.map((citation) => (
+                    <Card
+                      key={citation.id}
+                      className="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => handleInsertCitation(citation)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-medium">{citation.title}</h4>
+                          <p className="text-sm text-gray-600">
+                            {citation.authors.join(", ")} • {citation.year}
+                          </p>
+                          <p className="text-sm text-gray-500">{citation.source}</p>
+                          {citation.doi && (
+                            <p className="text-xs text-blue-600">DOI: {citation.doi}</p>
+                          )}
+                        </div>
+                        <Quote className="w-4 h-4 text-gray-400" />
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
 
-        <Button
-          className="w-full"
-          variant="outline"
-          onClick={() =>
-            handleAddCitation({
-              id: Date.now().toString(),
-              title: "Manual Citation Entry",
-              authors: ["Author, A."],
-              year: new Date().getFullYear().toString(),
-              source: "Enter source",
-              type: "journal",
-            })
-          }
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Manual Citation
-        </Button>
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() => setShowForm(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Manual Citation
+            </Button>
+          </>
+        )}
+        
+        <Card className="p-3 bg-blue-50">
+          <div className="flex items-start">
+            <FileText className="w-5 h-5 text-blue-600 mr-2 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-medium mb-1">Citation Format Preview</h4>
+              <p className="text-xs text-gray-700">
+                {citations.length > 0 
+                  ? formatCitation(citations[0], selectedStyle) 
+                  : `Example ${selectedStyle} citation will appear here`}
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
     </Card>
   );

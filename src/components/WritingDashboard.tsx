@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,36 @@ interface WritingDashboardProps {
   projectName: string;
   onClose: () => void;
   template?: TemplateType;
+  activeFeature?: string | null;
 }
 
-export function WritingDashboard({ projectName, onClose, template }: WritingDashboardProps) {
+export function WritingDashboard({ projectName, onClose, template, activeFeature }: WritingDashboardProps) {
+  const [activeTab, setActiveTab] = useState("editor");
+  
+  useEffect(() => {
+    // Set the active tab based on the selected feature
+    if (activeFeature) {
+      switch (activeFeature) {
+        case "AI-Powered Editor":
+          setActiveTab("editor");
+          break;
+        case "Citation Manager":
+          setActiveTab("editor");
+          // We'll handle showing the citation manager in the WritingEditor component
+          localStorage.setItem("show-citation-manager", "true");
+          break;
+        case "Progress Tracking":
+          setActiveTab("goals");
+          break;
+        case "Research Assistant":
+          setActiveTab("assistant");
+          break;
+        default:
+          setActiveTab("editor");
+      }
+    }
+  }, [activeFeature]);
+
   return (
     <div className="max-w-7xl mx-auto animate-fadeIn">
       <div className="flex items-center justify-between mb-6">
@@ -31,7 +58,7 @@ export function WritingDashboard({ projectName, onClose, template }: WritingDash
         <h1 className="text-2xl font-bold">{projectName}</h1>
       </div>
 
-      <Tabs defaultValue="editor" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid grid-cols-4 gap-2">
           <TabsTrigger value="editor" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -52,7 +79,12 @@ export function WritingDashboard({ projectName, onClose, template }: WritingDash
         </TabsList>
         
         <TabsContent value="editor">
-          <WritingEditor onClose={onClose} projectName={projectName} template={template} />
+          <WritingEditor 
+            onClose={onClose} 
+            projectName={projectName} 
+            template={template} 
+            showCitations={activeFeature === "Citation Manager"}
+          />
         </TabsContent>
         
         <TabsContent value="assistant">
