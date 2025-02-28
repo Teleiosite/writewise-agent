@@ -14,6 +14,7 @@ import {
   Clock,
   BookmarkIcon,
   Download,
+  FileUp,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ interface WritingEditorProps {
   projectName: string;
   template?: TemplateType;
   showCitations?: boolean;
+  showPdfReader?: boolean;
 }
 
 interface Section {
@@ -39,13 +41,15 @@ interface Section {
   content: string;
 }
 
-export function WritingEditor({ onClose, projectName, template, showCitations = false }: WritingEditorProps) {
+export function WritingEditor({ onClose, projectName, template, showCitations = false, showPdfReader = false }: WritingEditorProps) {
   const [activeSection, setActiveSection] = useState<string>("");
   const [sections, setSections] = useState<Section[]>([]);
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
   const [showCitationsPanel, setShowCitationsPanel] = useState(showCitations);
+  const [showPdfReaderPanel, setShowPdfReaderPanel] = useState(showPdfReader);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [pdfContent, setPdfContent] = useState<string>("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -76,7 +80,15 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
       // Clear the flag
       localStorage.removeItem("show-citation-manager");
     }
-  }, [template, projectName, showCitations]);
+    
+    // Check if we should show the PDF Reader
+    const shouldShowPdfReader = localStorage.getItem("show-pdf-reader") === "true";
+    if (shouldShowPdfReader) {
+      setShowPdfReaderPanel(true);
+      // Clear the flag
+      localStorage.removeItem("show-pdf-reader");
+    }
+  }, [template, projectName, showCitations, showPdfReader]);
 
   const handleContentChange = (sectionId: string, content: string) => {
     setSections(sections.map(section => 
@@ -122,6 +134,58 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
     toast({
       title: "Document exported",
       description: `Your document has been exported as ${format.toUpperCase()}`,
+    });
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Only accept PDF files
+    if (file.type !== "application/pdf") {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF file.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // In a real app, this would parse the PDF content
+    // For demo, we'll simulate extraction
+    const reader = new FileReader();
+    reader.onload = () => {
+      // Set some sample extracted text
+      setPdfContent(`[PDF Content Extracted from: ${file.name}]
+      
+This would be the actual content extracted from the PDF document. In a real application, the PDF would be parsed and its text content would be extracted here.
+
+The system would analyze headings, paragraphs, tables, and other elements to provide structured content that you can work with.
+
+Key information such as:
+- Authors: John Smith, Jane Doe
+- Publication date: October 2023
+- Abstract: The study investigates the effects of climate change on coastal ecosystems...
+
+You can select any portion of this text to add to your document, or click "Add to Document" to include the entire extracted content in your current section.`);
+      
+      toast({
+        title: "PDF uploaded",
+        description: `"${file.name}" has been uploaded and analyzed.`,
+      });
+    };
+    reader.readAsText(file);
+  };
+
+  const handleAddPdfContent = () => {
+    if (!pdfContent || !currentSection) return;
+    
+    const newContent = currentSection.content + "\n\n" + pdfContent;
+    handleContentChange(currentSection.id, newContent);
+    
+    toast({
+      title: "Content added",
+      description: "PDF content has been added to your document.",
     });
   };
 
@@ -231,20 +295,78 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
                 <Button
                   variant={showCitationsPanel ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => setShowCitationsPanel(!showCitationsPanel)}
+                  onClick={() => {
+                    setShowCitationsPanel(!showCitationsPanel);
+                    if (showCitationsPanel) setShowPdfReaderPanel(false);
+                  }}
                 >
                   <Quote className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm">
+                <Button 
+                  variant={showPdfReaderPanel ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => {
+                    setShowPdfReaderPanel(!showPdfReaderPanel);
+                    if (showPdfReaderPanel) setShowCitationsPanel(false);
+                  }}
+                >
                   <BookOpen className="h-4 w-4" />
                 </Button>
               </div>
             </div>
+            
             {showCitationsPanel && (
               <div className="mb-4">
                 <CitationManager onInsertCitation={handleInsertCitation} />
               </div>
             )}
+            
+            {showPdfReaderPanel && (
+              <div className="mb-4">
+                <Card className="p-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">PDF Reader</h3>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => document.getElementById('pdf-file-upload')?.click()}
+                      >
+                        <FileUp className="h-4 w-4 mr-2" />
+                        Upload PDF
+                      </Button>
+                      <input
+                        id="pdf-file-upload"
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
+                    </div>
+                    
+                    {pdfContent ? (
+                      <>
+                        <ScrollArea className="h-[200px] border rounded-md p-3">
+                          <div className="whitespace-pre-wrap">{pdfContent}</div>
+                        </ScrollArea>
+                        
+                        <Button 
+                          className="w-full"
+                          onClick={handleAddPdfContent}
+                        >
+                          Add to Document
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="text-center py-8 border rounded-md">
+                        <p className="text-gray-500">Upload a PDF file to extract and analyze its content.</p>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            )}
+            
             <Textarea
               value={currentSection?.content || ""}
               onChange={(e) => handleContentChange(activeSection, e.target.value)}

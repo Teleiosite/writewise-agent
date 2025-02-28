@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, BookOpen, FileText, Trash2, Edit, Calendar, Users, AlertTriangle, FileText2, ZapIcon } from "lucide-react";
+import { Plus, BookOpen, FileText, Trash2, Edit, Calendar, Users, AlertTriangle, Menu } from "lucide-react";
 import { WritingDashboard } from "@/components/WritingDashboard";
 import { documentTemplates, type TemplateType } from "@/components/DocumentTemplates";
 
@@ -24,6 +24,7 @@ export default function Index() {
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | undefined>(undefined);
   const [activeFeature, setActiveFeature] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -155,6 +156,9 @@ export default function Index() {
       case "Text Humanizer":
         templateToUse = documentTemplates[0]; // Research Paper
         break;
+      case "Read PDF":
+        templateToUse = documentTemplates[0]; // Research Paper
+        break;
       default:
         templateToUse = documentTemplates[0];
     }
@@ -183,6 +187,9 @@ export default function Index() {
     
     setActiveProject(featureDemoName);
     setActiveFeature(feature);
+    
+    // Close mobile menu after selection
+    setMobileMenuOpen(false);
   };
 
   const formatDate = (date: Date) => {
@@ -192,6 +199,51 @@ export default function Index() {
       year: 'numeric'
     }).format(date);
   };
+
+  const features = [
+    {
+      name: "AI-Powered Editor",
+      description: "Smart writing suggestions and real-time grammar feedback as you write.",
+      icon: FileText,
+      color: "blue"
+    },
+    {
+      name: "Citation Manager",
+      description: "Easily manage references and citations in multiple formats (APA, MLA, Chicago).",
+      icon: Users,
+      color: "green"
+    },
+    {
+      name: "Progress Tracking",
+      description: "Set goals, track your writing habits, and visualize your progress over time.",
+      icon: Calendar,
+      color: "purple"
+    },
+    {
+      name: "Research Assistant",
+      description: "AI-powered research tools to find relevant sources and generate insights.",
+      icon: BookOpen,
+      color: "amber"
+    },
+    {
+      name: "AI Detector",
+      description: "Analyze text to determine if it was likely created by AI. Perfect for educators and reviewers.",
+      icon: AlertTriangle,
+      color: "red"
+    },
+    {
+      name: "Text Humanizer",
+      description: "Transform AI-generated content into natural-sounding text that passes AI detection.",
+      icon: FileText,
+      color: "indigo"
+    },
+    {
+      name: "Read PDF",
+      description: "Import and analyze PDF documents to extract key information and insights.",
+      icon: FileText,
+      color: "orange"
+    }
+  ];
 
   if (activeProject) {
     return (
@@ -217,42 +269,56 @@ export default function Index() {
         </p>
       </div>
       
-      {/* Create Project Section - Now at the top with animation */}
-      <div className="mb-8 animate-pulse hover:animate-none">
-        <Card className="border-2 border-blue-400 shadow-lg animate-scale-in">
-          <CardHeader className="bg-blue-50">
-            <CardTitle className="flex items-center gap-2 text-blue-700">
-              <Plus className="h-5 w-5 text-blue-600" />
-              Create New Project
-            </CardTitle>
-            <CardDescription>
-              Start a new writing project with our AI-powered tools
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-3">
-              <Input
-                placeholder="Enter your project name..."
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                className="flex-grow focus:ring-2 focus:ring-blue-400"
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-              />
-              <Button 
-                onClick={handleCreateProject}
-                className="bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105"
-                size="lg"
-              >
-                <Plus className="h-5 w-5 mr-2 animate-bounce" />
-                Create Project
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Mobile Menu Toggle Button - Only visible on small screens */}
+      <div className="md:hidden fixed top-4 right-4 z-50">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="rounded-full"
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="md:w-2/3">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Main Content Area */}
+        <div className="w-full md:w-3/4">
+          {/* Create Project Section */}
+          <div className="mb-8 animate-pulse hover:animate-none">
+            <Card className="border-2 border-blue-400 shadow-lg animate-scale-in">
+              <CardHeader className="bg-blue-50">
+                <CardTitle className="flex items-center gap-2 text-blue-700">
+                  <Plus className="h-5 w-5 text-blue-600" />
+                  Create New Project
+                </CardTitle>
+                <CardDescription>
+                  Start a new writing project with our AI-powered tools
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-3">
+                  <Input
+                    placeholder="Enter your project name..."
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                    className="flex-grow focus:ring-2 focus:ring-blue-400"
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+                  />
+                  <Button 
+                    onClick={handleCreateProject}
+                    className="bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105"
+                    size="lg"
+                  >
+                    <Plus className="h-5 w-5 mr-2 animate-bounce" />
+                    Create Project
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Your Writing Projects Section */}
           <Card className="w-full glass-card mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -330,113 +396,59 @@ export default function Index() {
           </Card>
         </div>
         
-        <div className="md:w-1/3">
-          <Card className="glass-card mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+        {/* Side Menu - Features & Tools */}
+        <div className={`
+          fixed inset-y-0 right-0 w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out
+          md:static md:w-1/4 md:translate-x-0 md:shadow-none
+          ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+        `}>
+          <div className="h-full flex flex-col">
+            <div className="p-4 flex items-center justify-between border-b">
+              <div className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-blue-600" />
-                Features & Tools
-              </CardTitle>
-              <CardDescription>
-                Discover what our writing assistant can do for you
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
-                  onClick={() => handleFeatureClick("AI-Powered Editor")}
-                >
-                  <div className="bg-blue-100 text-blue-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">AI-Powered Editor</h3>
-                    <p className="text-sm text-gray-600">
-                      Smart writing suggestions and real-time grammar feedback as you write.
-                    </p>
-                  </div>
-                </div>
-                
-                <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
-                  onClick={() => handleFeatureClick("Citation Manager")}
-                >
-                  <div className="bg-green-100 text-green-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
-                    <Users className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Citation Manager</h3>
-                    <p className="text-sm text-gray-600">
-                      Easily manage references and citations in multiple formats (APA, MLA, Chicago).
-                    </p>
-                  </div>
-                </div>
-                
-                <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
-                  onClick={() => handleFeatureClick("Progress Tracking")}
-                >
-                  <div className="bg-purple-100 text-purple-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
-                    <Calendar className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Progress Tracking</h3>
-                    <p className="text-sm text-gray-600">
-                      Set goals, track your writing habits, and visualize your progress over time.
-                    </p>
-                  </div>
-                </div>
-                
-                <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1"
-                  onClick={() => handleFeatureClick("Research Assistant")}
-                >
-                  <div className="bg-amber-100 text-amber-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
-                    <BookOpen className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Research Assistant</h3>
-                    <p className="text-sm text-gray-600">
-                      AI-powered research tools to find relevant sources and generate insights.
-                    </p>
-                  </div>
-                </div>
-                
-                {/* New AI Detector Feature */}
-                <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1 animate-fade-in"
-                  onClick={() => handleFeatureClick("AI Detector")}
-                >
-                  <div className="bg-red-100 text-red-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
-                    <AlertTriangle className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">AI Detector</h3>
-                    <p className="text-sm text-gray-600">
-                      Analyze text to determine if it was likely created by AI. Perfect for educators and reviewers.
-                    </p>
-                  </div>
-                </div>
-                
-                {/* New Text Humanizer Feature */}
-                <div 
-                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors transform hover:translate-x-1 animate-fade-in"
-                  onClick={() => handleFeatureClick("Text Humanizer")}
-                >
-                  <div className="bg-indigo-100 text-indigo-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Text Humanizer</h3>
-                    <p className="text-sm text-gray-600">
-                      Transform AI-generated content into natural-sounding text that passes AI detection.
-                    </p>
-                  </div>
-                </div>
+                <h2 className="font-bold">Features & Tools</h2>
               </div>
-            </CardContent>
-          </Card>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                &times;
+              </Button>
+            </div>
+            
+            <ScrollArea className="flex-1 py-2">
+              <div className="px-2 space-y-1">
+                {features.map((feature) => (
+                  <button
+                    key={feature.name}
+                    onClick={() => handleFeatureClick(feature.name)}
+                    className="w-full text-left p-3 rounded-md hover:bg-gray-100 transition-colors group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`bg-${feature.color}-100 text-${feature.color}-800 rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                        <feature.icon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm mb-1">{feature.name}</h3>
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            <div className="p-4 border-t">
+              <div className="p-3 bg-blue-50 rounded-md text-sm text-blue-800">
+                <p className="font-medium mb-1">Need Help?</p>
+                <p className="text-xs">Access our comprehensive documentation or contact support for assistance.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

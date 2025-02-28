@@ -9,7 +9,7 @@ import { WritingStats } from "@/components/WritingStats";
 import { WritingTracker } from "@/components/WritingTracker";
 import { AIDetector } from "@/components/AIDetector";
 import { TextHumanizer } from "@/components/TextHumanizer";
-import { FileText, MessageSquare, BarChart2, Target, ChevronLeft, AlertTriangle, FileText2 } from "lucide-react";
+import { FileText, MessageSquare, BarChart2, Target, ChevronLeft, AlertTriangle } from "lucide-react";
 import type { TemplateType } from "./DocumentTemplates";
 
 interface WritingDashboardProps {
@@ -45,6 +45,10 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
           break;
         case "Text Humanizer":
           setActiveTab("humanizer");
+          break;
+        case "Read PDF":
+          setActiveTab("editor");
+          localStorage.setItem("show-pdf-reader", "true");
           break;
         default:
           setActiveTab("editor");
@@ -100,6 +104,7 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
             projectName={projectName} 
             template={template} 
             showCitations={activeFeature === "Citation Manager"}
+            showPdfReader={activeFeature === "Read PDF"}
           />
         </TabsContent>
         
