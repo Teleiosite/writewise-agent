@@ -4,9 +4,6 @@ import {
   BookOpen,
   FileText,
   ClipboardList,
-  BeakerIcon,
-  BookText,
-  FileSpreadsheet,
 } from "lucide-react";
 
 export type TemplateType = {

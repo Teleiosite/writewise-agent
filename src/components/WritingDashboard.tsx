@@ -8,13 +8,15 @@ import { ChatAssistant } from "@/components/ChatAssistant";
 import { WritingStats } from "@/components/WritingStats";
 import { WritingTracker } from "@/components/WritingTracker";
 import { FileText, MessageSquare, BarChart2, Target, ChevronLeft } from "lucide-react";
+import type { TemplateType } from "./DocumentTemplates";
 
 interface WritingDashboardProps {
   projectName: string;
   onClose: () => void;
+  template?: TemplateType;
 }
 
-export function WritingDashboard({ projectName, onClose }: WritingDashboardProps) {
+export function WritingDashboard({ projectName, onClose, template }: WritingDashboardProps) {
   return (
     <div className="max-w-7xl mx-auto animate-fadeIn">
       <div className="flex items-center justify-between mb-6">
@@ -50,7 +52,7 @@ export function WritingDashboard({ projectName, onClose }: WritingDashboardProps
         </TabsList>
         
         <TabsContent value="editor">
-          <WritingEditor onClose={onClose} projectName={projectName} />
+          <WritingEditor onClose={onClose} projectName={projectName} template={template} />
         </TabsContent>
         
         <TabsContent value="assistant">

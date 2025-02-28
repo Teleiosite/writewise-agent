@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, BookOpen, FileText, Trash2, Edit, Calendar, Users } from "lucide-react";
 import { WritingDashboard } from "@/components/WritingDashboard";
+import { documentTemplates, type TemplateType } from "@/components/DocumentTemplates";
 
 interface Project {
   id: string;
@@ -21,6 +22,7 @@ export default function Index() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newProjectName, setNewProjectName] = useState("");
   const [activeProject, setActiveProject] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | undefined>(undefined);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -99,6 +101,10 @@ export default function Index() {
       title: "Project created",
       description: `"${newProjectName}" has been created successfully.`,
     });
+    
+    // Open the new project with research paper template
+    setSelectedTemplate(documentTemplates[0]); // Research Paper template
+    setActiveProject(newProjectName);
   };
 
   const handleDeleteProject = (projectId: string) => {
@@ -122,6 +128,54 @@ export default function Index() {
     // In a real app, you'd load project data here
   };
 
+  const handleFeatureClick = (feature: string) => {
+    // Create a new project for the demo feature
+    const featureDemoName = `${feature} Demo`;
+    
+    // Find the right template based on feature
+    let templateToUse;
+    switch (feature) {
+      case "AI-Powered Editor":
+        templateToUse = documentTemplates[0]; // Research Paper
+        break;
+      case "Citation Manager":
+        templateToUse = documentTemplates[1]; // Technical Report
+        break;
+      case "Progress Tracking":
+        templateToUse = documentTemplates[0]; // Research Paper
+        break;
+      case "Research Assistant":
+        templateToUse = documentTemplates[2]; // Case Study
+        break;
+      default:
+        templateToUse = documentTemplates[0];
+    }
+    
+    setSelectedTemplate(templateToUse);
+    
+    // Check if project already exists, if not create it
+    if (!projects.some(p => p.name === featureDemoName)) {
+      const newProject: Project = {
+        id: Date.now().toString(),
+        name: featureDemoName,
+        description: `A demo project for the ${feature} feature`,
+        lastEdited: new Date(),
+        wordCount: 0,
+        collaborators: 0
+      };
+      
+      const updatedProjects = [...projects, newProject];
+      saveProjects(updatedProjects);
+      
+      toast({
+        title: "Demo project created",
+        description: `"${featureDemoName}" has been created to showcase the ${feature} feature.`,
+      });
+    }
+    
+    setActiveProject(featureDemoName);
+  };
+
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -135,6 +189,7 @@ export default function Index() {
       <WritingDashboard 
         projectName={activeProject}
         onClose={() => setActiveProject(null)}
+        template={selectedTemplate}
       />
     );
   }
@@ -252,7 +307,10 @@ export default function Index() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex gap-3">
+                <div 
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  onClick={() => handleFeatureClick("AI-Powered Editor")}
+                >
                   <div className="bg-blue-100 text-blue-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
                     <FileText className="h-5 w-5" />
                   </div>
@@ -264,7 +322,10 @@ export default function Index() {
                   </div>
                 </div>
                 
-                <div className="flex gap-3">
+                <div 
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  onClick={() => handleFeatureClick("Citation Manager")}
+                >
                   <div className="bg-green-100 text-green-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
                     <Users className="h-5 w-5" />
                   </div>
@@ -276,7 +337,10 @@ export default function Index() {
                   </div>
                 </div>
                 
-                <div className="flex gap-3">
+                <div 
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  onClick={() => handleFeatureClick("Progress Tracking")}
+                >
                   <div className="bg-purple-100 text-purple-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
                     <Calendar className="h-5 w-5" />
                   </div>
@@ -288,7 +352,10 @@ export default function Index() {
                   </div>
                 </div>
                 
-                <div className="flex gap-3">
+                <div 
+                  className="flex gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-md transition-colors"
+                  onClick={() => handleFeatureClick("Research Assistant")}
+                >
                   <div className="bg-amber-100 text-amber-800 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
                     <BookOpen className="h-5 w-5" />
                   </div>
