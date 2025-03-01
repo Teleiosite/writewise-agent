@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
     
     // Check if we have saved content
     const savedContent = localStorage.getItem(`draft-${projectName}`);
+    
     if (savedContent) {
       try {
         const parsed = JSON.parse(savedContent);
@@ -66,26 +68,10 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
         }
       } catch (error) {
         console.error("Error parsing saved content:", error);
-        initializeDefaultSections();
-      }
-    } else if (template && Array.isArray(template.sections) && template.sections.length > 0) {
-      // Create sections from template if available
-      console.log("Creating sections from template:", template.sections);
-      const initialSections = template.sections.map((title) => ({
-        id: title.toLowerCase().replace(/\s+/g, '-'),
-        title,
-        content: "",
-      }));
-      
-      console.log("Initialized sections:", initialSections);
-      setSections(initialSections);
-      
-      if (initialSections.length > 0) {
-        setActiveSection(initialSections[0].id);
+        initializeFromTemplateOrDefault();
       }
     } else {
-      // No saved content or template, initialize with default
-      initializeDefaultSections();
+      initializeFromTemplateOrDefault();
     }
     
     // Check if we should show the citation manager
@@ -104,6 +90,28 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
       localStorage.removeItem("show-pdf-reader");
     }
   }, [template, projectName, showCitations, showPdfReader]);
+
+  const initializeFromTemplateOrDefault = () => {
+    // If we have a template with sections, use that
+    if (template && template.sections && Array.isArray(template.sections) && template.sections.length > 0) {
+      console.log("Creating sections from template:", template.sections);
+      const initialSections = template.sections.map((title) => ({
+        id: title.toLowerCase().replace(/\s+/g, '-'),
+        title,
+        content: "",
+      }));
+      
+      console.log("Initialized sections from template:", initialSections);
+      setSections(initialSections);
+      
+      if (initialSections.length > 0) {
+        setActiveSection(initialSections[0].id);
+      }
+    } else {
+      // Fallback to default
+      initializeDefaultSections();
+    }
+  };
 
   const initializeDefaultSections = () => {
     console.log("Initializing default sections");
