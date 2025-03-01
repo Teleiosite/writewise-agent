@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,33 +53,39 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
 
   useEffect(() => {
     console.log("Template in WritingEditor:", template);
+    
+    // Check if we have saved content
     const savedContent = localStorage.getItem(`draft-${projectName}`);
     if (savedContent) {
-      const parsed = JSON.parse(savedContent);
-      setSections(parsed.sections);
-      setLastSaved(new Date(parsed.lastSaved));
-      if (parsed.sections.length > 0) {
-        setActiveSection(parsed.sections[0].id);
+      try {
+        const parsed = JSON.parse(savedContent);
+        setSections(parsed.sections || []);
+        setLastSaved(new Date(parsed.lastSaved));
+        if (parsed.sections && parsed.sections.length > 0) {
+          setActiveSection(parsed.sections[0].id);
+        }
+      } catch (error) {
+        console.error("Error parsing saved content:", error);
+        initializeDefaultSections();
       }
-    } else if (template && template.sections) {
+    } else if (template && Array.isArray(template.sections) && template.sections.length > 0) {
+      // Create sections from template if available
       console.log("Creating sections from template:", template.sections);
       const initialSections = template.sections.map((title) => ({
         id: title.toLowerCase().replace(/\s+/g, '-'),
         title,
         content: "",
       }));
+      
+      console.log("Initialized sections:", initialSections);
       setSections(initialSections);
+      
       if (initialSections.length > 0) {
-        setActiveSection(initialSections[0]?.id || "");
+        setActiveSection(initialSections[0].id);
       }
     } else {
-      console.log("No template or saved content found");
-      // Default sections if no template is provided
-      const defaultSections: Section[] = [
-        { id: "main-content", title: "Main Content", content: "" }
-      ];
-      setSections(defaultSections);
-      setActiveSection("main-content");
+      // No saved content or template, initialize with default
+      initializeDefaultSections();
     }
     
     // Check if we should show the citation manager
@@ -99,6 +104,15 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
       localStorage.removeItem("show-pdf-reader");
     }
   }, [template, projectName, showCitations, showPdfReader]);
+
+  const initializeDefaultSections = () => {
+    console.log("Initializing default sections");
+    const defaultSections: Section[] = [
+      { id: "main-content", title: "Main Content", content: "" }
+    ];
+    setSections(defaultSections);
+    setActiveSection("main-content");
+  };
 
   const handleContentChange = (sectionId: string, content: string) => {
     setSections(sections.map(section => 
