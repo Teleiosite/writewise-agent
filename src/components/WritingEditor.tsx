@@ -53,6 +53,7 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("Template in WritingEditor:", template);
     const savedContent = localStorage.getItem(`draft-${projectName}`);
     if (savedContent) {
       const parsed = JSON.parse(savedContent);
@@ -61,7 +62,8 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
       if (parsed.sections.length > 0) {
         setActiveSection(parsed.sections[0].id);
       }
-    } else if (template) {
+    } else if (template && template.sections) {
+      console.log("Creating sections from template:", template.sections);
       const initialSections = template.sections.map((title) => ({
         id: title.toLowerCase().replace(/\s+/g, '-'),
         title,
@@ -71,6 +73,14 @@ export function WritingEditor({ onClose, projectName, template, showCitations = 
       if (initialSections.length > 0) {
         setActiveSection(initialSections[0]?.id || "");
       }
+    } else {
+      console.log("No template or saved content found");
+      // Default sections if no template is provided
+      const defaultSections: Section[] = [
+        { id: "main-content", title: "Main Content", content: "" }
+      ];
+      setSections(defaultSections);
+      setActiveSection("main-content");
     }
     
     // Check if we should show the citation manager
@@ -272,16 +282,22 @@ You can select any portion of this text to add to your document, or click "Add t
             </div>
             <ScrollArea className="h-[500px]">
               <div className="space-y-2">
-                {sections.map((section) => (
-                  <Button
-                    key={section.id}
-                    variant={activeSection === section.id ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => setActiveSection(section.id)}
-                  >
-                    {section.title}
-                  </Button>
-                ))}
+                {sections && sections.length > 0 ? (
+                  sections.map((section) => (
+                    <Button
+                      key={section.id}
+                      variant={activeSection === section.id ? "default" : "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => setActiveSection(section.id)}
+                    >
+                      {section.title}
+                    </Button>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    No sections available
+                  </div>
+                )}
               </div>
             </ScrollArea>
           </Card>
