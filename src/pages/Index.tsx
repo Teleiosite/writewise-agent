@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,10 +27,8 @@ export default function Index() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check local storage for projects
     const savedProjects = localStorage.getItem("writing-projects");
     if (savedProjects) {
-      // Parse and ensure dates are converted back from strings
       const parsed = JSON.parse(savedProjects);
       const projectsWithDates = parsed.map((project: any) => ({
         ...project,
@@ -39,7 +36,6 @@ export default function Index() {
       }));
       setProjects(projectsWithDates);
     } else {
-      // Create sample projects for demo
       const sampleProjects: Project[] = [
         {
           id: "1",
@@ -104,8 +100,7 @@ export default function Index() {
       description: `"${newProjectName}" has been created successfully.`,
     });
     
-    // Open the new project with research paper template
-    setSelectedTemplate(documentTemplates[0]); // Research Paper template
+    setSelectedTemplate(documentTemplates[0]);
     setActiveProject(newProjectName);
   };
 
@@ -113,7 +108,6 @@ export default function Index() {
     const updatedProjects = projects.filter(project => project.id !== projectId);
     saveProjects(updatedProjects);
     
-    // Also delete any saved content
     const projectToDelete = projects.find(p => p.id === projectId);
     if (projectToDelete) {
       localStorage.removeItem(`draft-${projectToDelete.name}`);
@@ -128,36 +122,33 @@ export default function Index() {
   const handleOpenProject = (projectName: string) => {
     setActiveProject(projectName);
     setActiveFeature(null);
-    // In a real app, you'd load project data here
   };
 
   const handleFeatureClick = (feature: string) => {
-    // Create a new project for the demo feature
     const featureDemoName = `${feature} Demo`;
     
-    // Find the right template based on feature
     let templateToUse;
     switch (feature) {
       case "AI-Powered Editor":
-        templateToUse = documentTemplates[0]; // Research Paper
+        templateToUse = documentTemplates[0];
         break;
       case "Citation Manager":
-        templateToUse = documentTemplates[1]; // Technical Report
+        templateToUse = documentTemplates[1];
         break;
       case "Progress Tracking":
-        templateToUse = documentTemplates[0]; // Research Paper
+        templateToUse = documentTemplates[0];
         break;
       case "Research Assistant":
-        templateToUse = documentTemplates[2]; // Case Study
+        templateToUse = documentTemplates[2];
         break;
       case "AI Detector":
-        templateToUse = documentTemplates[0]; // Research Paper
+        templateToUse = documentTemplates[0];
         break;
       case "Text Humanizer":
-        templateToUse = documentTemplates[0]; // Research Paper
+        templateToUse = documentTemplates[0];
         break;
       case "Read PDF":
-        templateToUse = documentTemplates[0]; // Research Paper
+        templateToUse = documentTemplates[0];
         break;
       default:
         templateToUse = documentTemplates[0];
@@ -165,7 +156,6 @@ export default function Index() {
     
     setSelectedTemplate(templateToUse);
     
-    // Check if project already exists, if not create it
     if (!projects.some(p => p.name === featureDemoName)) {
       const newProject: Project = {
         id: Date.now().toString(),
@@ -188,7 +178,6 @@ export default function Index() {
     setActiveProject(featureDemoName);
     setActiveFeature(feature);
     
-    // Close mobile menu after selection
     setMobileMenuOpen(false);
   };
 
@@ -269,8 +258,7 @@ export default function Index() {
         </p>
       </div>
       
-      {/* Mobile Menu Toggle Button - Only visible on small screens */}
-      <div className="md:hidden fixed top-4 right-4 z-50">
+      <div className="md:hidden fixed top-4 left-4 z-50">
         <Button 
           variant="outline" 
           size="icon" 
@@ -282,9 +270,61 @@ export default function Index() {
       </div>
       
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Main Content Area */}
+        <div className={`
+          fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out
+          md:static md:w-1/4 md:translate-x-0 md:shadow-none
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          <div className="h-full flex flex-col">
+            <div className="p-4 flex items-center justify-between border-b">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-blue-600" />
+                <h2 className="font-bold">Features & Tools</h2>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                &times;
+              </Button>
+            </div>
+            
+            <ScrollArea className="flex-1 py-2">
+              <div className="px-2 space-y-1">
+                {features.map((feature) => (
+                  <button
+                    key={feature.name}
+                    onClick={() => handleFeatureClick(feature.name)}
+                    className="w-full text-left p-3 rounded-md hover:bg-gray-100 transition-colors group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`bg-${feature.color}-100 text-${feature.color}-800 rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                        <feature.icon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-sm mb-1">{feature.name}</h3>
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            <div className="p-4 border-t">
+              <div className="p-3 bg-blue-50 rounded-md text-sm text-blue-800">
+                <p className="font-medium mb-1">Need Help?</p>
+                <p className="text-xs">Access our comprehensive documentation or contact support for assistance.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div className="w-full md:w-3/4">
-          {/* Create Project Section */}
           <div className="mb-8 animate-pulse hover:animate-none">
             <Card className="border-2 border-blue-400 shadow-lg animate-scale-in">
               <CardHeader className="bg-blue-50">
@@ -318,7 +358,6 @@ export default function Index() {
             </Card>
           </div>
           
-          {/* Your Writing Projects Section */}
           <Card className="w-full glass-card mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -394,61 +433,6 @@ export default function Index() {
               )}
             </CardContent>
           </Card>
-        </div>
-        
-        {/* Side Menu - Features & Tools */}
-        <div className={`
-          fixed inset-y-0 right-0 w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out
-          md:static md:w-1/4 md:translate-x-0 md:shadow-none
-          ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-        `}>
-          <div className="h-full flex flex-col">
-            <div className="p-4 flex items-center justify-between border-b">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-                <h2 className="font-bold">Features & Tools</h2>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="md:hidden"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                &times;
-              </Button>
-            </div>
-            
-            <ScrollArea className="flex-1 py-2">
-              <div className="px-2 space-y-1">
-                {features.map((feature) => (
-                  <button
-                    key={feature.name}
-                    onClick={() => handleFeatureClick(feature.name)}
-                    className="w-full text-left p-3 rounded-md hover:bg-gray-100 transition-colors group"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`bg-${feature.color}-100 text-${feature.color}-800 rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                        <feature.icon className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm mb-1">{feature.name}</h3>
-                        <p className="text-xs text-gray-600 line-clamp-2">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </ScrollArea>
-            
-            <div className="p-4 border-t">
-              <div className="p-3 bg-blue-50 rounded-md text-sm text-blue-800">
-                <p className="font-medium mb-1">Need Help?</p>
-                <p className="text-xs">Access our comprehensive documentation or contact support for assistance.</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
