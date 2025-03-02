@@ -5,32 +5,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { Quote, BookOpen } from "lucide-react";
 import { CitationManager } from "../CitationManager";
 import { PdfReaderPanel } from "./PdfReaderPanel";
+import { useEditor } from "@/contexts/EditorContext";
 
 interface EditorMainProps {
-  sectionTitle: string;
   projectName: string;
-  content: string;
-  onContentChange: (content: string) => void;
-  showCitationsPanel: boolean;
-  showPdfReaderPanel: boolean;
-  onToggleCitations: () => void;
-  onTogglePdfReader: () => void;
-  onInsertCitation: (citation: string) => void;
 }
 
-export function EditorMain({
-  sectionTitle,
-  projectName,
-  content,
-  onContentChange,
-  showCitationsPanel,
-  showPdfReaderPanel,
-  onToggleCitations,
-  onTogglePdfReader,
-  onInsertCitation,
-}: EditorMainProps) {
+export function EditorMain({ projectName }: EditorMainProps) {
+  const { 
+    getCurrentSectionTitle, 
+    getCurrentSectionContent,
+    updateSectionContent,
+    showCitationsPanel,
+    showPdfReaderPanel,
+    toggleCitationsPanel,
+    togglePdfReaderPanel,
+    insertCitation,
+    addContentToActiveSection
+  } = useEditor();
+
+  const sectionTitle = getCurrentSectionTitle();
+  const content = getCurrentSectionContent();
+
   const handleAddPdfContent = (pdfContent: string) => {
-    onContentChange(content + "\n\n" + pdfContent);
+    addContentToActiveSection(pdfContent);
   };
 
   return (
@@ -41,14 +39,14 @@ export function EditorMain({
           <Button
             variant={showCitationsPanel ? "default" : "ghost"}
             size="sm"
-            onClick={onToggleCitations}
+            onClick={toggleCitationsPanel}
           >
             <Quote className="h-4 w-4" />
           </Button>
           <Button 
             variant={showPdfReaderPanel ? "default" : "ghost"}
             size="sm"
-            onClick={onTogglePdfReader}
+            onClick={togglePdfReaderPanel}
           >
             <BookOpen className="h-4 w-4" />
           </Button>
@@ -57,7 +55,7 @@ export function EditorMain({
       
       {showCitationsPanel && (
         <div className="mb-4">
-          <CitationManager onInsertCitation={onInsertCitation} />
+          <CitationManager onInsertCitation={insertCitation} />
         </div>
       )}
       
@@ -69,7 +67,7 @@ export function EditorMain({
       
       <Textarea
         value={content}
-        onChange={(e) => onContentChange(e.target.value)}
+        onChange={(e) => updateSectionContent(e.target.value)}
         placeholder={`Start writing your ${sectionTitle || "project"}...`}
         className="min-h-[500px] resize-none"
       />

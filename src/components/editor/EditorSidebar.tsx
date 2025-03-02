@@ -5,30 +5,16 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { BookmarkIcon, Plus, Save, X } from "lucide-react";
+import { useEditor } from "@/contexts/EditorContext";
 
-interface EditorSidebarProps {
-  sections: Array<{
-    id: string;
-    title: string;
-    content: string;
-  }>;
-  activeSection: string;
-  onSectionChange: (sectionId: string) => void;
-  onCreateSection?: (title: string) => void;
-}
-
-export function EditorSidebar({ 
-  sections, 
-  activeSection, 
-  onSectionChange,
-  onCreateSection 
-}: EditorSidebarProps) {
+export function EditorSidebar() {
+  const { sections, activeSection, setActiveSection, createSection } = useEditor();
   const [showNewSectionForm, setShowNewSectionForm] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
 
   const handleCreateSection = () => {
-    if (newSectionTitle.trim() && onCreateSection) {
-      onCreateSection(newSectionTitle);
+    if (newSectionTitle.trim()) {
+      createSection(newSectionTitle);
       setNewSectionTitle("");
       setShowNewSectionForm(false);
     }
@@ -41,15 +27,13 @@ export function EditorSidebar({
           <BookmarkIcon className="h-5 w-5 text-blue-600" />
           <h3 className="font-semibold">Sections</h3>
         </div>
-        {onCreateSection && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setShowNewSectionForm(!showNewSectionForm)}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        )}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setShowNewSectionForm(!showNewSectionForm)}
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
 
       {showNewSectionForm && (
@@ -92,7 +76,7 @@ export function EditorSidebar({
                 key={section.id}
                 variant={activeSection === section.id ? "default" : "ghost"}
                 className="w-full justify-start"
-                onClick={() => onSectionChange(section.id)}
+                onClick={() => setActiveSection(section.id)}
               >
                 {section.title}
               </Button>

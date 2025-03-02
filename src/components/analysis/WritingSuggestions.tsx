@@ -12,7 +12,6 @@ interface WritingSuggestionsProps {
 
 export function WritingSuggestions({ content, onSuggestionClick }: WritingSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [structure, setStructure] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 

@@ -1,40 +1,20 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PenTool, Loader2 } from "lucide-react";
+import { PenTool } from "lucide-react";
 import { AnalysisTabs } from "./analysis/AnalysisTabs";
 import { WritingSuggestions } from "./analysis/WritingSuggestions";
 import { GrammarAnalysis } from "./analysis/GrammarAnalysis";
 import { ContentGenerator } from "./analysis/ContentGenerator";
+import { useEditor } from "@/contexts/EditorContext";
 
-interface TextAnalysisProps {
-  content: string;
-  onSuggestionClick: (suggestion: string) => void;
-}
-
-export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) {
+export function TextAnalysis() {
   const [activeTab, setActiveTab] = useState<string>("writing");
   const [isLoading, setIsLoading] = useState(false);
-  const [lastAnalyzedContent, setLastAnalyzedContent] = useState<string>("");
-
-  // Auto-analyze content when it changes (with debounce)
-  useEffect(() => {
-    // Skip empty content
-    if (!content.trim()) return;
-    
-    // Skip if content hasn't changed enough
-    if (content.length > 0 && 
-        lastAnalyzedContent.length > 0 && 
-        Math.abs(content.length - lastAnalyzedContent.length) < 20) return;
-    
-    // Set a timeout to avoid too frequent analyses
-    const timer = setTimeout(() => {
-      setLastAnalyzedContent(content);
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [content, lastAnalyzedContent]);
+  const { getCurrentSectionContent, addContentToActiveSection } = useEditor();
+  
+  const content = getCurrentSectionContent();
 
   return (
     <Card className="p-4">
@@ -54,7 +34,7 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
         {activeTab === "writing" && (
           <WritingSuggestions 
             content={content}
-            onSuggestionClick={onSuggestionClick}
+            onSuggestionClick={addContentToActiveSection}
           />
         )}
         
@@ -66,7 +46,7 @@ export function TextAnalysis({ content, onSuggestionClick }: TextAnalysisProps) 
         
         {activeTab === "generate" && (
           <ContentGenerator 
-            onSuggestionClick={onSuggestionClick}
+            onSuggestionClick={addContentToActiveSection}
           />
         )}
       </ScrollArea>
