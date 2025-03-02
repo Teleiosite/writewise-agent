@@ -9,7 +9,8 @@ import {
   Download, 
   Quote, 
   FileText,
-  FileType
+  FileType,
+  MessageSquare
 } from "lucide-react";
 import { useEditor } from "@/contexts/EditorContext";
 import {
@@ -84,7 +85,8 @@ export function EditorToolbar({ onClose }: EditorToolbarProps) {
             onClick={togglePdfReaderPanel}
           >
             <BookOpen className="h-4 w-4 mr-1" />
-            PDF Reader
+            <MessageSquare className="h-3 w-3 -mt-1" />
+            Chat PDF
           </Button>
         </div>
         

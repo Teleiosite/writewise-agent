@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,7 +48,6 @@ export function EditorProvider({ children, projectName, template }: {
   const [readingTime, setReadingTime] = useState(0);
   const { toast } = useToast();
 
-  // Initialize editor with data from localStorage or template
   useEffect(() => {
     const savedContent = localStorage.getItem(`draft-${projectName}`);
     
@@ -69,7 +67,6 @@ export function EditorProvider({ children, projectName, template }: {
       initializeFromTemplateOrDefault();
     }
     
-    // Check saved flags
     const shouldShowCitations = localStorage.getItem("show-citation-manager") === "true";
     if (shouldShowCitations) {
       setShowCitationsPanel(true);
@@ -83,7 +80,6 @@ export function EditorProvider({ children, projectName, template }: {
     }
   }, [projectName, template]);
 
-  // Update word count and reading time when active section changes
   useEffect(() => {
     if (!activeSection) return;
     
@@ -191,6 +187,11 @@ export function EditorProvider({ children, projectName, template }: {
     if (currentSection) {
       const newContent = currentSection.content + "\n\n" + content;
       updateSectionContent(newContent);
+      
+      toast({
+        title: "Content added",
+        description: "New content has been added to your document.",
+      });
     }
   };
 
