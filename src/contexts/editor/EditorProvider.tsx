@@ -1,22 +1,11 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Section, EditorState } from './types';
+import { calculateWordCount, calculateReadingTime, createSectionFromTitle, getSectionById, getDefaultSections } from './editorUtils';
+import { saveProjectToStorage, loadProjectFromStorage, loadUserPreferences } from './editorStorage';
 
-export interface Section {
-  id: string;
-  title: string;
-  content: string;
-}
-
-interface EditorContextType {
-  // Editor state
-  sections: Section[];
-  activeSection: string;
-  lastSaved: Date | null;
-  showCitationsPanel: boolean;
-  showPdfReaderPanel: boolean;
-  wordCount: number;
-  readingTime: number;
-  
+interface EditorContextType extends EditorState {
   // Actions
   setSections: (sections: Section[]) => void;
   setActiveSection: (sectionId: string) => void;
@@ -48,56 +37,43 @@ export function EditorProvider({ children, projectName, template }: {
   const [readingTime, setReadingTime] = useState(0);
   const { toast } = useToast();
 
+  // Initialize editor state
   useEffect(() => {
-    const savedContent = localStorage.getItem(`draft-${projectName}`);
+    const { sections: savedSections, lastSaved: savedTime } = loadProjectFromStorage(projectName);
     
-    if (savedContent) {
-      try {
-        const parsed = JSON.parse(savedContent);
-        setSections(parsed.sections || []);
-        setLastSaved(new Date(parsed.lastSaved));
-        if (parsed.sections && parsed.sections.length > 0) {
-          setActiveSection(parsed.sections[0].id);
-        }
-      } catch (error) {
-        console.error("Error parsing saved content:", error);
-        initializeFromTemplateOrDefault();
-      }
+    if (savedSections.length > 0) {
+      setSections(savedSections);
+      setLastSaved(savedTime);
+      setActiveSection(savedSections[0].id);
     } else {
       initializeFromTemplateOrDefault();
     }
     
-    const shouldShowCitations = localStorage.getItem("show-citation-manager") === "true";
-    if (shouldShowCitations) {
+    const { showCitations, showPdfReader } = loadUserPreferences();
+    if (showCitations) {
       setShowCitationsPanel(true);
-      localStorage.removeItem("show-citation-manager");
     }
     
-    const shouldShowPdfReader = localStorage.getItem("show-pdf-reader") === "true";
-    if (shouldShowPdfReader) {
+    if (showPdfReader) {
       setShowPdfReaderPanel(true);
-      localStorage.removeItem("show-pdf-reader");
     }
   }, [projectName, template]);
 
+  // Update word count and reading time when active section changes
   useEffect(() => {
     if (!activeSection) return;
     
-    const section = sections.find(s => s.id === activeSection);
+    const section = getSectionById(sections, activeSection);
     if (section) {
-      const words = section.content.trim().split(/\s+/).filter(Boolean).length;
+      const words = calculateWordCount(section.content);
       setWordCount(words);
-      setReadingTime(Math.ceil(words / 200));
+      setReadingTime(calculateReadingTime(words));
     }
   }, [activeSection, sections]);
 
   const initializeFromTemplateOrDefault = () => {
     if (template && template.sections && Array.isArray(template.sections) && template.sections.length > 0) {
-      const initialSections = template.sections.map((title: string) => ({
-        id: title.toLowerCase().replace(/\s+/g, '-'),
-        title,
-        content: "",
-      }));
+      const initialSections = template.sections.map((title: string) => createSectionFromTitle(title));
       
       setSections(initialSections);
       
@@ -105,16 +81,10 @@ export function EditorProvider({ children, projectName, template }: {
         setActiveSection(initialSections[0].id);
       }
     } else {
-      initializeDefaultSections();
+      const defaultSections = getDefaultSections();
+      setSections(defaultSections);
+      setActiveSection(defaultSections[0].id);
     }
-  };
-
-  const initializeDefaultSections = () => {
-    const defaultSections: Section[] = [
-      { id: "main-content", title: "Main Content", content: "" }
-    ];
-    setSections(defaultSections);
-    setActiveSection("main-content");
   };
 
   const updateSectionContent = (content: string) => {
@@ -126,12 +96,12 @@ export function EditorProvider({ children, projectName, template }: {
   };
 
   const getCurrentSectionContent = (): string => {
-    const section = sections.find(s => s.id === activeSection);
+    const section = getSectionById(sections, activeSection);
     return section ? section.content : "";
   };
 
   const getCurrentSectionTitle = (): string => {
-    const section = sections.find(s => s.id === activeSection);
+    const section = getSectionById(sections, activeSection);
     return section ? section.title : "";
   };
 
@@ -146,12 +116,7 @@ export function EditorProvider({ children, projectName, template }: {
   };
 
   const saveProject = () => {
-    const currentTime = new Date();
-    const saveData = {
-      sections,
-      lastSaved: currentTime.toISOString(),
-    };
-    localStorage.setItem(`draft-${projectName}`, JSON.stringify(saveData));
+    const currentTime = saveProjectToStorage(projectName, sections);
     setLastSaved(currentTime);
     toast({
       title: "Draft saved",
@@ -170,20 +135,15 @@ export function EditorProvider({ children, projectName, template }: {
   };
 
   const createSection = (title: string) => {
-    const id = title.toLowerCase().replace(/\s+/g, '-');
-    const newSection = {
-      id,
-      title,
-      content: ""
-    };
+    const newSection = createSectionFromTitle(title);
     setSections([...sections, newSection]);
-    setActiveSection(id);
+    setActiveSection(newSection.id);
   };
 
   const addContentToActiveSection = (content: string) => {
     if (!activeSection) return;
     
-    const currentSection = sections.find(s => s.id === activeSection);
+    const currentSection = getSectionById(sections, activeSection);
     if (currentSection) {
       const newContent = currentSection.content + "\n\n" + content;
       updateSectionContent(newContent);
@@ -198,7 +158,7 @@ export function EditorProvider({ children, projectName, template }: {
   const insertCitation = (citation: string) => {
     if (!activeSection) return;
     
-    const currentSection = sections.find(s => s.id === activeSection);
+    const currentSection = getSectionById(sections, activeSection);
     if (currentSection) {
       const newContent = currentSection.content + "\n" + citation;
       updateSectionContent(newContent);

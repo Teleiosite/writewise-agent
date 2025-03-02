@@ -1,11 +1,10 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Quote, BookOpen } from "lucide-react";
 import { CitationManager } from "../CitationManager";
 import { PdfReaderPanel } from "./PdfReaderPanel";
-import { useEditor } from "@/contexts/EditorContext";
+import { useEditor } from "@/contexts/editor";
 
 interface EditorMainProps {
   projectName: string;

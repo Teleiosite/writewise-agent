@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { BookmarkIcon, Plus, Save, X } from "lucide-react";
-import { useEditor } from "@/contexts/EditorContext";
+import { useEditor } from "@/contexts/editor";
 
 export function EditorSidebar() {
   const { sections, activeSection, setActiveSection, createSection } = useEditor();

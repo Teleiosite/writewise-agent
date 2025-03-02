@@ -1,5 +1,4 @@
-
-import { EditorProvider } from "@/contexts/EditorContext";
+import { EditorProvider } from "@/contexts/editor";
 import { TextAnalysis } from "./TextAnalysis";
 import { EditorSidebar } from "./editor/EditorSidebar";
 import { EditorMain } from "./editor/EditorMain";
@@ -7,7 +6,7 @@ import { EditorToolbar } from "./editor/EditorToolbar";
 import { PdfReaderPanel } from "./editor/PdfReaderPanel";
 import { CitationManager } from "./CitationManager";
 import type { TemplateType } from "./DocumentTemplates";
-import { useEditor } from "@/contexts/EditorContext";
+import { useEditor } from "@/contexts/editor";
 
 // This component uses the context but needs to be inside the provider
 function EditorContent({ projectName }: { projectName: string }) {

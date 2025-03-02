@@ -12,7 +12,7 @@ import {
   FileType,
   MessageSquare
 } from "lucide-react";
-import { useEditor } from "@/contexts/EditorContext";
+import { useEditor } from "@/contexts/editor";
 import {
   DropdownMenu,
   DropdownMenuContent,

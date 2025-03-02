@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -7,7 +6,7 @@ import { AnalysisTabs } from "./analysis/AnalysisTabs";
 import { WritingSuggestions } from "./analysis/WritingSuggestions";
 import { GrammarAnalysis } from "./analysis/GrammarAnalysis";
 import { ContentGenerator } from "./analysis/ContentGenerator";
-import { useEditor } from "@/contexts/EditorContext";
+import { useEditor } from "@/contexts/editor";
 
 export function TextAnalysis() {
   const [activeTab, setActiveTab] = useState<string>("writing");
