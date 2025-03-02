@@ -1,8 +1,23 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { BookOpen, Clock, Save, X, Download, Quote, FileText } from "lucide-react";
+import { 
+  BookOpen, 
+  Clock, 
+  Save, 
+  X, 
+  Download, 
+  Quote, 
+  FileText,
+  FileType
+} from "lucide-react";
 import { useEditor } from "@/contexts/EditorContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface EditorToolbarProps {
   onClose: () => void;
@@ -35,10 +50,24 @@ export function EditorToolbar({ onClose }: EditorToolbarProps) {
             Save
           </Button>
           
-          <Button variant="ghost" size="sm" onClick={() => exportDocument('docx')}>
-            <Download className="h-4 w-4 mr-1" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Download className="h-4 w-4 mr-1" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => exportDocument('pdf')}>
+                <FileType className="h-4 w-4 mr-2" />
+                PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportDocument('doc')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Word Document
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <Button
             variant={showCitationsPanel ? "default" : "ghost"}
