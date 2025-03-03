@@ -4,7 +4,7 @@ import { EditorSidebar } from "./editor/EditorSidebar";
 import { EditorMain } from "./editor/EditorMain";
 import { EditorToolbar } from "./editor/EditorToolbar";
 import { PdfReaderPanel } from "./editor/PdfReaderPanel";
-import { CitationManager } from "./CitationManager";
+import { CitationManager } from "./citations/CitationManager";
 import type { TemplateType } from "./DocumentTemplates";
 import { useEditor } from "@/contexts/editor";
 
@@ -28,7 +28,7 @@ function EditorContent({ projectName }: { projectName: string }) {
         )}
         {showCitationsPanel && (
           <div className="mt-4">
-            <CitationManager onAddCitation={insertCitation} />
+            <CitationManager onInsertCitation={insertCitation} />
           </div>
         )}
       </div>
