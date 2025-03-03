@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, MessageSquare } from "lucide-react";
 import { PdfUploader } from "./pdf/PdfUploader";
 import { PdfContent } from "./pdf/PdfContent";
-import { PdfChatInterface } from "./PdfChatInterface";
+import { PdfChatInterface } from "./pdf/PdfChatInterface";
 
 interface PdfReaderPanelProps {
   onAddContent: (content: string) => void;
