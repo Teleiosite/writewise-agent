@@ -1,5 +1,4 @@
 
-import { useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { ChatMessage } from "./types";
@@ -19,17 +18,21 @@ export function ChatMessages({ messages, isLoading, scrollAreaRef }: ChatMessage
           <ChatMessageItem key={message.id} message={message} />
         ))}
         
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] rounded-lg p-3 bg-muted">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Thinking...</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {isLoading && <ThinkingIndicator />}
       </div>
     </ScrollArea>
+  );
+}
+
+function ThinkingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div className="max-w-[80%] rounded-lg p-3 bg-muted">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-sm">Thinking...</span>
+        </div>
+      </div>
+    </div>
   );
 }
