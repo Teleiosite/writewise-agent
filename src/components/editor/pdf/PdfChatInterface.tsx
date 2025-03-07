@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Bot, Upload } from "lucide-react";
@@ -9,17 +8,23 @@ import { ChatInput } from "./ChatInput";
 import { SuggestedQuestions } from "./SuggestedQuestions";
 import { PdfUploader } from "./PdfUploader";
 
-interface PdfChatInterfaceProps {
+export interface PdfChatInterfaceProps {
   onAddContent: (content: string) => void;
+  pdfContent?: string;
+  pdfName?: string;
 }
 
-export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
+export function PdfChatInterface({ 
+  onAddContent,
+  pdfContent: initialPdfContent,
+  pdfName: initialPdfName 
+}: PdfChatInterfaceProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [generatedQuestions, setGeneratedQuestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [pdfContent, setPdfContent] = useState<string>("");
-  const [pdfName, setPdfName] = useState<string>("");
+  const [pdfContent, setPdfContent] = useState<string>(initialPdfContent || "");
+  const [pdfName, setPdfName] = useState<string>(initialPdfName || "");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -31,7 +36,6 @@ export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || !pdfContent) return;
     
-    // Add user message
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       content: inputMessage,
@@ -43,9 +47,7 @@ export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
     setInputMessage("");
     setIsLoading(true);
     
-    // Simulate response delay
     setTimeout(() => {
-      // Generate a mock response based on the question
       let responseContent = "";
       
       if (inputMessage.toLowerCase().includes("summary")) {
@@ -74,7 +76,6 @@ export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
       setChatMessages(prev => [...prev, assistantMessage]);
       setIsLoading(false);
       
-      // Scroll to bottom after message is added
       setTimeout(() => {
         if (scrollAreaRef.current) {
           scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -86,7 +87,6 @@ export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
   const generateQuestions = () => {
     setIsLoading(true);
     
-    // Simulate generating questions based on the PDF content
     setTimeout(() => {
       const questions = [
         "What are the main findings of this study?",
@@ -106,7 +106,6 @@ export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
     setInputMessage(question);
   };
 
-  // Initialize chat if there's PDF content and no messages yet
   useEffect(() => {
     if (pdfContent && chatMessages.length === 0 && pdfName) {
       const welcomeMessage: ChatMessage = {
@@ -118,7 +117,6 @@ export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
       
       setChatMessages([welcomeMessage]);
       
-      // Auto-generate some initial questions
       generateQuestions();
     }
   }, [pdfContent, pdfName, chatMessages.length]);
