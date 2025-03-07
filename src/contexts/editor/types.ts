@@ -11,6 +11,7 @@ export interface EditorState {
   lastSaved: Date | null;
   showCitationsPanel: boolean;
   showPdfReaderPanel: boolean;
+  showPdfChatPanel: boolean;
   wordCount: number;
   readingTime: number;
 }
@@ -27,6 +28,7 @@ export interface EditorActions {
   // UI state management
   toggleCitationsPanel: () => void;
   togglePdfReaderPanel: () => void;
+  togglePdfChatPanel: () => void;
   
   // Content management
   saveProject: () => void;

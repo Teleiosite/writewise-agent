@@ -1,26 +1,32 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Bot } from "lucide-react";
+import { Bot, Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { ChatMessage } from "./types";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { SuggestedQuestions } from "./SuggestedQuestions";
+import { PdfUploader } from "./PdfUploader";
 
 interface PdfChatInterfaceProps {
   onAddContent: (content: string) => void;
-  pdfContent: string;
-  pdfName: string;
 }
 
-export function PdfChatInterface({ onAddContent, pdfContent, pdfName }: PdfChatInterfaceProps) {
+export function PdfChatInterface({ onAddContent }: PdfChatInterfaceProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [generatedQuestions, setGeneratedQuestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [pdfContent, setPdfContent] = useState<string>("");
+  const [pdfName, setPdfName] = useState<string>("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const handlePdfLoaded = (name: string, content: string) => {
+    setPdfName(name);
+    setPdfContent(content);
+  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || !pdfContent) return;
@@ -117,35 +123,43 @@ export function PdfChatInterface({ onAddContent, pdfContent, pdfName }: PdfChatI
     }
   }, [pdfContent, pdfName, chatMessages.length]);
 
-  // If no PDF content, don't render anything
-  if (!pdfContent) return null;
-
   return (
     <Card className="p-4 h-[500px] flex flex-col">
       <div className="flex-grow flex flex-col h-full space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Chat with "{pdfName}"</h3>
+          <h3 className="text-lg font-semibold">Chat with PDF</h3>
+          <PdfUploader onPdfLoaded={handlePdfLoaded} />
         </div>
         
-        <ChatMessages 
-          messages={chatMessages}
-          isLoading={isLoading}
-          scrollAreaRef={scrollAreaRef}
-        />
-        
-        <SuggestedQuestions
-          questions={generatedQuestions}
-          onQuestionClick={handleQuestionClick}
-          onGenerateQuestions={generateQuestions}
-          isLoading={isLoading}
-        />
-        
-        <ChatInput
-          inputMessage={inputMessage}
-          setInputMessage={setInputMessage}
-          handleSendMessage={handleSendMessage}
-          isLoading={isLoading}
-        />
+        {pdfContent ? (
+          <>
+            <ChatMessages 
+              messages={chatMessages}
+              isLoading={isLoading}
+              scrollAreaRef={scrollAreaRef}
+            />
+            
+            <SuggestedQuestions
+              questions={generatedQuestions}
+              onQuestionClick={handleQuestionClick}
+              onGenerateQuestions={generateQuestions}
+              isLoading={isLoading}
+            />
+            
+            <ChatInput
+              inputMessage={inputMessage}
+              setInputMessage={setInputMessage}
+              handleSendMessage={handleSendMessage}
+              isLoading={isLoading}
+            />
+          </>
+        ) : (
+          <div className="text-center py-8 border rounded-md flex-grow flex flex-col items-center justify-center">
+            <Upload className="h-12 w-12 text-gray-400 mb-2" />
+            <p className="text-gray-500">Upload a PDF file to chat with it.</p>
+            <p className="text-gray-400 text-sm mt-2">You can ask questions about the content of the PDF.</p>
+          </div>
+        )}
       </div>
     </Card>
   );

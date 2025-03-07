@@ -5,6 +5,7 @@ import { EditorHeader } from "./EditorHeader";
 import { EditorContent } from "./EditorContent";
 import { EditorCitationsPanel } from "./EditorCitationsPanel";
 import { EditorPdfPanel } from "./EditorPdfPanel";
+import { EditorPdfChatPanel } from "./EditorPdfChatPanel";
 
 interface EditorMainProps {
   projectName: string;
@@ -17,8 +18,10 @@ export function EditorMain({ projectName }: EditorMainProps) {
     updateSectionContent,
     showCitationsPanel,
     showPdfReaderPanel,
+    showPdfChatPanel,
     toggleCitationsPanel,
     togglePdfReaderPanel,
+    togglePdfChatPanel,
     insertCitation,
     addContentToActiveSection
   } = useEditor();
@@ -36,8 +39,10 @@ export function EditorMain({ projectName }: EditorMainProps) {
         title={sectionTitle || projectName}
         showCitationsPanel={showCitationsPanel}
         showPdfReaderPanel={showPdfReaderPanel}
+        showPdfChatPanel={showPdfChatPanel}
         toggleCitationsPanel={toggleCitationsPanel}
         togglePdfReaderPanel={togglePdfReaderPanel}
+        togglePdfChatPanel={togglePdfChatPanel}
       />
       
       <EditorCitationsPanel 
@@ -48,6 +53,11 @@ export function EditorMain({ projectName }: EditorMainProps) {
       <EditorPdfPanel 
         onAddContent={handleAddPdfContent}
         show={showPdfReaderPanel}
+      />
+
+      <EditorPdfChatPanel
+        onAddContent={handleAddPdfContent}
+        show={showPdfChatPanel}
       />
       
       <EditorContent

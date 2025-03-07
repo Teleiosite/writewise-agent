@@ -50,6 +50,7 @@ export function EditorProvider({ children, projectName, template }: {
         lastSaved: projectOps.lastSaved,
         showCitationsPanel: panelManager.showCitationsPanel,
         showPdfReaderPanel: panelManager.showPdfReaderPanel,
+        showPdfChatPanel: panelManager.showPdfChatPanel,
         wordCount: sectionManager.wordCount,
         readingTime: sectionManager.readingTime,
         
@@ -62,6 +63,7 @@ export function EditorProvider({ children, projectName, template }: {
         getCurrentSectionTitle: sectionManager.getCurrentSectionTitle,
         toggleCitationsPanel: panelManager.toggleCitationsPanel,
         togglePdfReaderPanel: panelManager.togglePdfReaderPanel,
+        togglePdfChatPanel: panelManager.togglePdfChatPanel,
         saveProject,
         exportDocument,
         addContentToActiveSection: sectionManager.addContentToActiveSection,
