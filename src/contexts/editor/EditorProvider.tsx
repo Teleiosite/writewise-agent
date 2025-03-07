@@ -1,25 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Section, EditorState } from './types';
-import { calculateWordCount, calculateReadingTime, createSectionFromTitle, getSectionById, getDefaultSections } from './editorUtils';
-import { saveProjectToStorage, loadProjectFromStorage, loadUserPreferences } from './editorStorage';
-
-interface EditorContextType extends EditorState {
-  // Actions
-  setSections: (sections: Section[]) => void;
-  setActiveSection: (sectionId: string) => void;
-  createSection: (title: string) => void;
-  updateSectionContent: (content: string) => void;
-  getCurrentSectionContent: () => string;
-  getCurrentSectionTitle: () => string;
-  toggleCitationsPanel: () => void;
-  togglePdfReaderPanel: () => void;
-  saveProject: () => void;
-  exportDocument: (format: string) => Promise<void>;
-  addContentToActiveSection: (content: string) => void;
-  insertCitation: (citation: string) => void;
-}
+import { Section, EditorContextType } from './types';
+import { useSectionManager } from './useSectionManager';
+import { usePanelManager } from './usePanelManager';
+import { useProjectOperations } from './useProjectOperations';
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
@@ -28,165 +12,60 @@ export function EditorProvider({ children, projectName, template }: {
   projectName: string;
   template?: any;
 }) {
-  const [sections, setSections] = useState<Section[]>([]);
-  const [activeSection, setActiveSection] = useState<string>("");
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [showCitationsPanel, setShowCitationsPanel] = useState(false);
-  const [showPdfReaderPanel, setShowPdfReaderPanel] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
-  const [readingTime, setReadingTime] = useState(0);
-  const { toast } = useToast();
+  // Use our custom hooks
+  const sectionManager = useSectionManager(projectName, template);
+  const panelManager = usePanelManager();
+  const projectOps = useProjectOperations(projectName);
 
   // Initialize editor state
   useEffect(() => {
-    const { sections: savedSections, lastSaved: savedTime } = loadProjectFromStorage(projectName);
+    const { savedSections, savedTime } = projectOps.loadProject();
     
     if (savedSections.length > 0) {
-      setSections(savedSections);
-      setLastSaved(savedTime);
-      setActiveSection(savedSections[0].id);
+      sectionManager.setSections(savedSections);
+      projectOps.setLastSaved(savedTime);
+      sectionManager.setActiveSection(savedSections[0].id);
     } else {
-      initializeFromTemplateOrDefault();
+      sectionManager.initializeFromTemplateOrDefault();
     }
     
-    const { showCitations, showPdfReader } = loadUserPreferences();
-    if (showCitations) {
-      setShowCitationsPanel(true);
-    }
-    
-    if (showPdfReader) {
-      setShowPdfReaderPanel(true);
-    }
+    panelManager.initializePanelState();
   }, [projectName, template]);
 
-  // Update word count and reading time when active section changes
-  useEffect(() => {
-    if (!activeSection) return;
-    
-    const section = getSectionById(sections, activeSection);
-    if (section) {
-      const words = calculateWordCount(section.content);
-      setWordCount(words);
-      setReadingTime(calculateReadingTime(words));
-    }
-  }, [activeSection, sections]);
-
-  const initializeFromTemplateOrDefault = () => {
-    if (template && template.sections && Array.isArray(template.sections) && template.sections.length > 0) {
-      const initialSections = template.sections.map((title: string) => createSectionFromTitle(title));
-      
-      setSections(initialSections);
-      
-      if (initialSections.length > 0) {
-        setActiveSection(initialSections[0].id);
-      }
-    } else {
-      const defaultSections = getDefaultSections();
-      setSections(defaultSections);
-      setActiveSection(defaultSections[0].id);
-    }
-  };
-
-  const updateSectionContent = (content: string) => {
-    if (!activeSection) return;
-    
-    setSections(sections.map(section => 
-      section.id === activeSection ? { ...section, content } : section
-    ));
-  };
-
-  const getCurrentSectionContent = (): string => {
-    const section = getSectionById(sections, activeSection);
-    return section ? section.content : "";
-  };
-
-  const getCurrentSectionTitle = (): string => {
-    const section = getSectionById(sections, activeSection);
-    return section ? section.title : "";
-  };
-
-  const toggleCitationsPanel = () => {
-    setShowCitationsPanel(!showCitationsPanel);
-    if (showCitationsPanel) setShowPdfReaderPanel(false);
-  };
-
-  const togglePdfReaderPanel = () => {
-    setShowPdfReaderPanel(!showPdfReaderPanel);
-    if (showPdfReaderPanel) setShowCitationsPanel(false);
-  };
-
+  // Create wrapped functions that use our hooks
   const saveProject = () => {
-    const currentTime = saveProjectToStorage(projectName, sections);
-    setLastSaved(currentTime);
-    toast({
-      title: "Draft saved",
-      description: "Your progress has been saved successfully.",
-    });
+    projectOps.saveProject(sectionManager.sections);
   };
 
   const exportDocument = async (format: string) => {
-    const { downloadDocument, formatContent } = await import("@/utils/documentExport");
-    const content = await formatContent(sections, format as any);
-    await downloadDocument(content, projectName, format as any);
-    toast({
-      title: "Document exported",
-      description: `Your document has been exported as ${format.toUpperCase()}`,
-    });
-  };
-
-  const createSection = (title: string) => {
-    const newSection = createSectionFromTitle(title);
-    setSections([...sections, newSection]);
-    setActiveSection(newSection.id);
-  };
-
-  const addContentToActiveSection = (content: string) => {
-    if (!activeSection) return;
-    
-    const currentSection = getSectionById(sections, activeSection);
-    if (currentSection) {
-      const newContent = currentSection.content + "\n\n" + content;
-      updateSectionContent(newContent);
-      
-      toast({
-        title: "Content added",
-        description: "New content has been added to your document.",
-      });
-    }
-  };
-
-  const insertCitation = (citation: string) => {
-    if (!activeSection) return;
-    
-    const currentSection = getSectionById(sections, activeSection);
-    if (currentSection) {
-      const newContent = currentSection.content + "\n" + citation;
-      updateSectionContent(newContent);
-    }
+    await projectOps.exportDocument(sectionManager.sections, format);
   };
 
   return (
     <EditorContext.Provider
       value={{
-        sections,
-        activeSection,
-        lastSaved,
-        showCitationsPanel,
-        showPdfReaderPanel,
-        wordCount,
-        readingTime,
-        setSections,
-        setActiveSection,
-        createSection,
-        updateSectionContent,
-        getCurrentSectionContent,
-        getCurrentSectionTitle,
-        toggleCitationsPanel,
-        togglePdfReaderPanel,
+        // State
+        sections: sectionManager.sections,
+        activeSection: sectionManager.activeSection,
+        lastSaved: projectOps.lastSaved,
+        showCitationsPanel: panelManager.showCitationsPanel,
+        showPdfReaderPanel: panelManager.showPdfReaderPanel,
+        wordCount: sectionManager.wordCount,
+        readingTime: sectionManager.readingTime,
+        
+        // Actions
+        setSections: sectionManager.setSections,
+        setActiveSection: sectionManager.setActiveSection,
+        createSection: sectionManager.createSection,
+        updateSectionContent: sectionManager.updateSectionContent,
+        getCurrentSectionContent: sectionManager.getCurrentSectionContent,
+        getCurrentSectionTitle: sectionManager.getCurrentSectionTitle,
+        toggleCitationsPanel: panelManager.toggleCitationsPanel,
+        togglePdfReaderPanel: panelManager.togglePdfReaderPanel,
         saveProject,
         exportDocument,
-        addContentToActiveSection,
-        insertCitation
+        addContentToActiveSection: sectionManager.addContentToActiveSection,
+        insertCitation: sectionManager.insertCitation
       }}
     >
       {children}
