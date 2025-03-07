@@ -1,6 +1,8 @@
 
 import { GenerateQuestionsButton } from "./components/GenerateQuestionsButton";
 import { QuestionsList } from "./components/QuestionsList";
+import { SuggestedQuestionsHeader } from "./components/SuggestedQuestionsHeader";
+import { SuggestedQuestionsContainer } from "./components/SuggestedQuestionsContainer";
 
 interface SuggestedQuestionsProps {
   questions: string[];
@@ -16,18 +18,18 @@ export function SuggestedQuestions({
   isLoading 
 }: SuggestedQuestionsProps) {
   return (
-    <div className="mb-3">
-      <div className="flex items-center gap-2 mb-2">
+    <SuggestedQuestionsContainer>
+      <SuggestedQuestionsHeader>
         <GenerateQuestionsButton 
           onGenerateQuestions={onGenerateQuestions} 
           isLoading={isLoading} 
         />
-      </div>
+      </SuggestedQuestionsHeader>
       
       <QuestionsList 
         questions={questions} 
         onQuestionClick={onQuestionClick} 
       />
-    </div>
+    </SuggestedQuestionsContainer>
   );
 }
