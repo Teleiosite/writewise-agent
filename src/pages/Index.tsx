@@ -9,6 +9,8 @@ import { FeaturesSidebar } from "@/components/dashboard/FeaturesSidebar";
 import { CreateProjectCard } from "@/components/dashboard/CreateProjectCard";
 import { ProjectsList } from "@/components/dashboard/ProjectsList";
 import { type Project } from "@/components/dashboard/ProjectCard";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Logo } from "@/components/Logo";
 
 export default function Index() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -190,7 +192,13 @@ export default function Index() {
 
   return (
     <div className="container mx-auto py-8 animate-fadeIn">
-      <div className="mb-8 text-center">
+      <div className="mb-8 text-center relative">
+        <div className="absolute top-0 right-0 md:right-8">
+          <ThemeToggle />
+        </div>
+        <div className="flex justify-center mb-3">
+          <Logo size="lg" />
+        </div>
         <h1 className="text-3xl font-bold mb-2">Academic Writing Assistant</h1>
         <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
           Enhance your academic writing with AI-powered tools for research, analysis, 
