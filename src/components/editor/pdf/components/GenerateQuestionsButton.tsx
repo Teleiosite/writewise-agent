@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { LightbulbIcon } from "lucide-react";
+import { LightbulbIcon, Loader2 } from "lucide-react";
 
 interface GenerateQuestionsButtonProps {
   onGenerateQuestions: () => void;
@@ -17,9 +17,15 @@ export function GenerateQuestionsButton({
       size="sm" 
       onClick={onGenerateQuestions}
       disabled={isLoading}
+      className="transition-all duration-300 hover:scale-105"
+      aria-label="Generate suggested questions"
     >
-      <LightbulbIcon className="h-4 w-4 mr-1" />
-      Generate Questions
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+      ) : (
+        <LightbulbIcon className="h-4 w-4 mr-1" />
+      )}
+      {isLoading ? "Generating..." : "Generate Questions"}
     </Button>
   );
 }

@@ -1,7 +1,7 @@
 
-import { MessageSquare, FileText, BookmarkPlus } from "lucide-react";
+import { FileText, BookOpen, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ThemeToggle } from "../editor/pdf/components/ThemeToggle";
 
 interface EditorHeaderProps {
   title: string;
@@ -23,59 +23,39 @@ export function EditorHeader({
   togglePdfChatPanel
 }: EditorHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-xl font-bold">{title}</h2>
-      <div className="flex space-x-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={showCitationsPanel ? "default" : "outline"}
-                size="sm"
-                onClick={toggleCitationsPanel}
-              >
-                <BookmarkPlus className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Citations</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={showPdfReaderPanel ? "default" : "outline"}
-                size="sm"
-                onClick={togglePdfReaderPanel}
-              >
-                <FileText className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>PDF Reader</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={showPdfChatPanel ? "default" : "outline"}
-                size="sm"
-                onClick={togglePdfChatPanel}
-              >
-                <MessageSquare className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Chat with PDF</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-2xl font-bold">{title}</h2>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <Button
+          variant={showPdfReaderPanel ? "default" : "outline"}
+          size="sm"
+          onClick={togglePdfReaderPanel}
+          aria-label="Toggle PDF Reader"
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          PDF Reader
+        </Button>
+        
+        <Button
+          variant={showPdfChatPanel ? "default" : "outline"}
+          size="sm"
+          onClick={togglePdfChatPanel}
+          aria-label="Toggle PDF Chat"
+        >
+          <MessageSquare className="h-4 w-4 mr-2" />
+          PDF Chat
+        </Button>
+        
+        <Button
+          variant={showCitationsPanel ? "default" : "outline"}
+          size="sm"
+          onClick={toggleCitationsPanel}
+          aria-label="Toggle Citations"
+        >
+          <BookOpen className="h-4 w-4 mr-2" />
+          Citations
+        </Button>
       </div>
     </div>
   );

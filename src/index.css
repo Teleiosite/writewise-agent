@@ -55,7 +55,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -121,7 +121,20 @@
 
 /* Glass card effect */
 .glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  @apply backdrop-blur-sm border border-border shadow-lg;
+}
+
+.dark .glass-card {
+  @apply bg-black/20 border-white/10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .responsive-container {
+    @apply px-4 py-3;
+  }
+  
+  .responsive-text {
+    @apply text-sm;
+  }
 }

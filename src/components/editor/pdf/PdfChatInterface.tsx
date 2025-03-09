@@ -34,9 +34,9 @@ export function PdfChatInterface({
   } = usePdfChat(initialPdfContent, initialPdfName);
 
   return (
-    <Card className="p-4 h-[500px] flex flex-col">
+    <Card className="p-4 h-[500px] md:h-[600px] flex flex-col shadow-lg animate-fade-in">
       <div className="flex-grow flex flex-col h-full space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h3 className="text-lg font-semibold">Chat with PDF</h3>
           <PdfUploader onPdfLoaded={handlePdfLoaded} />
         </div>
@@ -73,7 +73,7 @@ export function PdfChatInterface({
 
 function EmptyState() {
   return (
-    <div className="text-center py-8 border rounded-md flex-grow flex flex-col items-center justify-center">
+    <div className="text-center py-8 border rounded-md flex-grow flex flex-col items-center justify-center animate-pulse">
       <Upload className="h-12 w-12 text-gray-400 mb-2" />
       <p className="text-gray-500">Upload a PDF file to chat with it.</p>
       <p className="text-gray-400 text-sm mt-2">You can ask questions about the content of the PDF.</p>
