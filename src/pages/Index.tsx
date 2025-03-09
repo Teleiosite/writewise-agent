@@ -1,21 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, BookOpen, FileText, Trash2, Edit, Calendar, Users, AlertTriangle, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { WritingDashboard } from "@/components/WritingDashboard";
 import { documentTemplates, type TemplateType } from "@/components/DocumentTemplates";
-
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  lastEdited: Date;
-  wordCount: number;
-  collaborators: number;
-}
+import { FeaturesSidebar } from "@/components/dashboard/FeaturesSidebar";
+import { CreateProjectCard } from "@/components/dashboard/CreateProjectCard";
+import { ProjectsList } from "@/components/dashboard/ProjectsList";
+import { type Project } from "@/components/dashboard/ProjectCard";
 
 export default function Index() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -181,59 +174,6 @@ export default function Index() {
     setMobileMenuOpen(false);
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date);
-  };
-
-  const features = [
-    {
-      name: "AI-Powered Editor",
-      description: "Smart writing suggestions and real-time grammar feedback as you write.",
-      icon: FileText,
-      color: "blue"
-    },
-    {
-      name: "Citation Manager",
-      description: "Easily manage references and citations in multiple formats (APA, MLA, Chicago).",
-      icon: Users,
-      color: "green"
-    },
-    {
-      name: "Progress Tracking",
-      description: "Set goals, track your writing habits, and visualize your progress over time.",
-      icon: Calendar,
-      color: "purple"
-    },
-    {
-      name: "Research Assistant",
-      description: "AI-powered research tools to find relevant sources and generate insights.",
-      icon: BookOpen,
-      color: "amber"
-    },
-    {
-      name: "AI Detector",
-      description: "Analyze text to determine if it was likely created by AI. Perfect for educators and reviewers.",
-      icon: AlertTriangle,
-      color: "red"
-    },
-    {
-      name: "Text Humanizer",
-      description: "Transform AI-generated content into natural-sounding text that passes AI detection.",
-      icon: FileText,
-      color: "indigo"
-    },
-    {
-      name: "Read PDF",
-      description: "Import and analyze PDF documents to extract key information and insights.",
-      icon: FileText,
-      color: "orange"
-    }
-  ];
-
   if (activeProject) {
     return (
       <WritingDashboard 
@@ -270,169 +210,26 @@ export default function Index() {
       </div>
       
       <div className="flex flex-col md:flex-row gap-6">
-        <div className={`
-          fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 shadow-xl dark:shadow-slate-900/60 z-40 transform transition-transform duration-300 ease-in-out
-          md:static md:w-1/4 md:translate-x-0 md:shadow-none
-          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}>
-          <div className="h-full flex flex-col">
-            <div className="p-4 flex items-center justify-between border-b dark:border-slate-700/50">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                <h2 className="font-bold dark:text-white">Features & Tools</h2>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="md:hidden"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                &times;
-              </Button>
-            </div>
-            
-            <ScrollArea className="flex-1 py-2">
-              <div className="px-2 space-y-1">
-                {features.map((feature) => (
-                  <button
-                    key={feature.name}
-                    onClick={() => handleFeatureClick(feature.name)}
-                    className="w-full text-left p-3 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800/60 transition-colors group"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`bg-${feature.color}-100 dark:bg-${feature.color}-900/30 text-${feature.color}-800 dark:text-${feature.color}-300 rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                        <feature.icon className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-sm mb-1 dark:text-white">{feature.name}</h3>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </ScrollArea>
-            
-            <div className="p-4 border-t dark:border-slate-700/50">
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md text-sm text-blue-800 dark:text-blue-300">
-                <p className="font-medium mb-1">Need Help?</p>
-                <p className="text-xs">Access our comprehensive documentation or contact support for assistance.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <FeaturesSidebar 
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          onFeatureClick={handleFeatureClick}
+        />
         
         <div className="w-full md:w-3/4">
           <div className="mb-8 animate-pulse hover:animate-none">
-            <Card className="border-2 border-blue-400 dark:border-blue-700 shadow-lg dark:shadow-blue-900/20 animate-scale-in">
-              <CardHeader className="bg-blue-50 dark:bg-blue-950/40 dark:backdrop-blur-sm">
-                <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                  <Plus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  Create New Project
-                </CardTitle>
-                <CardDescription className="dark:text-gray-400">
-                  Start a new writing project with our AI-powered tools
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-3">
-                  <Input
-                    placeholder="Enter your project name..."
-                    value={newProjectName}
-                    onChange={(e) => setNewProjectName(e.target.value)}
-                    className="flex-grow focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-700 dark:bg-slate-800/50 dark:border-slate-700"
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-                  />
-                  <Button 
-                    onClick={handleCreateProject}
-                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700 transition-all transform hover:scale-105"
-                    size="lg"
-                  >
-                    <Plus className="h-5 w-5 mr-2 animate-bounce" />
-                    Create Project
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <CreateProjectCard
+              onCreateProject={handleCreateProject}
+              newProjectName={newProjectName}
+              setNewProjectName={setNewProjectName}
+            />
           </div>
           
-          <Card className="w-full glass-card mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                Your Writing Projects
-              </CardTitle>
-              <CardDescription>
-                Manage, track and continue your writing projects
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {projects.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">You don't have any projects yet.</p>
-                  <p className="text-gray-500 dark:text-gray-400">Create your first project to get started!</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-[400px]">
-                  <div className="space-y-4">
-                    {projects.map((project) => (
-                      <Card key={project.id} className="overflow-hidden transition-all duration-300 hover:shadow-md dark:hoverable-card">
-                        <div className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 
-                                className="text-lg font-semibold mb-1 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors"
-                                onClick={() => handleOpenProject(project.name)}
-                              >
-                                {project.name}
-                              </h3>
-                              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{project.description}</p>
-                              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>{formatDate(project.lastEdited)}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <FileText className="h-4 w-4" />
-                                  <span>{project.wordCount} words</span>
-                                </div>
-                                {project.collaborators > 0 && (
-                                  <div className="flex items-center gap-1">
-                                    <Users className="h-4 w-4" />
-                                    <span>{project.collaborators} collaborators</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleOpenProject(project.name)}
-                                className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                              >
-                                <Edit className="h-4 w-4 mr-1" /> Open
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                onClick={() => handleDeleteProject(project.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
+          <ProjectsList
+            projects={projects}
+            onOpenProject={handleOpenProject}
+            onDeleteProject={handleDeleteProject}
+          />
         </div>
       </div>
     </div>
