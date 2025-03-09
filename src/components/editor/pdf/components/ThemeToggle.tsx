@@ -36,13 +36,15 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={toggleTheme}
+      className="relative overflow-hidden transition-all duration-300 ease-in-out"
       aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
     >
       {theme === "light" ? (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-4 w-4 transition-transform duration-300 ease-in-out" />
       ) : (
-        <Sun className="h-4 w-4" />
+        <Sun className="h-4 w-4 text-yellow-300 animate-spin-slow" />
       )}
+      <span className={`absolute inset-0 ${theme === 'dark' ? 'bg-slate-800/20' : 'bg-slate-200/20'} rounded-md`}></span>
     </Button>
   );
 }

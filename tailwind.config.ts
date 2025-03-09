@@ -102,6 +102,14 @@ module.exports = {
           "100%": {
             transform: "translateX(0)"
           }
+        },
+        "spin-slow": {
+          "0%": {
+            transform: "rotate(0deg)"
+          },
+          "100%": {
+            transform: "rotate(360deg)"
+          }
         }
       },
       animation: {
@@ -110,7 +118,8 @@ module.exports = {
         "fade-in": "fade-in 0.3s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
         "pulse": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "slide-in": "slide-in 0.3s ease-out"
+        "slide-in": "slide-in 0.3s ease-out",
+        "spin-slow": "spin-slow 3s linear infinite"
       },
     },
   },
