@@ -114,28 +114,28 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
               <ChatAssistant />
             </div>
             <div className="md:col-span-1">
-              <Card className="p-4 h-[600px] bg-gray-50">
-                <h3 className="font-medium mb-3">How the AI Assistant Can Help</h3>
+              <Card className="p-4 h-[600px] bg-gray-50 dark:bg-slate-900/60 dark:backdrop-blur-sm dark:border-slate-700/50">
+                <h3 className="font-medium mb-3 dark:text-white">How the AI Assistant Can Help</h3>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">1</span>
-                    <span>Ask for writing suggestions or feedback on specific paragraphs.</span>
+                    <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">1</span>
+                    <span className="dark:text-gray-300">Ask for writing suggestions or feedback on specific paragraphs.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">2</span>
-                    <span>Get help with research, facts, or finding relevant sources.</span>
+                    <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">2</span>
+                    <span className="dark:text-gray-300">Get help with research, facts, or finding relevant sources.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">3</span>
-                    <span>Brainstorm ideas for your next section or overcome writer's block.</span>
+                    <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">3</span>
+                    <span className="dark:text-gray-300">Brainstorm ideas for your next section or overcome writer's block.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">4</span>
-                    <span>Get help with grammar, style, or formatting questions.</span>
+                    <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">4</span>
+                    <span className="dark:text-gray-300">Get help with grammar, style, or formatting questions.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">5</span>
-                    <span>Ask for explanations of complex topics related to your writing.</span>
+                    <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full w-5 h-5 flex items-center justify-center text-xs mt-0.5">5</span>
+                    <span className="dark:text-gray-300">Ask for explanations of complex topics related to your writing.</span>
                   </li>
                 </ul>
               </Card>

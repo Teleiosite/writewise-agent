@@ -252,7 +252,7 @@ export default function Index() {
     <div className="container mx-auto py-8 animate-fadeIn">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold mb-2">Academic Writing Assistant</h1>
-        <p className="text-gray-600 max-w-xl mx-auto">
+        <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
           Enhance your academic writing with AI-powered tools for research, analysis, 
           and collaborative editing. Track your progress and get real-time feedback.
         </p>
@@ -271,15 +271,15 @@ export default function Index() {
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className={`
-          fixed inset-y-0 left-0 w-64 bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 shadow-xl dark:shadow-slate-900/60 z-40 transform transition-transform duration-300 ease-in-out
           md:static md:w-1/4 md:translate-x-0 md:shadow-none
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           <div className="h-full flex flex-col">
-            <div className="p-4 flex items-center justify-between border-b">
+            <div className="p-4 flex items-center justify-between border-b dark:border-slate-700/50">
               <div className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-                <h2 className="font-bold">Features & Tools</h2>
+                <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <h2 className="font-bold dark:text-white">Features & Tools</h2>
               </div>
               <Button 
                 variant="ghost" 
@@ -297,15 +297,15 @@ export default function Index() {
                   <button
                     key={feature.name}
                     onClick={() => handleFeatureClick(feature.name)}
-                    className="w-full text-left p-3 rounded-md hover:bg-gray-100 transition-colors group"
+                    className="w-full text-left p-3 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800/60 transition-colors group"
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`bg-${feature.color}-100 text-${feature.color}-800 rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                      <div className={`bg-${feature.color}-100 dark:bg-${feature.color}-900/30 text-${feature.color}-800 dark:text-${feature.color}-300 rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                         <feature.icon className="h-4 w-4" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-sm mb-1">{feature.name}</h3>
-                        <p className="text-xs text-gray-600 line-clamp-2">
+                        <h3 className="font-medium text-sm mb-1 dark:text-white">{feature.name}</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
                           {feature.description}
                         </p>
                       </div>
@@ -315,8 +315,8 @@ export default function Index() {
               </div>
             </ScrollArea>
             
-            <div className="p-4 border-t">
-              <div className="p-3 bg-blue-50 rounded-md text-sm text-blue-800">
+            <div className="p-4 border-t dark:border-slate-700/50">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md text-sm text-blue-800 dark:text-blue-300">
                 <p className="font-medium mb-1">Need Help?</p>
                 <p className="text-xs">Access our comprehensive documentation or contact support for assistance.</p>
               </div>
@@ -326,13 +326,13 @@ export default function Index() {
         
         <div className="w-full md:w-3/4">
           <div className="mb-8 animate-pulse hover:animate-none">
-            <Card className="border-2 border-blue-400 shadow-lg animate-scale-in">
-              <CardHeader className="bg-blue-50">
-                <CardTitle className="flex items-center gap-2 text-blue-700">
-                  <Plus className="h-5 w-5 text-blue-600" />
+            <Card className="border-2 border-blue-400 dark:border-blue-700 shadow-lg dark:shadow-blue-900/20 animate-scale-in">
+              <CardHeader className="bg-blue-50 dark:bg-blue-950/40 dark:backdrop-blur-sm">
+                <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                  <Plus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   Create New Project
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="dark:text-gray-400">
                   Start a new writing project with our AI-powered tools
                 </CardDescription>
               </CardHeader>
@@ -342,12 +342,12 @@ export default function Index() {
                     placeholder="Enter your project name..."
                     value={newProjectName}
                     onChange={(e) => setNewProjectName(e.target.value)}
-                    className="flex-grow focus:ring-2 focus:ring-blue-400"
+                    className="flex-grow focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-700 dark:bg-slate-800/50 dark:border-slate-700"
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
                   />
                   <Button 
                     onClick={handleCreateProject}
-                    className="bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-105"
+                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700 transition-all transform hover:scale-105"
                     size="lg"
                   >
                     <Plus className="h-5 w-5 mr-2 animate-bounce" />
@@ -361,7 +361,7 @@ export default function Index() {
           <Card className="w-full glass-card mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-600" />
+                <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 Your Writing Projects
               </CardTitle>
               <CardDescription>
@@ -371,25 +371,25 @@ export default function Index() {
             <CardContent>
               {projects.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">You don't have any projects yet.</p>
-                  <p className="text-gray-500">Create your first project to get started!</p>
+                  <p className="text-gray-500 dark:text-gray-400">You don't have any projects yet.</p>
+                  <p className="text-gray-500 dark:text-gray-400">Create your first project to get started!</p>
                 </div>
               ) : (
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-4">
                     {projects.map((project) => (
-                      <Card key={project.id} className="overflow-hidden transition-all duration-300 hover:shadow-md">
+                      <Card key={project.id} className="overflow-hidden transition-all duration-300 hover:shadow-md dark:hoverable-card">
                         <div className="p-6">
                           <div className="flex items-start justify-between">
                             <div>
                               <h3 
-                                className="text-lg font-semibold mb-1 hover:text-blue-600 cursor-pointer transition-colors"
+                                className="text-lg font-semibold mb-1 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors"
                                 onClick={() => handleOpenProject(project.name)}
                               >
                                 {project.name}
                               </h3>
-                              <p className="text-gray-600 text-sm mb-3">{project.description}</p>
-                              <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{project.description}</p>
+                              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-4 w-4" />
                                   <span>{formatDate(project.lastEdited)}</span>
@@ -411,14 +411,14 @@ export default function Index() {
                                 variant="outline" 
                                 size="sm"
                                 onClick={() => handleOpenProject(project.name)}
-                                className="hover:bg-blue-50 transition-colors"
+                                className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                               >
                                 <Edit className="h-4 w-4 mr-1" /> Open
                               </Button>
                               <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                 onClick={() => handleDeleteProject(project.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
