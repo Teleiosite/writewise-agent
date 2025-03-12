@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -8,12 +7,15 @@ import { documentTemplates, type TemplateType } from "@/components/DocumentTempl
 import { FeaturesSidebar } from "@/components/dashboard/FeaturesSidebar";
 import { CreateProjectCard } from "@/components/dashboard/CreateProjectCard";
 import { ProjectsList } from "@/components/dashboard/ProjectsList";
+import { ProjectSearch } from "@/components/dashboard/ProjectSearch";
 import { type Project } from "@/components/dashboard/ProjectCard";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Logo } from "@/components/Logo";
+import { Navigation } from "@/components/layout/Navigation";
+import { WelcomeBanner } from "@/components/layout/WelcomeBanner";
+import { Footer } from "@/components/layout/Footer";
 
 export default function Index() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [newProjectName, setNewProjectName] = useState("");
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | undefined>(undefined);
@@ -30,6 +32,7 @@ export default function Index() {
         lastEdited: new Date(project.lastEdited)
       }));
       setProjects(projectsWithDates);
+      setFilteredProjects(projectsWithDates);
     } else {
       const sampleProjects: Project[] = [
         {
@@ -58,12 +61,14 @@ export default function Index() {
         }
       ];
       setProjects(sampleProjects);
+      setFilteredProjects(sampleProjects);
       localStorage.setItem("writing-projects", JSON.stringify(sampleProjects));
     }
   }, []);
 
   const saveProjects = (updatedProjects: Project[]) => {
     setProjects(updatedProjects);
+    setFilteredProjects(updatedProjects);
     localStorage.setItem("writing-projects", JSON.stringify(updatedProjects));
   };
 
@@ -176,6 +181,20 @@ export default function Index() {
     setMobileMenuOpen(false);
   };
 
+  const handleSearch = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      setFilteredProjects(projects);
+    } else {
+      const term = searchTerm.toLowerCase();
+      const filtered = projects.filter(
+        project => 
+          project.name.toLowerCase().includes(term) || 
+          project.description.toLowerCase().includes(term)
+      );
+      setFilteredProjects(filtered);
+    }
+  };
+
   if (activeProject) {
     return (
       <WritingDashboard 
@@ -191,55 +210,59 @@ export default function Index() {
   }
 
   return (
-    <div className="container mx-auto py-8 animate-fadeIn">
-      <div className="mb-8 text-center relative">
-        <div className="absolute top-0 right-0 md:right-8">
-          <ThemeToggle />
-        </div>
-        <div className="flex justify-center mb-3">
-          <Logo size="lg" />
-        </div>
-        <h1 className="text-3xl font-bold mb-2">Academic Writing Assistant</h1>
-        <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
-          Enhance your academic writing with AI-powered tools for research, analysis, 
-          and collaborative editing. Track your progress and get real-time feedback.
-        </p>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <Navigation />
       
-      <div className="md:hidden fixed top-4 left-4 z-50">
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="rounded-full"
-        >
-          <Menu className="h-6 w-6" />
-        </Button>
-      </div>
-      
-      <div className="flex flex-col md:flex-row gap-6">
-        <FeaturesSidebar 
-          mobileMenuOpen={mobileMenuOpen}
-          setMobileMenuOpen={setMobileMenuOpen}
-          onFeatureClick={handleFeatureClick}
-        />
+      <main className="flex-grow container mx-auto py-8 px-4">
+        <WelcomeBanner />
         
-        <div className="w-full md:w-3/4">
-          <div className="mb-8 animate-pulse hover:animate-none">
-            <CreateProjectCard
-              onCreateProject={handleCreateProject}
-              newProjectName={newProjectName}
-              setNewProjectName={setNewProjectName}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">Academic Writing Assistant</h1>
+          <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
+            Enhance your academic writing with AI-powered tools for research, analysis, 
+            and collaborative editing. Track your progress and get real-time feedback.
+          </p>
+        </div>
+        
+        <div className="md:hidden fixed top-4 left-4 z-50">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="rounded-full"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+        </div>
+        
+        <div className="flex flex-col md:flex-row gap-6">
+          <FeaturesSidebar 
+            mobileMenuOpen={mobileMenuOpen}
+            setMobileMenuOpen={setMobileMenuOpen}
+            onFeatureClick={handleFeatureClick}
+          />
+          
+          <div className="w-full md:w-3/4">
+            <ProjectSearch onSearch={handleSearch} />
+            
+            <div className="mb-8 animate-pulse hover:animate-none">
+              <CreateProjectCard
+                onCreateProject={handleCreateProject}
+                newProjectName={newProjectName}
+                setNewProjectName={setNewProjectName}
+              />
+            </div>
+            
+            <ProjectsList
+              projects={filteredProjects}
+              onOpenProject={handleOpenProject}
+              onDeleteProject={handleDeleteProject}
             />
           </div>
-          
-          <ProjectsList
-            projects={projects}
-            onOpenProject={handleOpenProject}
-            onDeleteProject={handleDeleteProject}
-          />
         </div>
-      </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 }
