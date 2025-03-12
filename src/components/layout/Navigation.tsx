@@ -4,13 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Wallet } from "lucide-react";
+import { Wallet, User } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem 
+} from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
   return (
     <nav className="flex items-center justify-between py-4 px-6 w-full">
       <div className="flex items-center">
         <Logo size="md" />
+        <span className="ml-2 text-xl font-bold">Writewise</span>
       </div>
       
       <div className="hidden md:flex items-center space-x-6">
@@ -34,6 +43,29 @@ export function Navigation() {
       
       <div className="flex items-center gap-4">
         <ThemeToggle />
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="rounded-full">
+              <User className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="w-full cursor-pointer">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/wallet" className="w-full cursor-pointer">Wallet</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
         <div className="md:hidden">
           <Button variant="ghost" size="sm">
             Menu
