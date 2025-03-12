@@ -16,6 +16,12 @@ export function ProjectSearch({ onSearch }: ProjectSearchProps) {
     onSearch(value);
   };
   
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSearch(searchTerm);
+    }
+  };
+  
   return (
     <div className="relative mb-6">
       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -23,10 +29,12 @@ export function ProjectSearch({ onSearch }: ProjectSearchProps) {
       </div>
       <Input
         type="text"
-        placeholder="Search projects..."
+        placeholder="Search projects by name or description..."
         value={searchTerm}
         onChange={handleSearch}
+        onKeyDown={handleKeyDown}
         className="pl-10 w-full"
+        aria-label="Search projects"
       />
     </div>
   );
