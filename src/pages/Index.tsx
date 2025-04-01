@@ -6,7 +6,6 @@ import { WritingDashboard } from "@/components/WritingDashboard";
 import { ProjectProvider } from "@/contexts/ProjectContext";
 import { useProjects } from "@/contexts/ProjectContext";
 import { HomeLayout } from "@/components/layout/HomeLayout";
-import { HomeHeader } from "@/components/layout/HomeHeader";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { type TemplateType } from "@/components/DocumentTemplates";
 
@@ -50,12 +49,6 @@ function IndexContent() {
 
   return (
     <HomeLayout>
-      <HomeHeader 
-        title="Academic Writing Assistant"
-        description="Enhance your academic writing with AI-powered tools for research, analysis, 
-          and collaborative editing. Track your progress and get real-time feedback."
-      />
-      
       <div className="md:hidden fixed top-4 left-4 z-50">
         <Button 
           variant="outline" 
