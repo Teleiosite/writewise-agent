@@ -19,7 +19,6 @@ export function Navigation() {
     <nav className="flex items-center justify-between py-4 px-6 w-full">
       <div className="flex items-center">
         <Logo size="md" />
-        <span className="ml-2 text-xl font-bold">Writewise</span>
       </div>
       
       <div className="hidden md:flex items-center space-x-6">
