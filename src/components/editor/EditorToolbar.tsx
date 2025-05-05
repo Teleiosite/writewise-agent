@@ -1,113 +1,93 @@
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { 
-  BookOpen, 
-  Clock, 
-  Save, 
-  X, 
-  Download, 
-  Quote, 
-  FileText,
-  FileType,
-  MessageSquare
-} from "lucide-react";
 import { useEditor } from "@/contexts/editor";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { Download, Save, Wifi, WifiOff } from "lucide-react";
+import { useState } from "react";
 
 interface EditorToolbarProps {
   onClose: () => void;
 }
 
 export function EditorToolbar({ onClose }: EditorToolbarProps) {
-  const { 
-    wordCount, 
-    readingTime, 
-    lastSaved, 
-    saveProject, 
+  const {
+    saveProject,
     exportDocument,
-    showCitationsPanel,
-    showPdfReaderPanel,
-    toggleCitationsPanel,
-    togglePdfReaderPanel
+    lastSaved,
+    wordCount,
+    readingTime,
+    isAutoSaving,
   } = useEditor();
-
+  
+  const [isExporting, setIsExporting] = useState(false);
+  const isOnline = useOnlineStatus();
+  
+  const handleExport = async (format: string) => {
+    setIsExporting(true);
+    try {
+      await exportDocument(format);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  
   return (
-    <Card className="p-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4 mr-1" />
-            Close
-          </Button>
-          
-          <Button variant="ghost" size="sm" onClick={saveProject}>
-            <Save className="h-4 w-4 mr-1" />
-            Save
-          </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Download className="h-4 w-4 mr-1" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => exportDocument('pdf')}>
-                <FileType className="h-4 w-4 mr-2" />
-                PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportDocument('doc')}>
-                <FileText className="h-4 w-4 mr-2" />
-                Word Document
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Button
-            variant={showCitationsPanel ? "default" : "ghost"}
-            size="sm"
-            onClick={toggleCitationsPanel}
-          >
-            <Quote className="h-4 w-4 mr-1" />
-            Citations
-          </Button>
-          
-          <Button
-            variant={showPdfReaderPanel ? "default" : "ghost"}
-            size="sm"
-            onClick={togglePdfReaderPanel}
-          >
-            <BookOpen className="h-4 w-4 mr-1" />
-            <MessageSquare className="h-3 w-3 -mt-1" />
-            Chat PDF
-          </Button>
+    <div className="flex flex-wrap items-center justify-between gap-4 p-2 bg-card border rounded-lg shadow-sm">
+      <div className="flex items-center gap-2">
+        <Button 
+          variant="default" 
+          onClick={() => saveProject()}
+          disabled={isAutoSaving}
+        >
+          <Save className="w-4 h-4 mr-1" />
+          Save
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={() => handleExport("docx")}
+          disabled={isExporting}
+        >
+          <Download className="w-4 h-4 mr-1" />
+          Export DOCX
+        </Button>
+        
+        <Button 
+          variant="outline"
+          onClick={() => handleExport("pdf")}
+          disabled={isExporting}
+        >
+          <Download className="w-4 h-4 mr-1" />
+          Export PDF
+        </Button>
+      </div>
+      
+      <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center">
+          {isOnline ? (
+            <Wifi className="w-4 h-4 text-green-500 mr-1" />
+          ) : (
+            <WifiOff className="w-4 h-4 text-destructive mr-1" />
+          )}
+          <span>{isOnline ? "Online" : "Offline"}</span>
         </div>
         
-        <div className="flex items-center space-x-4 text-sm text-gray-500">
-          {lastSaved && (
-            <span className="text-xs">
-              Last saved: {lastSaved.toLocaleTimeString()}
-            </span>
+        <div className="hidden sm:block">
+          {isAutoSaving ? (
+            <span className="text-muted-foreground">Saving...</span>
+          ) : (
+            lastSaved && (
+              <span className="text-muted-foreground">
+                Last saved: {lastSaved.toLocaleTimeString()}
+              </span>
+            )
           )}
-          
-          <div className="flex items-center">
-            <FileText className="h-4 w-4 mr-1" />
-            <span>{wordCount} words</span>
-          </div>
-          
-          <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-1" />
-            <span>{readingTime} min read</span>
-          </div>
+        </div>
+        
+        <div className="hidden md:block text-muted-foreground">
+          {wordCount} words · {readingTime} min read
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
