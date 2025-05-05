@@ -13,7 +13,8 @@ export const createSectionFromTitle = (title: string): Section => {
   return {
     id: title.toLowerCase().replace(/\s+/g, '-'),
     title,
-    content: ""
+    content: "",
+    order: 0 // Adding the required order property
   };
 };
 
@@ -22,5 +23,5 @@ export const getSectionById = (sections: Section[], id: string): Section | undef
 };
 
 export const getDefaultSections = (): Section[] => {
-  return [{ id: "main-content", title: "Main Content", content: "" }];
+  return [{ id: "main-content", title: "Main Content", content: "", order: 0 }]; // Adding the required order property
 };

@@ -34,7 +34,7 @@ export async function callChatGptApi(systemPrompt: string, userMessage: string) 
 }
 
 export async function withLoadingFeedback<T>(
-  promise: Promise<T>,
+  promise: () => Promise<T>,
   loadingMessage = "Processing your request...",
   successMessage = "Operation completed successfully"
 ): Promise<T> {
@@ -44,7 +44,7 @@ export async function withLoadingFeedback<T>(
   });
   
   try {
-    const result = await promise;
+    const result = await promise();
     toast({
       title: "Success",
       description: successMessage,
@@ -56,7 +56,9 @@ export async function withLoadingFeedback<T>(
   } finally {
     // Clear the loading toast
     toast({
-      id: toastId,
+      // Remove the id property as it's not part of the Toast type
+      title: "", // Using empty title to remove the toast
+      description: "",
     });
   }
 }
