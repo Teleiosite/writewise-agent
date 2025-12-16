@@ -13,9 +13,67 @@ export interface AIResponse {
 
 // Mock function to simulate AI chatbot response
 export const getChatbotResponse = async (message: string): Promise<ChatResponse> => {
-  // In a real app, this would call an AI service API
-  // For demo purposes, we're simulating a response
-  
+  const apiProvider = localStorage.getItem("apiProvider");
+  const apiKey = localStorage.getItem("apiKey");
+
+  if (apiProvider && apiKey) {
+    console.log(`Using API Provider: ${apiProvider}`);
+    // NOTE: This is where you would integrate with the actual API.
+    // The following is a placeholder for demonstration.
+    try {
+      let apiUrl = "";
+      let requestBody: any = {};
+
+      switch (apiProvider) {
+        case "OpenAI":
+          apiUrl = "https://api.openai.com/v1/chat/completions";
+          requestBody = {
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: message }],
+          };
+          break;
+        case "DeepSeek":
+          apiUrl = "https://api.deepseek.com/v1/chat/completions";
+          requestBody = {
+            model: "deepseek-chat",
+            messages: [{ role: "user", content: message }],
+          };
+          break;
+        case "Grok":
+          // Placeholder for Grok API
+          apiUrl = "https://api.x.ai/grok";
+          requestBody = {
+            prompt: message,
+          };
+          console.log("Grok API is not yet supported, using mock response.");
+          break;
+        case "Gemini":
+          // Placeholder for Gemini API
+          apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+          requestBody = {
+            contents: [{ parts: [{ text: message }] }],
+          };
+          break;
+        default:
+          console.log("Unknown API provider, using mock response.");
+      }
+
+      if (apiUrl) {
+        console.log("Making API call to:", apiUrl);
+        console.log("Request body:", JSON.stringify(requestBody, null, 2));
+        console.log("Using API Key:", apiKey);
+
+        // This is a placeholder for the actual fetch call.
+        // In a real application, you would make a fetch request and handle the response.
+        // For now, returning a mock response indicating the provider.
+        return { content: `Response from ${apiProvider} (mocked). Your message was: "${message}"` };
+      }
+    } catch (error) {
+      console.error("API call failed:", error);
+      // Fallback to mock response if API call fails
+    }
+  }
+
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   
@@ -43,6 +101,9 @@ export const getChatbotResponse = async (message: string): Promise<ChatResponse>
   
   return { content: response };
 };
+
+// ... (rest of the file remains the same)
+
 
 // Function to get writing suggestions
 export const getWritingSuggestions = async (text: string): Promise<AIResponse> => {

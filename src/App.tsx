@@ -19,6 +19,7 @@ import TermsOfService from "./pages/TermsOfService";
 import FAQ from "./pages/FAQ";
 import HelpCenter from "./pages/HelpCenter";
 import ContactSupport from "./pages/ContactSupport";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/help" element={<HelpCenter />} />
               <Route path="/support" element={<ContactSupport />} />
+              <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

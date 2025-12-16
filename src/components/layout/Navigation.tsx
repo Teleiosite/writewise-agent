@@ -58,6 +58,9 @@ export function Navigation() {
             <DropdownMenuItem asChild>
               <Link to="/wallet" className="w-full cursor-pointer">Wallet</Link>
             </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/settings" className="w-full cursor-pointer">Settings</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               Sign out
