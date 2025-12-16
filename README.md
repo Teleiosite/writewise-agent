@@ -8,14 +8,50 @@ The Writing Assistant Dashboard is a powerful tool designed for writers of all l
 
 ### Key Features
 
-*   **Project Management:** Create, organize, and manage all your writing projects in one place.
-*   **Advanced Writing Editor:** A feature-rich editor with tools for formatting, styling, and more.
-*   **AI-Powered Assistance:** Get suggestions for improving grammar, style, and clarity with the integrated AI detector and text analysis tools.
-*   **Document Templates:** Start new documents quickly with a variety of pre-built templates.
-*   **Citation Management:** Easily add and manage citations for academic and research papers.
-*   **Text Humanizer:** Refine AI-generated text to sound more natural and human-like.
-*   **Writing Statistics:** Track your writing progress with detailed statistics on word count, writing time, and more.
-*   **PDF Integration:** Upload and interact with PDF documents directly within the editor.
+**Core Features:**
+
+*   **User Authentication and Profile Management:** Users can create an account, log in, and manage their profile information.
+*   **Project-Based Organization:** Users can create and manage multiple writing projects, each with its own set of documents, notes, and settings.
+*   **Advanced Writing Editor:** A rich-text editor with a comprehensive toolbar for formatting, styling, and content creation.
+*   **AI-Powered Writing Assistance:** A suite of AI tools to help with various aspects of writing, including:
+    *   **AI Detector:** Identifies AI-generated content.
+    *   **Text Humanizer:** Rewrites text to sound more natural and human-like.
+    *   **Grammar and Writing Suggestions:** Provides real-time feedback on grammar, style, and word choice.
+    *   **Content Generation:** Generates new content based on user prompts and existing text.
+*   **Citation Management:** A complete system for managing citations, including:
+    *   **Citation Style Selection:** Supports various citation styles (e.g., APA, MLA, Chicago).
+    *   **Citation Search:** Search for and import citations from external sources.
+    *   **Manual Citation Entry:** Add and edit citations manually.
+    *   **Citation Preview and Formatting:** Preview and format citations in the selected style.
+*   **PDF Interaction:**
+    *   **PDF Reader:** View and interact with PDF documents directly within the application.
+    *   **PDF Chat:** A chat interface that allows users to ask questions and get answers from their PDF documents.
+*   **Document Templates:** A library of pre-built templates for various types of documents (e.g., essays, reports, articles).
+
+**Dashboard and Analytics:**
+
+*   **Centralized Dashboard:** A main dashboard that provides an overview of all projects, recent activity, and writing statistics.
+*   **Writing Statistics:** Detailed analytics on writing habits, including:
+    *   **Word Count Tracking:** Monitor word count over time.
+    *   **Content Distribution Analysis:** See the breakdown of content by type (e.g., introduction, body, conclusion).
+    *   **Goal Tracking:** Set and track writing goals.
+    *   **Writing Time Analysis:** Analyze writing sessions and productivity.
+
+**User Interface and Experience:**
+
+*   **Modern and Responsive UI:** A clean, intuitive, and responsive user interface built with a comprehensive set of UI components.
+*   **Light and Dark Mode:** Switch between light and dark themes for a comfortable viewing experience.
+*   **Toast Notifications and Alerts:** Provides feedback and notifications to the user for various actions.
+*   **Customizable Settings:**
+    *   **API Key Configuration:** Allows users to connect their own AI provider accounts (OpenAI, DeepSeek, Grok, Gemini).
+    *   **Theme and Appearance Settings:** Customize the look and feel of the application.
+
+**Other Features:**
+
+*   **About, Contact, and Support Pages:** Provides information about the application and ways to get in touch with support.
+*   **Pricing and Subscription Management:** (If applicable) Pages for managing subscription plans and billing.
+*   **Terms of Service and Privacy Policy:** Legal documents outlining the terms of use and data privacy policies.
+*   **FAQ and Help Center:** A comprehensive help center with frequently asked questions and tutorials.
 
 ## File Structure
 
