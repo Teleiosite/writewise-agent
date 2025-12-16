@@ -1,69 +1,73 @@
-# Welcome to your Lovable project
+# Writing Assistant Dashboard
 
-## Project info
+This is a web-based application that provides a comprehensive suite of tools for writers. It helps users manage their writing projects, improve their writing style, and boost their productivity.
 
-**URL**: https://lovable.dev/projects/e5fdf352-d4da-4e04-abd8-ee975607c4b1
+## About the Project
 
-## How can I edit this code?
+The Writing Assistant Dashboard is a powerful tool designed for writers of all levels, from students to professional authors. It offers a rich set of features to streamline the writing process, enhance content quality, and provide valuable insights into writing habits.
 
-There are several ways of editing your application.
+### Key Features
 
-**Use Lovable**
+*   **Project Management:** Create, organize, and manage all your writing projects in one place.
+*   **Advanced Writing Editor:** A feature-rich editor with tools for formatting, styling, and more.
+*   **AI-Powered Assistance:** Get suggestions for improving grammar, style, and clarity with the integrated AI detector and text analysis tools.
+*   **Document Templates:** Start new documents quickly with a variety of pre-built templates.
+*   **Citation Management:** Easily add and manage citations for academic and research papers.
+*   **Text Humanizer:** Refine AI-generated text to sound more natural and human-like.
+*   **Writing Statistics:** Track your writing progress with detailed statistics on word count, writing time, and more.
+*   **PDF Integration:** Upload and interact with PDF documents directly within the editor.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e5fdf352-d4da-4e04-abd8-ee975607c4b1) and start prompting.
+## File Structure
 
-Changes made via Lovable will be committed automatically to this repo.
+The project is structured as a typical Vite + React + TypeScript application. Here's a breakdown of the most important files and folders:
 
-**Use your preferred IDE**
+*   `public/`: Contains static assets like images and favicons.
+*   `src/`: The main source code of the application.
+    *   `components/`: Contains all the React components used in the application.
+        *   `dashboard/`: Components related to the main dashboard.
+        *   `editor/`: Components for the writing editor and its panels.
+        *   `ui/`: Reusable UI components from `shadcn/ui`.
+    *   `contexts/`: React context providers for managing global state.
+    *   `hooks/`: Custom React hooks for reusable logic.
+    *   `pages/`: The main pages of the application, corresponding to the routes.
+    *   `services/`: Modules for interacting with APIs and external services.
+*   `package.json`: Lists the project dependencies and scripts.
+*   `vite.config.ts`: The configuration file for the Vite build tool.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+To run the project locally, follow these steps:
 
-Follow these steps:
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository-url>
+    ```
+2.  **Install the dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Start the development server:**
+    ```bash
+    npm run dev
+    ```
+4.  Open your browser and navigate to `http://localhost:5173`.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## What has been achieved
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+*   The basic project structure is in place, using Vite, React, and TypeScript.
+*   The main dashboard is implemented, allowing users to create, view, and manage their projects.
+*   The writing editor is integrated, with several panels for different functionalities.
+*   Several key features have been implemented, including the AI detector, text analysis, and document templates.
+*   The application is responsive and works on different screen sizes.
+*   The application has been updated to the latest version of React to patch a security vulnerability.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## What remains to be done
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+For the project to be production-ready, the following tasks need to be completed:
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e5fdf352-d4da-4e04-abd8-ee975607c4b1) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+*   **Backend Integration:** The current version of the application is a frontend-only prototype. A backend needs to be developed to handle user authentication, data persistence, and the AI-powered features.
+*   **User Authentication:** Implement a secure user authentication system to allow users to sign up, log in, and manage their accounts.
+*   **Database Integration:** Connect the application to a database to store user data, projects, and other information.
+*   **AI Service Integration:** The AI-powered features are currently placeholders. They need to be integrated with actual AI services to provide real-time suggestions and analysis.
+*   **Testing:** Write unit and integration tests to ensure the application is stable and bug-free.
+*   **Deployment:** Deploy the application to a cloud platform like Firebase or Vercel.
