@@ -17,9 +17,6 @@ export const getChatbotResponse = async (message: string): Promise<ChatResponse>
   const apiKey = localStorage.getItem("apiKey");
 
   if (apiProvider && apiKey) {
-    console.log(`Using API Provider: ${apiProvider}`);
-    // NOTE: This is where you would integrate with the actual API.
-    // The following is a placeholder for demonstration.
     try {
       let apiUrl = "";
       let requestBody: any = {};
@@ -40,16 +37,13 @@ export const getChatbotResponse = async (message: string): Promise<ChatResponse>
           };
           break;
         case "Grok":
-          // Placeholder for Grok API
           apiUrl = "https://api.x.ai/grok";
           requestBody = {
             prompt: message,
           };
-          console.log("Grok API is not yet supported, using mock response.");
           break;
         case "Gemini":
-          // Placeholder for Gemini API
-          apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+          apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
           requestBody = {
             contents: [{ parts: [{ text: message }] }],
           };
@@ -59,46 +53,104 @@ export const getChatbotResponse = async (message: string): Promise<ChatResponse>
       }
 
       if (apiUrl) {
-        console.log("Making API call to:", apiUrl);
-        console.log("Request body:", JSON.stringify(requestBody, null, 2));
-        console.log("Using API Key:", apiKey);
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify(requestBody),
+        });
 
-        // This is a placeholder for the actual fetch call.
-        // In a real application, you would make a fetch request and handle the response.
-        // For now, returning a mock response indicating the provider.
-        return { content: `Response from ${apiProvider} (mocked). Your message was: "${message}"` };
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("API Error:", errorData);
+          throw new Error(
+            `API request failed: ${errorData.error?.message || response.statusText}`,
+          );
+        }
+
+        const data = await response.json();
+
+        let content = "";
+        switch (apiProvider) {
+          case "OpenAI":
+            content = data.choices[0]?.message?.content.trim() || "";
+            break;
+          case "DeepSeek":
+            content = data.choices[0]?.message?.content.trim() || "";
+            break;
+          case "Gemini":
+            content =
+              data.candidates[0]?.content?.parts[0]?.text.trim() || "";
+            break;
+          case "Grok":
+            console.log("Grok API response handling is not implemented yet.");
+            content = "Grok response (mocked).";
+            break;
+          default:
+            content = "Unknown API provider response.";
+        }
+
+        if (!content) {
+          console.error("No content found in API response:", data);
+          return {
+            content:
+              "Sorry, I received an empty response from the AI service.",
+          };
+        }
+
+        return { content };
       }
     } catch (error) {
       console.error("API call failed:", error);
-      // Fallback to mock response if API call fails
+      return {
+        content:
+          "Sorry, I am unable to connect to the AI service at the moment.",
+      };
     }
   }
 
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-  
+
   // Simple response mapping based on keywords
   let response = "";
-  
+
   if (message.toLowerCase().includes("help") || message.toLowerCase().includes("how to")) {
-    response = "I can help you with your writing! What specific aspect would you like assistance with? I can provide feedback on structure, grammar, content, or research suggestions.";
-  } 
-  else if (message.toLowerCase().includes("thesis") || message.toLowerCase().includes("argument")) {
-    response = "A strong thesis statement is clear, specific, and arguable. Try to make your main argument focused on a specific aspect rather than being too broad. Would you like me to review your thesis statement?";
+    response =
+      "I can help you with your writing! What specific aspect would you like assistance with? I can provide feedback on structure, grammar, content, or research suggestions.";
+  } else if (
+    message.toLowerCase().includes("thesis") ||
+    message.toLowerCase().includes("argument")
+  ) {
+    response =
+      "A strong thesis statement is clear, specific, and arguable. Try to make your main argument focused on a specific aspect rather than being too broad. Would you like me to review your thesis statement?";
+  } else if (
+    message.toLowerCase().includes("citation") ||
+    message.toLowerCase().includes("reference")
+  ) {
+    response =
+      "For academic writing, it's important to follow the citation style required by your institution (APA, MLA, Chicago, etc.). Make sure to cite all sources properly to avoid plagiarism. Would you like information about a specific citation style?";
+  } else if (
+    message.toLowerCase().includes("structure") ||
+    message.toLowerCase().includes("organize")
+  ) {
+    response =
+      "A well-structured academic paper typically includes an introduction with a thesis statement, body paragraphs that each focus on a single idea, and a conclusion that synthesizes your arguments. Consider creating an outline before writing to organize your thoughts.";
+  } else if (
+    message.toLowerCase().includes("research") ||
+    message.toLowerCase().includes("sources")
+  ) {
+    response =
+      "When conducting research, focus on peer-reviewed journals, academic books, and reputable sources. University libraries and academic databases like JSTOR, Google Scholar, or PubMed are excellent places to start your research.";
+  } else {
+    response =
+      'I understand you\'re asking about \"' +
+      message +
+      '\". As your writing assistant, I can help with structure, content, grammar, citations, and research suggestions. Could you provide more details about what you need help with?';
   }
-  else if (message.toLowerCase().includes("citation") || message.toLowerCase().includes("reference")) {
-    response = "For academic writing, it's important to follow the citation style required by your institution (APA, MLA, Chicago, etc.). Make sure to cite all sources properly to avoid plagiarism. Would you like information about a specific citation style?";
-  }
-  else if (message.toLowerCase().includes("structure") || message.toLowerCase().includes("organize")) {
-    response = "A well-structured academic paper typically includes an introduction with a thesis statement, body paragraphs that each focus on a single idea, and a conclusion that synthesizes your arguments. Consider creating an outline before writing to organize your thoughts.";
-  }
-  else if (message.toLowerCase().includes("research") || message.toLowerCase().includes("sources")) {
-    response = "When conducting research, focus on peer-reviewed journals, academic books, and reputable sources. University libraries and academic databases like JSTOR, Google Scholar, or PubMed are excellent places to start your research.";
-  }
-  else {
-    response = "I understand you're asking about \"" + message + "\". As your writing assistant, I can help with structure, content, grammar, citations, and research suggestions. Could you provide more details about what you need help with?";
-  }
-  
+
   return { content: response };
 };
 
