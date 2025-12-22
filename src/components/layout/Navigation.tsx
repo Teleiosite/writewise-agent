@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/context/AuthContext";
 import { Wallet, User } from "lucide-react";
 import { 
   DropdownMenu,
@@ -15,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
+  const { logout } = useAuth();
+
   return (
     <nav className="flex items-center justify-between py-4 px-6 w-full">
       <div className="flex items-center">
@@ -62,7 +65,7 @@ export function Navigation() {
               <Link to="/settings" className="w-full cursor-pointer">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={logout} className="cursor-pointer">
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

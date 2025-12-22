@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { type Project } from "@/components/dashboard/ProjectCard";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectContextType {
   projects: Project[];
@@ -14,7 +15,7 @@ interface ProjectContextType {
   handleDeleteProject: (projectId: string) => void;
   handleOpenProject: (projectName: string) => void;
   handleSearch: (searchTerm: string) => void;
-  saveProjects: (updatedProjects: Project[]) => void;
+  fetchProjects: () => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -26,56 +27,29 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const savedProjects = localStorage.getItem("writing-projects");
-    if (savedProjects) {
-      const parsed = JSON.parse(savedProjects);
-      const projectsWithDates = parsed.map((project: any) => ({
+  const fetchProjects = async () => {
+    const { data: projects, error } = await supabase.from('projects').select('*');
+    if (error) {
+      toast({
+        title: "Error fetching projects",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      const projectsWithDates = projects.map((project: any) => ({
         ...project,
-        lastEdited: new Date(project.lastEdited)
+        lastEdited: new Date(project.last_edited)
       }));
       setProjects(projectsWithDates);
       setFilteredProjects(projectsWithDates);
-    } else {
-      const sampleProjects: Project[] = [
-        {
-          id: "1",
-          name: "Research Paper on AI Ethics",
-          description: "Investigating the ethical implications of artificial intelligence in healthcare",
-          lastEdited: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          wordCount: 2345,
-          collaborators: 1
-        },
-        {
-          id: "2",
-          name: "Literature Review: Climate Science",
-          description: "A comprehensive review of recent climate science publications",
-          lastEdited: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          wordCount: 4528,
-          collaborators: 2
-        },
-        {
-          id: "3",
-          name: "Thesis Draft",
-          description: "Working draft of my thesis on cognitive psychology",
-          lastEdited: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          wordCount: 12056,
-          collaborators: 0
-        }
-      ];
-      setProjects(sampleProjects);
-      setFilteredProjects(sampleProjects);
-      localStorage.setItem("writing-projects", JSON.stringify(sampleProjects));
     }
-  }, []);
-
-  const saveProjects = (updatedProjects: Project[]) => {
-    setProjects(updatedProjects);
-    setFilteredProjects(updatedProjects);
-    localStorage.setItem("writing-projects", JSON.stringify(updatedProjects));
   };
 
-  const handleCreateProject = () => {
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const handleCreateProject = async () => {
     if (!newProjectName.trim()) {
       toast({
         title: "Project name required",
@@ -85,38 +59,55 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const newProject: Project = {
-      id: Date.now().toString(),
-      name: newProjectName,
-      description: "A new writing project",
-      lastEdited: new Date(),
-      wordCount: 0,
-      collaborators: 0
-    };
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        toast({
+            title: "Authentication Error",
+            description: "You must be logged in to create a project.",
+            variant: "destructive",
+        });
+        return;
+    }
 
-    const updatedProjects = [...projects, newProject];
-    saveProjects(updatedProjects);
-    setNewProjectName("");
-    
-    toast({
-      title: "Project created",
-      description: `"${newProjectName}" has been created successfully.`,
-    });
+    const { data, error } = await supabase
+      .from('projects')
+      .insert([
+        { name: newProjectName, description: 'A new writing project', user_id: user.id },
+      ])
+      .select();
+
+    if (error) {
+      toast({
+        title: "Error creating project",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      fetchProjects();
+      setNewProjectName("");
+      toast({
+        title: "Project created",
+        description: `"${newProjectName}" has been created successfully.`,
+      });
+    }
   };
 
-  const handleDeleteProject = (projectId: string) => {
-    const updatedProjects = projects.filter(project => project.id !== projectId);
-    saveProjects(updatedProjects);
-    
-    const projectToDelete = projects.find(p => p.id === projectId);
-    if (projectToDelete) {
-      localStorage.removeItem(`draft-${projectToDelete.name}`);
+  const handleDeleteProject = async (projectId: string) => {
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
+
+    if (error) {
+      toast({
+        title: "Error deleting project",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      fetchProjects();
+      toast({
+        title: "Project deleted",
+        description: "The project has been deleted successfully.",
+      });
     }
-    
-    toast({
-      title: "Project deleted",
-      description: "The project has been deleted successfully.",
-    });
   };
 
   const handleOpenProject = (projectName: string) => {
@@ -129,8 +120,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } else {
       const term = searchTerm.toLowerCase();
       const filtered = projects.filter(
-        project => 
-          project.name.toLowerCase().includes(term) || 
+        project =>
+          project.name.toLowerCase().includes(term) ||
           project.description.toLowerCase().includes(term)
       );
       setFilteredProjects(filtered);
@@ -150,7 +141,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         handleDeleteProject,
         handleOpenProject,
         handleSearch,
-        saveProjects
+        fetchProjects
       }}
     >
       {children}

@@ -1,36 +1,46 @@
 
 import { useState, useEffect } from "react";
 import { Section } from "./types";
-import { createSectionFromTitle, getSectionById, getDefaultSections } from './editorUtils';
+import { supabase } from "@/integrations/supabase/client";
+import { useProjects } from "@/contexts/ProjectContext";
 import { calculateWordCount, calculateReadingTime } from './editorUtils';
 
-export function useSectionManager(projectName: string, template?: any) {
+export function useSectionManager(projectName: string) {
   const [sections, setSections] = useState<Section[]>([]);
   const [activeSection, setActiveSection] = useState<string>("");
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
+  const { projects, activeProject } = useProjects();
 
-  const initializeFromTemplateOrDefault = () => {
-    if (template && template.sections && Array.isArray(template.sections) && template.sections.length > 0) {
-      const initialSections = template.sections.map((title: string) => createSectionFromTitle(title));
-      
-      setSections(initialSections);
-      
-      if (initialSections.length > 0) {
-        setActiveSection(initialSections[0].id);
-      }
+  const project = projects.find(p => p.name === activeProject);
+  const projectId = project?.id;
+
+  const fetchSections = async () => {
+    if (!projectId) return;
+    const { data: sections, error } = await supabase
+      .from('sections')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching sections:', error);
     } else {
-      const defaultSections = getDefaultSections();
-      setSections(defaultSections);
-      setActiveSection(defaultSections[0].id);
+      setSections(sections);
+      if (sections.length > 0) {
+        setActiveSection(sections[0].id);
+      }
     }
   };
 
-  // Update word count and reading time when active section changes
+  useEffect(() => {
+    fetchSections();
+  }, [projectId]);
+
   useEffect(() => {
     if (!activeSection) return;
-    
-    const section = getSectionById(sections, activeSection);
+
+    const section = sections.find(s => s.id === activeSection);
     if (section) {
       const words = calculateWordCount(section.content);
       setWordCount(words);
@@ -38,34 +48,54 @@ export function useSectionManager(projectName: string, template?: any) {
     }
   }, [activeSection, sections]);
 
-  const updateSectionContent = (content: string) => {
+  const updateSectionContent = async (content: string) => {
     if (!activeSection) return;
-    
-    setSections(sections.map(section => 
-      section.id === activeSection ? { ...section, content } : section
-    ));
+
+    const { error } = await supabase
+      .from('sections')
+      .update({ content })
+      .eq('id', activeSection);
+
+    if (error) {
+      console.error('Error updating section:', error);
+    } else {
+        setSections(sections.map(section =>
+            section.id === activeSection ? { ...section, content } : section
+        ));
+    }
   };
 
   const getCurrentSectionContent = (): string => {
-    const section = getSectionById(sections, activeSection);
+    const section = sections.find(s => s.id === activeSection);
     return section ? section.content : "";
   };
 
   const getCurrentSectionTitle = (): string => {
-    const section = getSectionById(sections, activeSection);
+    const section = sections.find(s => s.id === activeSection);
     return section ? section.title : "";
   };
 
-  const createSection = (title: string) => {
-    const newSection = createSectionFromTitle(title);
-    setSections([...sections, newSection]);
-    setActiveSection(newSection.id);
+  const createSection = async (title: string) => {
+    if (!projectId) return;
+
+    const { data, error } = await supabase
+      .from('sections')
+      .insert([{ title, project_id: projectId, order: sections.length }])
+      .select();
+
+    if (error) {
+      console.error('Error creating section:', error);
+    } else if (data) {
+      const newSection = data[0];
+      setSections([...sections, newSection]);
+      setActiveSection(newSection.id);
+    }
   };
 
   const addContentToActiveSection = (content: string) => {
     if (!activeSection) return;
-    
-    const currentSection = getSectionById(sections, activeSection);
+
+    const currentSection = sections.find(s => s.id === activeSection);
     if (currentSection) {
       const newContent = currentSection.content + "\n\n" + content;
       updateSectionContent(newContent);
@@ -74,8 +104,8 @@ export function useSectionManager(projectName: string, template?: any) {
 
   const insertCitation = (citation: string) => {
     if (!activeSection) return;
-    
-    const currentSection = getSectionById(sections, activeSection);
+
+    const currentSection = sections.find(s => s.id === activeSection);
     if (currentSection) {
       const newContent = currentSection.content + "\n" + citation;
       updateSectionContent(newContent);
@@ -89,7 +119,7 @@ export function useSectionManager(projectName: string, template?: any) {
     setActiveSection,
     wordCount,
     readingTime,
-    initializeFromTemplateOrDefault,
+    fetchSections,
     updateSectionContent,
     getCurrentSectionContent,
     getCurrentSectionTitle,

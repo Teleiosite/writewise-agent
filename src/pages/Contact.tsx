@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import * as React from "react";
 import { HomeLayout } from "@/components/layout/HomeLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +7,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { Mail, MessageSquare, Clock, MapPin } from "lucide-react";
 
 export default function Contact() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = React.useState({
     name: "",
     email: "",
     subject: "",
     message: ""
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

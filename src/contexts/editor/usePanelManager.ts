@@ -1,22 +1,10 @@
 
 import { useState } from "react";
-import { loadUserPreferences } from './editorStorage';
 
 export function usePanelManager() {
   const [showCitationsPanel, setShowCitationsPanel] = useState(false);
   const [showPdfReaderPanel, setShowPdfReaderPanel] = useState(false);
   const [showPdfChatPanel, setShowPdfChatPanel] = useState(false);
-
-  const initializePanelState = () => {
-    const { showCitations, showPdfReader } = loadUserPreferences();
-    if (showCitations) {
-      setShowCitationsPanel(true);
-    }
-    
-    if (showPdfReader) {
-      setShowPdfReaderPanel(true);
-    }
-  };
 
   const toggleCitationsPanel = () => {
     setShowCitationsPanel(!showCitationsPanel);
@@ -46,7 +34,6 @@ export function usePanelManager() {
     showCitationsPanel,
     showPdfReaderPanel,
     showPdfChatPanel,
-    initializePanelState,
     toggleCitationsPanel,
     togglePdfReaderPanel,
     togglePdfChatPanel

@@ -1,5 +1,4 @@
-
-import React from "react";
+import * as React from "react";
 import { HomeLayout } from "@/components/layout/HomeLayout";
 
 export default function About() {

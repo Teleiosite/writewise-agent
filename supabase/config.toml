@@ -1,0 +1,5 @@
+[project_id]
+
+[db]
+[db.migrations]
+schema_paths = ["supabase/migrations"]

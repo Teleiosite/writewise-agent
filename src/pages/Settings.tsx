@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
 import { HomeLayout } from "@/components/layout/HomeLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/context/AuthContext";
 
 const AIPROVIDER_OPTIONS = ["OpenAI", "DeepSeek", "Grok", "Gemini"];
 
 export default function Settings() {
-  const [apiProvider, setApiProvider] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiProvider, setApiProvider] = React.useState("");
+  const [apiKey, setApiKey] = React.useState("");
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
+  const { logout } = useAuth();
 
-  useEffect(() => {
+  React.useEffect(() => {
     const savedApiProvider = localStorage.getItem("apiProvider");
     const savedApiKey = localStorage.getItem("apiKey");
 
@@ -106,6 +108,18 @@ export default function Settings() {
             {isSubmitting ? "Saving..." : "Save Settings"}
           </Button>
         </form>
+
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Authentication</h2>
+          <div className="p-6 border rounded-lg">
+            <p className="mb-4">
+              You are currently logged in. Click the button below to log out.
+            </p>
+            <Button onClick={logout} variant="destructive">
+              Logout
+            </Button>
+          </div>
+        </div>
       </div>
     </HomeLayout>
   );
