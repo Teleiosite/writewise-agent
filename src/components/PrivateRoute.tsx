@@ -1,21 +1,11 @@
-import * as React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Loader } from 'lucide-react';
 
-interface PrivateRouteProps {
-  children: React.ReactElement;
-}
+const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
+  const { user, loading } = useAuth();
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="animate-spin h-8 w-8 text-primary" />
-      </div>
-    );
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
   if (!user) {

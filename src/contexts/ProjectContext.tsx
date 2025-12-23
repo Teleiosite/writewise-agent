@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { type Project } from "@/components/dashboard/ProjectCard";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { documentTemplates } from "@/components/DocumentTemplates";
 
 interface ProjectContextType {
   projects: Project[];
@@ -16,6 +17,7 @@ interface ProjectContextType {
   handleOpenProject: (projectName: string) => void;
   handleSearch: (searchTerm: string) => void;
   fetchProjects: () => void;
+  handleFeatureClick: (feature: string) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -128,6 +130,61 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleFeatureClick = (feature: string) => {
+    const featureDemoName = `${feature} Demo`;
+    
+    let templateToUse;
+    switch (feature) {
+      case "AI-Powered Editor":
+        templateToUse = documentTemplates[0];
+        break;
+      case "Citation Manager":
+        templateToUse = documentTemplates[1];
+        break;
+      case "Progress Tracking":
+        templateToUse = documentTemplates[0];
+        break;
+      case "Research Assistant":
+        templateToUse = documentTemplates[2];
+        break;
+      case "AI Detector":
+        templateToUse = documentTemplates[0];
+        break;
+      case "Text Humanizer":
+        templateToUse = documentTemplates[0];
+        break;
+      case "Read PDF":
+        templateToUse = documentTemplates[0];
+        break;
+      default:
+        templateToUse = documentTemplates[0];
+    }
+    
+    localStorage.setItem("selected-template", JSON.stringify(templateToUse));
+    localStorage.setItem("active-feature", feature);
+    
+    if (!projects.some(p => p.name === featureDemoName)) {
+      const newProject: Project = {
+        id: Date.now().toString(),
+        name: featureDemoName,
+        description: `A demo project for the ${feature} feature`,
+        lastEdited: new Date(),
+        wordCount: 0,
+        collaborators: 0
+      };
+      
+      const updatedProjects = [...projects, newProject];
+      setProjects(updatedProjects);
+      
+      toast({
+        title: "Demo project created",
+        description: `"${featureDemoName}" has been created to showcase the ${feature} feature.`,
+      });
+    }
+    
+    setActiveProject(featureDemoName);
+  };
+
   return (
     <ProjectContext.Provider
       value={{
@@ -141,7 +198,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         handleDeleteProject,
         handleOpenProject,
         handleSearch,
-        fetchProjects
+        fetchProjects,
+        handleFeatureClick
       }}
     >
       {children}

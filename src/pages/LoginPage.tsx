@@ -1,35 +1,43 @@
-import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 
-const LoginPage: React.FC = () => {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+const LoginPage = () => {
+  const { user, loading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    setIsSubmitting(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
       toast({
-        title: "Missing information",
-        description: "Please enter both email and password.",
+        title: "Login Failed",
+        description: error.message,
         variant: "destructive",
       });
-      return;
-    }
-    setIsSubmitting(true);
-    const loggedIn = await login(email, password);
-    if (loggedIn) {
-      navigate("/");
     }
     setIsSubmitting(false);
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  if (user) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div className="flex items-center justify-center h-screen bg-background">
