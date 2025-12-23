@@ -1,10 +1,3 @@
-# **Professional README for WriteWise Agent**
-
-Here's a comprehensive, professional README that will impress anyone who views your repository:
-
----
-
-```markdown
 # WriteWise Agent 📝
 
 > AI-Powered Writing Productivity Platform with Real-Time Collaboration
@@ -80,75 +73,142 @@ WriteWise Agent is a comprehensive, full-stack SaaS writing productivity platfor
 ## 🏗️ System Architecture
 
 ### High-Level Architecture
+```mermaid
+graph TB
+    subgraph Frontend["🎨 Frontend Layer (Vercel)"]
+        A[React + TypeScript + Vite]
+        A --> B[📊 Dashboard]
+        A --> C[✍️ Writing Editor]
+        A --> D[📁 Project Manager]
+        A --> E[📖 Citation Manager]
+        A --> F[📄 PDF Reader]
+        A --> G[🔐 Auth UI]
+    end
 
+    subgraph Backend["⚙️ Backend Layer (Supabase)"]
+        H[(💾 PostgreSQL Database)]
+        I[🔑 Authentication Service]
+        J[📦 Storage Service]
+        
+        H --> H1[users]
+        H --> H2[projects]
+        H --> H3[documents]
+        H --> H4[citations]
+        H --> H5[analytics]
+    end
+
+    subgraph External["🌐 External Services"]
+        K[🤖 OpenAI API]
+        L[🤖 Gemini API]
+        M[📚 Citation APIs]
+    end
+
+    B & C & D & E & F & G -->|REST API + JWT| I
+    I -->|Validate & Query| H
+    J -->|File Storage| H
+
+    C -.->|Planned Integration| K
+    C -.->|Planned Integration| L
+    E -.->|Planned Integration| M
+
+    style Frontend fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style Backend fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style External fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                        │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐   │
-│  │     React Frontend (Vercel)                        │   │
-│  │                                                     │   │
-│  │  - Dashboard (Analytics & Overview)                │   │
-│  │  - Writing Editor (Rich-Text with Toolbar)         │   │
-│  │  - Project Manager (CRUD Operations)               │   │
-│  │  - Citation Manager (Multiple Styles)              │   │
-│  │  - PDF Reader & Chat Interface                     │   │
-│  │  - Settings & Customization                        │   │
-│  │  - Authentication UI (Login/Register)              │   │
-│  └────────────────────────────────────────────────────┘   │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                        │ HTTPS/REST API + JWT Auth
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    BACKEND LAYER (Supabase)                  │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐   │
-│  │    Database (PostgreSQL)                           │   │
-│  │                                                     │   │
-│  │  Tables:                                           │   │
-│  │  - users (authentication & profiles)               │   │
-│  │  - projects (writing projects)                     │   │
-│  │  - documents (individual documents)                │   │
-│  │  - citations (reference management)                │   │
-│  │  - analytics (usage statistics)                    │   │
-│  │                                                     │   │
-│  │  Security:                                         │   │
-│  │  - Row-Level Security (RLS) policies               │   │
-│  │  - User data isolation                             │   │
-│  │  - JWT token validation                            │   │
-│  └────────────────────────────────────────────────────┘   │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐   │
-│  │    Authentication Service                          │   │
-│  │                                                     │   │
-│  │  - Email/Password authentication                   │   │
-│  │  - JWT token generation & validation               │   │
-│  │  - Session management                              │   │
-│  │  - Password reset functionality                    │   │
-│  └────────────────────────────────────────────────────┘   │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐   │
-│  │    Storage Service                                 │   │
-│  │                                                     │   │
-│  │  - Document file storage                           │   │
-│  │  - PDF uploads                                     │   │
-│  │  - User-uploaded content                           │   │
-│  └────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                        │
-                        │ API Calls
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│              EXTERNAL SERVICES (Planned Integration)         │
-│                                                              │
-│  - OpenAI API (AI content generation & analysis)            │
-│  - Gemini API (Alternative AI provider)                     │
-│  - Citation Database APIs (Academic reference search)       │
-│  - Plagiarism Detection Services                            │
-└─────────────────────────────────────────────────────────────┘
+
+### Database Schema
+```mermaid
+erDiagram
+    USERS ||--o{ PROJECTS : creates
+    USERS ||--o{ DOCUMENTS : owns
+    USERS ||--o{ CITATIONS : manages
+    USERS ||--o{ ANALYTICS : generates
+    PROJECTS ||--o{ DOCUMENTS : contains
+    DOCUMENTS ||--o{ CITATIONS : references
+
+    USERS {
+        uuid id PK
+        string email UK
+        string full_name
+        string avatar_url
+        timestamp created_at
+    }
+
+    PROJECTS {
+        uuid id PK
+        uuid user_id FK
+        string title
+        text description
+        string status
+        timestamp created_at
+    }
+
+    DOCUMENTS {
+        uuid id PK
+        uuid project_id FK
+        uuid user_id FK
+        string title
+        text content
+        int word_count
+        string status
+        timestamp created_at
+    }
+
+    CITATIONS {
+        uuid id PK
+        uuid user_id FK
+        uuid document_id FK
+        string citation_type
+        string citation_style
+        jsonb citation_data
+        timestamp created_at
+    }
+
+    ANALYTICS {
+        uuid id PK
+        uuid user_id FK
+        string event_type
+        jsonb event_data
+        timestamp created_at
+    }
+```
+
+### Request Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Supabase
+    participant Database
+    
+    User->>Frontend: Create New Document
+    Frontend->>Supabase: POST /documents (JWT Token)
+    Supabase->>Supabase: Validate JWT
+    Supabase->>Database: Check RLS Policy
+    Database->>Database: INSERT document
+    Database-->>Supabase: Document Created
+    Supabase-->>Frontend: Success Response
+    Frontend-->>User: Show New Document
+```
+
+### Deployment Architecture
+```mermaid
+graph LR
+    A[👨‍💻 Developer] -->|git push| B[📦 GitHub]
+    B -->|Webhook| C[🚀 Vercel]
+    C -->|Deploy| D[🌍 CDN Edge Network]
+    D -->|Serve| E[👥 Users]
+    
+    F[💾 Supabase] -->|Database| D
+    G[🔐 Environment Variables] -->|Config| C
+    
+    style A fill:#e8f5e9
+    style B fill:#fff3e0
+    style C fill:#e3f2fd
+    style D fill:#f3e5f5
+    style E fill:#fce4ec
+    style F fill:#fff8e1
+    style G fill:#e0f2f1
 ```
 
 ### Technology Stack
@@ -637,4 +697,3 @@ If you have any questions or need help, please:
 Made with ❤️ by [Abomide Oluwaseye](https://github.com/Teleiosite)
 
 </div>
-
