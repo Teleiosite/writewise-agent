@@ -191,24 +191,59 @@ sequenceDiagram
     Frontend-->>User: Show New Document
 ```
 
-### Deployment Architecture
-```mermaid
-graph LR
-    A[👨‍💻 Developer] -->|git push| B[📦 GitHub]
-    B -->|Webhook| C[🚀 Vercel]
-    C -->|Deploy| D[🌍 CDN Edge Network]
-    D -->|Serve| E[👥 Users]
-    
-    F[💾 Supabase] -->|Database| D
-    G[🔐 Environment Variables] -->|Config| C
-    
-    style A fill:#e8f5e9
-    style B fill:#fff3e0
-    style C fill:#e3f2fd
-    style D fill:#f3e5f5
-    style E fill:#fce4ec
-    style F fill:#fff8e1
-    style G fill:#e0f2f1
+## 🏗️ System Architecture
+
+### High-Level Architecture
+```
+┌──────────────────────────────────────────────────────┐
+│              PRESENTATION LAYER                      │
+│                                                      │
+│  React Frontend (Vercel)                            │
+│  ├─ Dashboard (Analytics & Overview)                │
+│  ├─ Writing Editor (Rich-Text)                      │
+│  ├─ Project Manager (CRUD)                          │
+│  ├─ Citation Manager                                │
+│  ├─ PDF Reader & Chat                               │
+│  └─ Authentication UI                               │
+│                                                      │
+└──────────────┬───────────────────────────────────────┘
+               │
+               │ HTTPS/REST API + JWT Auth
+               │
+               ▼
+┌──────────────────────────────────────────────────────┐
+│              BACKEND LAYER (Supabase)                │
+│                                                      │
+│  PostgreSQL Database                                │
+│  ├─ users (auth & profiles)                         │
+│  ├─ projects (writing projects)                     │
+│  ├─ documents (individual docs)                     │
+│  ├─ citations (references)                          │
+│  └─ analytics (usage stats)                         │
+│                                                      │
+│  Authentication Service                             │
+│  ├─ Email/Password auth                             │
+│  ├─ JWT tokens                                      │
+│  └─ Session management                              │
+│                                                      │
+│  Storage Service                                    │
+│  ├─ Document files                                  │
+│  ├─ PDF uploads                                     │
+│  └─ User content                                    │
+│                                                      │
+└──────────────┬───────────────────────────────────────┘
+               │
+               │ API Calls (Planned)
+               │
+               ▼
+┌──────────────────────────────────────────────────────┐
+│          EXTERNAL SERVICES (In Development)          │
+│                                                      │
+│  ├─ OpenAI API (Content generation)                 │
+│  ├─ Gemini API (Alternative AI)                     │
+│  ├─ Citation APIs (Academic search)                 │
+│  └─ Plagiarism Detection                            │
+└──────────────────────────────────────────────────────┘
 ```
 
 ### Technology Stack
