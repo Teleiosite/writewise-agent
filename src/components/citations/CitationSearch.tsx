@@ -19,63 +19,53 @@ export function CitationSearch({ onCitationsFound }: CitationSearchProps) {
   const searchPapers = async (query: string) => {
     setIsSearching(true);
     try {
-      const prompt = `Find academic papers related to: ${query}. Return response as JSON array with fields: title, authors (array), year, source, doi (if available). Include only high-quality academic sources. Limit 5 papers.`;
-      
-      const response = await getChatbotResponse(prompt);
-      let papers;
-      
+      const { callChatGptApi } = await import("@/services/api-client");
+
+      const data = await callChatGptApi(
+        `You are an academic research assistant. Find 3 real, existing academic papers highly relevant to the query. Return ONLY a valid JSON array with no extra text. Each item must have exactly these fields: "title" (string), "authors" (array of strings), "year" (string), "source" (journal or publisher name string), "doi" (string or null). Do not fabricate titles or authors.`,
+        `Find academic papers related to: ${query}`
+      );
+
+      const raw = data.choices?.[0]?.message?.content?.trim() ?? "[]";
+      const clean = raw.replace(/```json|```/g, "").trim();
+
+      let papers: any[];
       try {
-        // For demo purposes, create some sample papers since the mock AI service doesn't return JSON
-        papers = [
-          {
-            title: `Recent Advances in ${query}`,
-            authors: ["Smith, J.", "Johnson, A."],
-            year: "2022",
-            source: "Journal of Academic Research",
-            doi: "10.1234/jar.2022.001"
-          },
-          {
-            title: `A Comprehensive Review of ${query}`,
-            authors: ["Williams, R.", "Brown, T.", "Davis, M."],
-            year: "2021",
-            source: "Annual Review of Science",
-            doi: "10.1234/ars.2021.042"
-          },
-          {
-            title: `${query}: Methods and Applications`,
-            authors: ["Garcia, L.", "Martinez, D."],
-            year: "2023",
-            source: "International Journal of Applied Research",
-            doi: "10.1234/ijar.2023.015"
-          }
-        ];
-      } catch (e) {
-        console.error('Failed to parse AI response:', e);
-        throw new Error('Invalid response format');
+        papers = JSON.parse(clean);
+        if (!Array.isArray(papers)) throw new Error("Not an array");
+      } catch {
+        toast({
+          title: "Search failed",
+          description: "Could not parse results. Try a more specific search term.",
+          variant: "destructive",
+        });
+        return;
       }
 
-      const newCitations = papers.map((paper: any) => ({
+      const newCitations = papers.slice(0, 5).map((paper: any) => ({
         id: Date.now().toString() + Math.random(),
-        title: paper.title,
-        authors: paper.authors,
-        year: paper.year,
-        source: paper.source,
-        type: "journal",
-        doi: paper.doi
+        title: paper.title ?? "Unknown Title",
+        authors: Array.isArray(paper.authors)
+          ? paper.authors
+          : [String(paper.authors ?? "Unknown Author")],
+        year: String(paper.year ?? new Date().getFullYear()),
+        source: paper.source ?? "Unknown Source",
+        type: "journal" as const,
+        doi: paper.doi ?? undefined,
       }));
 
       onCitationsFound(newCitations);
-      
+
       toast({
         title: "Search completed",
         description: `Found ${newCitations.length} relevant papers`,
       });
     } catch (error) {
-      console.error('Error searching papers:', error);
+      console.error("Error searching papers:", error);
       toast({
         title: "Search failed",
         description: "Could not find relevant papers. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsSearching(false);

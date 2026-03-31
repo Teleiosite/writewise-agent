@@ -36,50 +36,69 @@ export function TextHumanizer() {
     }
 
     setIsProcessing(true);
-    
+
     try {
-      // Simulate API call with processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // For demo, we'll simulate humanized text
-      // In a real app, this would call an AI service API
-      const variations = [
-        "I've thought about this topic quite a bit, actually. It seems to me that the key challenge here isn't just about implementing solutions, but really understanding the underlying problems first. Sometimes we rush to fix things without really seeing the whole picture, you know?\n\nFrom my perspective, we need to step back and look at how these issues connect. I'm not claiming to have all the answers - far from it! But I've noticed that when we take time to consider different viewpoints, we usually come up with better approaches.\n\nI might be wrong about this, but I think the most promising direction involves combining several strategies rather than looking for a single perfect solution. That's just my take, though.",
-        "You know what, I've been pondering this question for a while. The way I see it, we often overlook the human element when discussing these systems. Like, there's all this technical talk, but at the end of the day, real people are affected.\n\nI remember reading something about this last year - can't recall the exact source (maybe The Atlantic?). Anyway, it made me reconsider my assumptions. Not saying my current view is perfect either! I'm still figuring it out too.\n\nHonestly, I go back and forth on the best approach here. Some days I lean toward one solution, other days I see merits in the alternatives. Isn't that how thinking should work though?",
-        "So I've been wondering about this, and I'm not entirely convinced by the standard explanations. There's something missing in how we typically frame this discussion.\n\nI mean, if you look at what happened in similar situations historically - which I'm definitely no expert on! - there seems to be a pattern of overlooking certain factors. I probably have some biases here too, tbh.\n\nThe thing is, I keep changing my mind about the best path forward. Sometimes I think option A makes the most sense, but then I remember the limitations... I dunno, what do you think? I'm curious about other perspectives on this."
-      ];
-      
-      // Choose a random variation and modify it based on sliders
-      const baseText = variations[Math.floor(Math.random() * variations.length)];
-      
-      // Apply creativity/naturalness/error transformations
-      // In a real implementation, these would actually modify the text
-      // For demo purposes, we're just using different templates
-      
-      setOutputText(baseText);
-      
-      // Simulate AI detection scores
-      const originalScore = 85 + Math.random() * 10; // High AI probability
-      const newScore = Math.max(5, 40 - (naturalness / 10) - (errorRate / 5) + Math.random() * 15);
-      
-      setBeforeScore(originalScore);
-      setAfterScore(newScore);
-      
+      const { callChatGptApi } = await import("@/services/api-client");
+
+      // Step 1: Rewrite with humanizing prompt using slider values
+      const humanizeData = await callChatGptApi(
+        `You are an expert text humanizer. Rewrite the provided AI-generated text to sound completely natural and human-written. Apply these precise settings:
+- Naturalness: ${naturalness}% → ${naturalness > 65 ? "conversational, informal, use contractions freely" : "balanced semi-formal tone"}
+- Creativity: ${creativity}% → ${creativity > 65 ? "significantly restructure sentences and rephrase ideas creatively" : "moderate rephrasing while closely preserving the original meaning"}
+- Natural Error Rate: ${errorRate}% → ${errorRate > 7 ? "include realistic human imperfections: occasional contractions, casual phrasing, slight informalities" : "keep mostly clean but natural feeling"}
+Rules: preserve the core meaning, do NOT add commentary, return ONLY the rewritten text.`,
+        inputText
+      );
+
+      const humanized = humanizeData.choices?.[0]?.message?.content?.trim() ?? "";
+      if (!humanized) throw new Error("Empty response from AI service");
+      setOutputText(humanized);
+
+      // Helper to parse detection score from AI response
+      const parseScore = (raw: string, fallback: number): number => {
+        try {
+          const clean = raw.replace(/```json|```/g, "").trim();
+          const parsed = JSON.parse(clean);
+          return Math.min(100, Math.max(0, Number(parsed.aiProbability ?? fallback)));
+        } catch {
+          return fallback;
+        }
+      };
+
+      // Step 2: Detect original text AI probability
+      const detectBefore = await callChatGptApi(
+        "You are an AI content detector. Analyze the text and return ONLY a JSON object: { \"aiProbability\": <integer 0-100> }",
+        `Detect AI probability in:\n\n${inputText}`
+      );
+
+      // Step 3: Detect humanized text AI probability
+      const detectAfter = await callChatGptApi(
+        "You are an AI content detector. Analyze the text and return ONLY a JSON object: { \"aiProbability\": <integer 0-100> }",
+        `Detect AI probability in:\n\n${humanized}`
+      );
+
+      const beforeRaw = detectBefore.choices?.[0]?.message?.content?.trim() ?? "";
+      const afterRaw  = detectAfter.choices?.[0]?.message?.content?.trim() ?? "";
+
+      setBeforeScore(parseScore(beforeRaw, 85 + Math.random() * 10));
+      setAfterScore(parseScore(afterRaw, Math.max(5, 35 - naturalness / 5)));
+
       toast({
         title: "Text humanized",
-        description: "Your text has been processed and humanized.",
+        description: "Your text has been successfully rewritten.",
       });
     } catch (error) {
-      console.error('Error humanizing text:', error);
+      console.error("Error humanizing text:", error);
       toast({
         title: "Processing failed",
-        description: "An error occurred while humanizing the text.",
+        description: "An error occurred while humanizing the text. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
     }
   };
+
 
   const handleCopy = () => {
     if (!outputText) return;

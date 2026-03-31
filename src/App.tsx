@@ -51,8 +51,8 @@ const App = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/wallet" element={<Wallet />} />
-                <Route path="/profile" element={<UserProfile />} />
+                <Route path="/wallet" element={<PrivateRoute><Wallet /></PrivateRoute>} />
+                <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
                 <Route path="/features" element={<Features />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -60,7 +60,7 @@ const App = () => {
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/help" element={<HelpCenter />} />
                 <Route path="/support" element={<ContactSupport />} />
-                <Route path="/settings" element={<Settings />} />
+                <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

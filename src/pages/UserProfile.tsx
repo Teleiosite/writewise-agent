@@ -1,64 +1,128 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HomeLayout } from "@/components/layout/HomeLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card, CardContent, CardDescription,
+  CardFooter, CardHeader, CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
-import { User, Mail, Bell, Shield, Settings, Save } from "lucide-react";
+import { User, Mail, Bell, Shield, Settings, Save, Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function UserProfile() {
   const { toast } = useToast();
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    bio: "I'm a writer and researcher using Writewise to improve my academic papers.",
-    avatar: "",
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [profile, setProfile] = useState({
+    full_name: "",
+    email: user?.email ?? "",
+    bio: "",
+    avatar_url: "",
   });
 
   const [preferences, setPreferences] = useState({
-    emailNotifications: true,
-    aiSuggestions: true,
-    fontSize: [16],
-    autoSave: true,
+    email_notifications: true,
+    ai_suggestions: true,
+    font_size: [16] as number[],
+    auto_save: true,
   });
 
-  const handleUserChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Load profile from Supabase on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) { setIsLoading(false); return; }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (data) {
+        setProfile({
+          full_name: data.full_name ?? user.user_metadata?.full_name ?? "",
+          email: user.email ?? "",
+          bio: data.bio ?? "",
+          avatar_url: data.avatar_url ?? "",
+        });
+        setPreferences({
+          email_notifications: data.email_notifications ?? true,
+          ai_suggestions: data.ai_suggestions ?? true,
+          font_size: [data.font_size ?? 16],
+          auto_save: data.auto_save ?? true,
+        });
+      } else if (error) {
+        console.error("Error fetching profile:", error);
+      }
+      setIsLoading(false);
+    };
+    fetchProfile();
+  }, [user?.id]);
+
+  const handleProfileChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setUser(prev => ({ ...prev, [name]: value }));
+    setProfile(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveProfile = () => {
-    // In a real app, this would save to a backend
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved successfully.",
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      full_name: profile.full_name,
+      bio: profile.bio,
+      avatar_url: profile.avatar_url,
+      updated_at: new Date().toISOString(),
     });
-  };
-
-  const handleFontSizeChange = (value: number[]) => {
-    setPreferences(prev => ({ ...prev, fontSize: value }));
-  };
-
-  const togglePreference = (key: keyof typeof preferences) => {
-    if (typeof preferences[key] === 'boolean') {
-      setPreferences(prev => ({ 
-        ...prev, 
-        [key]: !prev[key] 
-      }));
+    if (error) {
+      toast({ title: "Error saving profile", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Profile updated", description: "Your profile has been saved successfully." });
     }
+    setIsSaving(false);
   };
 
-  const handleSavePreferences = () => {
-    // In a real app, this would save to a backend
-    toast({
-      title: "Preferences updated",
-      description: "Your preferences have been saved successfully.",
+  const handleSavePreferences = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      email_notifications: preferences.email_notifications,
+      ai_suggestions: preferences.ai_suggestions,
+      font_size: preferences.font_size[0],
+      auto_save: preferences.auto_save,
+      updated_at: new Date().toISOString(),
     });
+    if (error) {
+      toast({ title: "Error saving preferences", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Preferences updated", description: "Your preferences have been saved successfully." });
+    }
+    setIsSaving(false);
   };
+
+  const togglePref = (key: "email_notifications" | "ai_suggestions" | "auto_save") => {
+    setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  if (isLoading) {
+    return (
+      <HomeLayout showWelcomeBanner={false}>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </HomeLayout>
+    );
+  }
 
   return (
     <HomeLayout showWelcomeBanner={false}>
@@ -81,6 +145,7 @@ export default function UserProfile() {
             </TabsTrigger>
           </TabsList>
 
+          {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
@@ -92,51 +157,53 @@ export default function UserProfile() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">
-                    Full Name
-                  </label>
+                  <label htmlFor="full_name" className="text-sm font-medium">Full Name</label>
                   <Input
-                    id="name"
-                    name="name"
-                    value={user.name}
-                    onChange={handleUserChange}
+                    id="full_name"
+                    name="full_name"
+                    value={profile.full_name}
+                    onChange={handleProfileChange}
+                    placeholder="Your full name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">
-                    Email Address
-                  </label>
+                  <label htmlFor="email" className="text-sm font-medium">Email Address</label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    value={user.email}
-                    onChange={handleUserChange}
+                    value={profile.email}
+                    disabled
+                    className="opacity-60 cursor-not-allowed"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Email address cannot be changed here.
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="bio" className="text-sm font-medium">
-                    Bio
-                  </label>
+                  <label htmlFor="bio" className="text-sm font-medium">Bio</label>
                   <Textarea
                     id="bio"
                     name="bio"
-                    value={user.bio}
-                    onChange={handleUserChange}
+                    value={profile.bio}
+                    onChange={handleProfileChange}
                     placeholder="Tell us about yourself"
                     className="min-h-[120px]"
                   />
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveProfile} className="ml-auto">
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={handleSaveProfile} className="ml-auto" disabled={isSaving}>
+                  {isSaving
+                    ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    : <Save className="h-4 w-4 mr-2" />}
                   Save Changes
                 </Button>
               </CardFooter>
             </Card>
           </TabsContent>
 
+          {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-6">
             <Card>
               <CardHeader>
@@ -154,11 +221,11 @@ export default function UserProfile() {
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <span>Email Notifications</span>
                     </div>
-                    <Button 
-                      variant={preferences.emailNotifications ? "default" : "outline"}
-                      onClick={() => togglePreference('emailNotifications')}
+                    <Button
+                      variant={preferences.email_notifications ? "default" : "outline"}
+                      onClick={() => togglePref("email_notifications")}
                     >
-                      {preferences.emailNotifications ? "Enabled" : "Disabled"}
+                      {preferences.email_notifications ? "Enabled" : "Disabled"}
                     </Button>
                   </div>
                 </div>
@@ -166,15 +233,13 @@ export default function UserProfile() {
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Editor Settings</h3>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span>Font Size ({preferences.fontSize[0]}px)</span>
-                    </div>
+                    <span className="text-sm">Font Size ({preferences.font_size[0]}px)</span>
                     <Slider
-                      defaultValue={preferences.fontSize}
+                      defaultValue={preferences.font_size}
                       max={24}
                       min={12}
                       step={1}
-                      onValueChange={handleFontSizeChange}
+                      onValueChange={v => setPreferences(p => ({ ...p, font_size: v }))}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -182,11 +247,11 @@ export default function UserProfile() {
                       <Bell className="h-4 w-4 text-muted-foreground" />
                       <span>AI Writing Suggestions</span>
                     </div>
-                    <Button 
-                      variant={preferences.aiSuggestions ? "default" : "outline"}
-                      onClick={() => togglePreference('aiSuggestions')}
+                    <Button
+                      variant={preferences.ai_suggestions ? "default" : "outline"}
+                      onClick={() => togglePref("ai_suggestions")}
                     >
-                      {preferences.aiSuggestions ? "Enabled" : "Disabled"}
+                      {preferences.ai_suggestions ? "Enabled" : "Disabled"}
                     </Button>
                   </div>
                   <div className="flex items-center justify-between">
@@ -194,24 +259,27 @@ export default function UserProfile() {
                       <Save className="h-4 w-4 text-muted-foreground" />
                       <span>Auto-Save Documents</span>
                     </div>
-                    <Button 
-                      variant={preferences.autoSave ? "default" : "outline"}
-                      onClick={() => togglePreference('autoSave')}
+                    <Button
+                      variant={preferences.auto_save ? "default" : "outline"}
+                      onClick={() => togglePref("auto_save")}
                     >
-                      {preferences.autoSave ? "Enabled" : "Disabled"}
+                      {preferences.auto_save ? "Enabled" : "Disabled"}
                     </Button>
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSavePreferences} className="ml-auto">
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={handleSavePreferences} className="ml-auto" disabled={isSaving}>
+                  {isSaving
+                    ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    : <Save className="h-4 w-4 mr-2" />}
                   Save Preferences
                 </Button>
               </CardFooter>
             </Card>
           </TabsContent>
 
+          {/* Security Tab */}
           <TabsContent value="security" className="space-y-6">
             <Card>
               <CardHeader>
@@ -242,12 +310,8 @@ export default function UserProfile() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="mr-2">
-                  Cancel
-                </Button>
-                <Button>
-                  Update Password
-                </Button>
+                <Button variant="outline" className="mr-2">Cancel</Button>
+                <Button>Update Password</Button>
               </CardFooter>
             </Card>
           </TabsContent>

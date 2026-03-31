@@ -2,22 +2,17 @@
 import { useState, useEffect } from "react";
 import { Section } from "./types";
 import { supabase } from "@/integrations/supabase/client";
-import { useProjects } from "@/contexts/ProjectContext";
 import { calculateWordCount, calculateReadingTime } from './editorUtils';
 
-export function useSectionManager(projectName: string) {
+export function useSectionManager(projectId: string | undefined) {
   const [sections, setSections] = useState<Section[]>([]);
   const [activeSection, setActiveSection] = useState<string>("");
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
-  const { projects, activeProject } = useProjects();
-
-  const project = projects.find(p => p.name === activeProject);
-  const projectId = project?.id;
 
   const fetchSections = async () => {
     if (!projectId) return;
-    const { data: sections, error } = await supabase
+    const { data: fetchedSections, error } = await supabase
       .from('sections')
       .select('*')
       .eq('project_id', projectId)
@@ -26,23 +21,24 @@ export function useSectionManager(projectName: string) {
     if (error) {
       console.error('Error fetching sections:', error);
     } else {
-      setSections(sections);
-      if (sections.length > 0) {
-        setActiveSection(sections[0].id);
+      setSections(fetchedSections);
+      if (fetchedSections.length > 0) {
+        setActiveSection(fetchedSections[0].id);
       }
     }
   };
 
   useEffect(() => {
+    setSections([]);
+    setActiveSection("");
     fetchSections();
   }, [projectId]);
 
   useEffect(() => {
     if (!activeSection) return;
-
     const section = sections.find(s => s.id === activeSection);
     if (section) {
-      const words = calculateWordCount(section.content);
+      const words = calculateWordCount(section.content ?? "");
       setWordCount(words);
       setReadingTime(calculateReadingTime(words));
     }
@@ -59,15 +55,31 @@ export function useSectionManager(projectName: string) {
     if (error) {
       console.error('Error updating section:', error);
     } else {
-        setSections(sections.map(section =>
-            section.id === activeSection ? { ...section, content } : section
-        ));
+      const updatedSections = sections.map(s =>
+        s.id === activeSection ? { ...s, content } : s
+      );
+      setSections(updatedSections);
+
+      // Sync total word_count and last_edited back to the parent project row
+      if (projectId) {
+        const totalWords = updatedSections.reduce(
+          (sum, s) => sum + calculateWordCount(s.content ?? ""),
+          0
+        );
+        await supabase
+          .from('projects')
+          .update({
+            word_count: totalWords,
+            last_edited: new Date().toISOString(),
+          })
+          .eq('id', projectId);
+      }
     }
   };
 
   const getCurrentSectionContent = (): string => {
     const section = sections.find(s => s.id === activeSection);
-    return section ? section.content : "";
+    return section ? (section.content ?? "") : "";
   };
 
   const getCurrentSectionTitle = (): string => {
@@ -80,34 +92,32 @@ export function useSectionManager(projectName: string) {
 
     const { data, error } = await supabase
       .from('sections')
-      .insert([{ title, project_id: projectId, order: sections.length }])
+      .insert([{ title, project_id: projectId, order: sections.length, content: "" }])
       .select();
 
     if (error) {
       console.error('Error creating section:', error);
     } else if (data) {
       const newSection = data[0];
-      setSections([...sections, newSection]);
+      setSections(prev => [...prev, newSection]);
       setActiveSection(newSection.id);
     }
   };
 
   const addContentToActiveSection = (content: string) => {
     if (!activeSection) return;
-
     const currentSection = sections.find(s => s.id === activeSection);
     if (currentSection) {
-      const newContent = currentSection.content + "\n\n" + content;
+      const newContent = (currentSection.content ?? "") + "\n\n" + content;
       updateSectionContent(newContent);
     }
   };
 
   const insertCitation = (citation: string) => {
     if (!activeSection) return;
-
     const currentSection = sections.find(s => s.id === activeSection);
     if (currentSection) {
-      const newContent = currentSection.content + "\n" + citation;
+      const newContent = (currentSection.content ?? "") + "\n" + citation;
       updateSectionContent(newContent);
     }
   };
@@ -125,6 +135,6 @@ export function useSectionManager(projectName: string) {
     getCurrentSectionTitle,
     createSection,
     addContentToActiveSection,
-    insertCitation
+    insertCitation,
   };
 }

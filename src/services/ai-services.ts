@@ -216,43 +216,35 @@ export const getSemanticAnalysis = async (text: string): Promise<AIResponse> => 
   };
 };
 
-// Function to generate section content
+// Function to generate section content using real AI
 export const generateSectionContent = async (projectTitle: string, section: string): Promise<AIResponse> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1200));
-  
-  // Generate different mock content based on the section
-  let content = "";
-  
-  switch (section) {
-    case "Abstract":
-      content = "This study examines the impact of " + projectTitle + " on relevant field metrics. Through extensive analysis and experimentation, we demonstrate significant findings that contribute to the understanding of this domain. The results indicate important implications for both theory and practice.";
-      break;
-    case "Introduction":
-      content = "The field of " + projectTitle + " has gained increasing attention in recent years due to its potential applications and theoretical significance. This paper aims to address key gaps in the literature by investigating central questions that remain unanswered. Our approach combines methodological rigor with innovative analysis techniques.";
-      break;
-    case "Literature Review":
-      content = "Previous research on " + projectTitle + " has established several important findings. Smith (2018) demonstrated the fundamental principles, while Jones (2020) expanded the theoretical framework. However, there remains significant disagreement about the implications, as noted by Wilson (2021) and Thompson (2022). This paper builds upon this foundation while addressing key limitations in the existing literature.";
-      break;
-    case "Methodology":
-      content = "To investigate " + projectTitle + ", we employed a mixed-methods approach combining qualitative interviews with quantitative analysis. Participants (n=150) were recruited using stratified sampling to ensure representation across key demographics. Data collection occurred over a six-month period, and analysis was conducted using established protocols to ensure validity and reliability.";
-      break;
-    case "Results":
-      content = "Our analysis of " + projectTitle + " revealed several significant findings. First, we observed a strong correlation (r=0.72, p<0.001) between the primary variables. Second, thematic analysis of the qualitative data identified three key themes: integration, adaptation, and transformation. These findings were consistent across different subgroups in the study population.";
-      break;
-    case "Discussion":
-      content = "The results of our study on " + projectTitle + " have several important implications. Our findings both confirm and extend previous research in this domain, particularly regarding the relationship between key variables. The observed patterns suggest that theoretical models may need to be revised to account for these new insights. Limitations of this study include sample constraints and methodological choices that could be addressed in future research.";
-      break;
-    case "Conclusion":
-      content = "This study has advanced our understanding of " + projectTitle + " through rigorous investigation and analysis. The findings contribute to both theoretical knowledge and practical applications in this domain. Future research should explore additional dimensions of this phenomenon, potentially using longitudinal designs to capture developmental patterns over time.";
-      break;
-    default:
-      content = "This is a placeholder for the " + section + " section of your " + projectTitle + " document. Replace this with your actual content.";
+  try {
+    const { callChatGptApi } = await import("@/services/api-client");
+
+    const data = await callChatGptApi(
+      `You are an expert academic writer. Generate a well-structured, comprehensive "${section}" section for an academic paper. Follow these rules:
+- Use formal scholarly tone and academic writing conventions
+- Include appropriate depth and detail for this specific section type
+- Use proper paragraph structure with clear transitions
+- Do NOT use placeholder text or generic filler
+- Return ONLY the section content, no headings or meta-commentary`,
+      `Write the "${section}" section for an academic paper titled: "${projectTitle}". Make it genuinely useful and academically rigorous.`
+    );
+
+    const content = data.choices?.[0]?.message?.content?.trim() ?? "";
+
+    return {
+      content,
+      source: "AI Content Generator",
+      confidence: 0.85,
+    };
+  } catch (error) {
+    console.error("Error generating section content:", error);
+    return {
+      content: `Unable to generate content for the ${section} section right now. Please try again or write this section manually.`,
+      source: "Fallback Generator",
+      confidence: 0.3,
+    };
   }
-  
-  return {
-    content: content,
-    source: "AI Content Generator",
-    confidence: 0.8
-  };
 };
+
