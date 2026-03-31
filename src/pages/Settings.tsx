@@ -122,9 +122,10 @@ export default function Settings() {
     }
 
     setIsSubmitting(true);
-    localStorage.setItem("apiProvider", apiProvider);
-    localStorage.setItem("apiModel",    apiModel);
-    localStorage.setItem("apiKey",      apiKey);
+    localStorage.setItem("apiProvider", apiProvider.trim());
+    localStorage.setItem("apiModel",    apiModel.trim());
+    localStorage.setItem("apiKey",      apiKey.trim());
+    setApiKey(apiKey.trim()); // update display
     setIsSubmitting(false);
 
     toast({

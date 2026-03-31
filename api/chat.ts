@@ -25,13 +25,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   try {
-    const { provider, apiKey, messages, model: requestedModel } = req.body;
+    const { provider: rawProvider, apiKey: rawKey, messages, model: requestedModel } = req.body;
+
+    const provider = (rawProvider ?? '').trim();
+    const apiKey   = (rawKey ?? '').trim();
 
     if (!provider || !apiKey || !messages) {
       return res.status(400).json({ error: 'Missing provider, apiKey, or messages' });
     }
 
-    const model = requestedModel || DEFAULT_MODELS[provider] || 'gpt-4o-mini';
+    const model = (requestedModel ?? '').trim() || DEFAULT_MODELS[provider] || 'gpt-4o-mini';
 
     // ─── Gemini ────────────────────────────────────────────────────────────────
     if (provider === 'Gemini') {
