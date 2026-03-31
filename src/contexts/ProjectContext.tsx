@@ -130,58 +130,63 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleFeatureClick = (feature: string) => {
+  const handleFeatureClick = async (feature: string) => {
     const featureDemoName = `${feature} Demo`;
-    
+
     let templateToUse;
     switch (feature) {
-      case "AI-Powered Editor":
-        templateToUse = documentTemplates[0];
-        break;
       case "Citation Manager":
         templateToUse = documentTemplates[1];
-        break;
-      case "Progress Tracking":
-        templateToUse = documentTemplates[0];
         break;
       case "Research Assistant":
         templateToUse = documentTemplates[2];
         break;
-      case "AI Detector":
-        templateToUse = documentTemplates[0];
-        break;
-      case "Text Humanizer":
-        templateToUse = documentTemplates[0];
-        break;
-      case "Read PDF":
-        templateToUse = documentTemplates[0];
-        break;
       default:
         templateToUse = documentTemplates[0];
     }
-    
+
     localStorage.setItem("selected-template", JSON.stringify(templateToUse));
     localStorage.setItem("active-feature", feature);
-    
-    if (!projects.some(p => p.name === featureDemoName)) {
-      const newProject: Project = {
-        id: Date.now().toString(),
-        name: featureDemoName,
-        description: `A demo project for the ${feature} feature`,
-        lastEdited: new Date(),
-        wordCount: 0,
-        collaborators: 0
-      };
-      
-      const updatedProjects = [...projects, newProject];
-      setProjects(updatedProjects);
-      
+
+    // Check if demo project already exists in Supabase
+    const existing = projects.find(p => p.name === featureDemoName);
+    if (!existing) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to open a feature demo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("projects")
+        .insert([{
+          name: featureDemoName,
+          description: `A demo project for the ${feature} feature`,
+          user_id: user.id,
+        }]);
+
+      if (error) {
+        toast({
+          title: "Error creating demo project",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Refetch so we have the real UUID
+      await fetchProjects();
+
       toast({
         title: "Demo project created",
-        description: `"${featureDemoName}" has been created to showcase the ${feature} feature.`,
+        description: `"${featureDemoName}" is ready to showcase the ${feature} feature.`,
       });
     }
-    
+
     setActiveProject(featureDemoName);
   };
 

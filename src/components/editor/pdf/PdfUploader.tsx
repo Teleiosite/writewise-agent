@@ -1,8 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, FileUp, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface PdfUploaderProps {
   onPdfLoaded: (pdfName: string, pdfContent: string) => void;
@@ -31,40 +34,25 @@ export function PdfUploader({ onPdfLoaded }: PdfUploaderProps) {
         throw new Error("Please upload a PDF file");
       }
       
-      // In a real app, this would parse the PDF content
-      // For demo, we'll simulate extraction
-      const reader = new FileReader();
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
-      reader.onload = () => {
-        // Set some sample extracted text
-        const extractedContent = `[PDF Content Extracted from: ${file.name}]
-        
-This would be the actual content extracted from the PDF document. In a real application, the PDF would be parsed and its text content would be extracted here.
-
-The system would analyze headings, paragraphs, tables, and other elements to provide structured content that you can work with.
-
-Key information such as:
-- Authors: John Smith, Jane Doe
-- Publication date: October 2023
-- Abstract: The study investigates the effects of climate change on coastal ecosystems...
-
-You can select any portion of this text to add to your document, or click "Add to Document" to include the entire extracted content in your current section.`;
-        
-        onPdfLoaded(file.name, extractedContent);
-        
-        toast({
-          title: "PDF uploaded successfully",
-          description: `"${file.name}" has been uploaded and analyzed.`,
-        });
-        
-        setIsLoading(false);
-      };
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(" ");
+        fullText += pageText + "\n\n";
+      }
       
-      reader.onerror = () => {
-        throw new Error("Failed to read the file");
-      };
+      onPdfLoaded(file.name, fullText.trim());
       
-      reader.readAsText(file);
+      toast({
+        title: "PDF uploaded successfully",
+        description: `"${file.name}" has been uploaded and analyzed.`,
+      });
+      
+      setIsLoading(false);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to upload PDF";

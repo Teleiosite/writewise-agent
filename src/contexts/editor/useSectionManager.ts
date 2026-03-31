@@ -73,6 +73,14 @@ export function useSectionManager(projectId: string | undefined) {
             last_edited: new Date().toISOString(),
           })
           .eq('id', projectId);
+
+        // Auto-sync writing goals that track words
+        await supabase
+          .from('writing_goals')
+          .update({ current: totalWords })
+          .eq('project_id', projectId)
+          .eq('unit', 'words')
+          .eq('completed', false);
       }
     }
   };

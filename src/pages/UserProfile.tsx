@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
-import { User, Mail, Bell, Shield, Settings, Save, Loader2 } from "lucide-react";
+import { User, Mail, Bell, Shield, Settings, Save, Loader2, KeyRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -33,6 +33,12 @@ export default function UserProfile() {
     font_size: [16] as number[],
     auto_save: true,
   });
+
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Load profile from Supabase on mount
   useEffect(() => {
@@ -112,6 +118,31 @@ export default function UserProfile() {
 
   const togglePref = (key: "email_notifications" | "ai_suggestions" | "auto_save") => {
     setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleChangePassword = async () => {
+    const { newPassword, confirmPassword } = passwordForm;
+    if (!newPassword || !confirmPassword) {
+      toast({ title: "Missing fields", description: "Please fill in both password fields.", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast({ title: "Password too short", description: "Password must be at least 8 characters.", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Passwords don't match", description: "New password and confirmation must match.", variant: "destructive" });
+      return;
+    }
+    setIsChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      toast({ title: "Error updating password", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Password updated", description: "Your password has been changed successfully." });
+      setPasswordForm({ newPassword: "", confirmPassword: "" });
+    }
+    setIsChangingPassword(false);
   };
 
   if (isLoading) {
@@ -291,27 +322,41 @@ export default function UserProfile() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="current-password" className="text-sm font-medium">
-                    Current Password
-                  </label>
-                  <Input id="current-password" type="password" />
-                </div>
-                <div className="space-y-2">
                   <label htmlFor="new-password" className="text-sm font-medium">
                     New Password
                   </label>
-                  <Input id="new-password" type="password" />
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={passwordForm.newPassword}
+                    onChange={e => setPasswordForm(p => ({ ...p, newPassword: e.target.value }))}
+                    placeholder="Minimum 8 characters"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="confirm-password" className="text-sm font-medium">
                     Confirm New Password
                   </label>
-                  <Input id="confirm-password" type="password" />
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={passwordForm.confirmPassword}
+                    onChange={e => setPasswordForm(p => ({ ...p, confirmPassword: e.target.value }))}
+                    placeholder="Repeat your new password"
+                  />
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="mr-2">Cancel</Button>
-                <Button>Update Password</Button>
+                <Button
+                  onClick={handleChangePassword}
+                  disabled={isChangingPassword}
+                  className="ml-auto"
+                >
+                  {isChangingPassword
+                    ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    : <KeyRound className="h-4 w-4 mr-2" />}
+                  {isChangingPassword ? "Updating..." : "Update Password"}
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>
