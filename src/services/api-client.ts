@@ -1,64 +1,107 @@
 
-/**
- * Common API client for making requests to ChatGPT API
- */
 import { handleError } from "@/utils/errorHandling";
-import { toast } from "@/hooks/use-toast";
 
-export async function callChatGptApi(systemPrompt: string, userMessage: string) {
+export interface NormalizedAIResponse {
+  choices: Array<{
+    message: {
+      content: string;
+    };
+  }>;
+}
+
+/**
+ * Calls Pollinations.ai — a free, no-auth, CORS-friendly AI API.
+ * Falls back gracefully if the request fails.
+ */
+async function callPollinationsApi(
+  messages: Array<{ role: string; content: string }>
+): Promise<NormalizedAIResponse> {
+  const response = await fetch("https://text.pollinations.ai/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messages,
+      model: "openai",
+      private: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Pollinations API error: ${response.status}`);
+  }
+
+  const text = await response.text();
+  return { choices: [{ message: { content: text.trim() } }] };
+}
+
+/**
+ * Calls the user's configured API provider via our Vercel Serverless proxy (/api/chat).
+ * This elegantly bypasses browser CORS restrictions for Custom API keys while safely
+ * preserving the keys themselves. 
+ */
+async function callUserConfiguredApi(
+  provider: string,
+  apiKey: string,
+  messages: Array<{ role: string; content: string }>
+): Promise<NormalizedAIResponse> {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, apiKey, messages })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || `Proxy error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (provider === 'Gemini') {
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+    return { choices: [{ message: { content } }] };
+  }
+
+  return data as NormalizedAIResponse;
+}
+
+/**
+ * Main AI API client.
+ * Priority:
+ *  1. User's configured API key/provider (from Settings page → localStorage)
+ *  2. Pollinations.ai free fallback (no auth required, CORS-friendly)
+ */
+export async function callChatGptApi(
+  systemPrompt: string,
+  userMessage: string
+): Promise<NormalizedAIResponse> {
+  const messages = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userMessage },
+  ];
+
+  const apiProvider = localStorage.getItem("apiProvider");
+  const apiKey = localStorage.getItem("apiKey");
+
   try {
-    const response = await fetch('https://chatgpt-api-free.puter.com/v1/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
-        ],
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API request failed with status ${response.status}`);
+    if (apiProvider && apiKey) {
+      return await callUserConfiguredApi(apiProvider, apiKey, messages);
     }
-    
-    const data = await response.json();
-    return data;
+    return await callPollinationsApi(messages);
   } catch (error) {
     handleError(error, "API Error", "Failed to communicate with the AI service");
-    throw error; // Re-throw to allow callers to handle as needed
+    throw error;
   }
 }
 
 export async function withLoadingFeedback<T>(
   promise: () => Promise<T>,
-  loadingMessage = "Processing your request...",
-  successMessage = "Operation completed successfully"
+  _loadingMessage = "Processing your request...",
+  _successMessage = "Operation completed successfully"
 ): Promise<T> {
-  const toastId = toast({
-    title: "Loading",
-    description: loadingMessage,
-  });
-  
   try {
-    const result = await promise();
-    toast({
-      title: "Success",
-      description: successMessage,
-    });
-    return result;
+    return await promise();
   } catch (error) {
-    // Error already handled by the API function
     throw error;
-  } finally {
-    // Clear the loading toast
-    toast({
-      // Remove the id property as it's not part of the Toast type
-      title: "", // Using empty title to remove the toast
-      description: "",
-    });
   }
 }
