@@ -11,7 +11,7 @@ export interface NormalizedAIResponse {
 
 /**
  * Calls Pollinations.ai — a free, no-auth, CORS-friendly AI API.
- * Falls back gracefully if the request fails.
+ * Used as a fallback when the user hasn't configured a provider/key.
  */
 async function callPollinationsApi(
   messages: Array<{ role: string; content: string }>
@@ -35,19 +35,25 @@ async function callPollinationsApi(
 }
 
 /**
- * Calls the user's configured API provider via our Vercel Serverless proxy (/api/chat).
- * This elegantly bypasses browser CORS restrictions for Custom API keys while safely
- * preserving the keys themselves. 
+ * Calls the user's configured provider via the Vercel serverless proxy /api/chat.
+ * The proxy handles CORS and forwards the key server-side so it never leaks in the browser.
+ * All provider responses are normalised to the OpenAI choices[] shape.
  */
 async function callUserConfiguredApi(
   provider: string,
   apiKey: string,
+  model: string | null,
   messages: Array<{ role: string; content: string }>
 ): Promise<NormalizedAIResponse> {
-  const response = await fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ provider, apiKey, messages })
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      provider,
+      apiKey,
+      messages,
+      ...(model ? { model } : {}),
+    }),
   });
 
   if (!response.ok) {
@@ -55,21 +61,16 @@ async function callUserConfiguredApi(
     throw new Error(err.error || `Proxy error: ${response.status}`);
   }
 
-  const data = await response.json();
-
-  if (provider === 'Gemini') {
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
-    return { choices: [{ message: { content } }] };
-  }
-
-  return data as NormalizedAIResponse;
+  // All providers now return normalised choices[] from the proxy
+  return (await response.json()) as NormalizedAIResponse;
 }
 
 /**
- * Main AI API client.
+ * Main AI entry point used by every AI feature in the app.
+ *
  * Priority:
- *  1. User's configured API key/provider (from Settings page → localStorage)
- *  2. Pollinations.ai free fallback (no auth required, CORS-friendly)
+ *  1. User's saved provider + model + API key  → Vercel proxy
+ *  2. No key configured                        → free Pollinations.ai fallback
  */
 export async function callChatGptApi(
   systemPrompt: string,
@@ -77,15 +78,16 @@ export async function callChatGptApi(
 ): Promise<NormalizedAIResponse> {
   const messages = [
     { role: "system", content: systemPrompt },
-    { role: "user", content: userMessage },
+    { role: "user",   content: userMessage  },
   ];
 
   const apiProvider = localStorage.getItem("apiProvider");
-  const apiKey = localStorage.getItem("apiKey");
+  const apiKey      = localStorage.getItem("apiKey");
+  const apiModel    = localStorage.getItem("apiModel"); // may be null
 
   try {
     if (apiProvider && apiKey) {
-      return await callUserConfiguredApi(apiProvider, apiKey, messages);
+      return await callUserConfiguredApi(apiProvider, apiKey, apiModel, messages);
     }
     return await callPollinationsApi(messages);
   } catch (error) {
