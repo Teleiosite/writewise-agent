@@ -12,146 +12,28 @@ export interface AIResponse {
 }
 
 // Mock function to simulate AI chatbot response
+// Real function to get AI chatbot response
 export const getChatbotResponse = async (message: string): Promise<ChatResponse> => {
-  const apiProvider = localStorage.getItem("apiProvider");
-  const apiKey = localStorage.getItem("apiKey");
+  try {
+    const { callChatGptApi } = await import("@/services/api-client");
 
-  if (apiProvider && apiKey) {
-    try {
-      let apiUrl = "";
-      let requestBody: any = {};
+    const data = await callChatGptApi(
+      `You are the WriteWise AI Assistant, a helpful expert in academic writing.
+       Help the user with questions about structure, grammar, citations, and general writing advice.
+       Keep responses helpful, scholarly, yet supportive.`,
+      message
+    );
 
-      switch (apiProvider) {
-        case "OpenAI":
-          apiUrl = "https://api.openai.com/v1/chat/completions";
-          requestBody = {
-            model: "gpt-3.5-turbo",
-            messages: [{ role: "user", content: message }],
-          };
-          break;
-        case "DeepSeek":
-          apiUrl = "https://api.deepseek.com/v1/chat/completions";
-          requestBody = {
-            model: "deepseek-chat",
-            messages: [{ role: "user", content: message }],
-          };
-          break;
-        case "Grok":
-          apiUrl = "https://api.x.ai/grok";
-          requestBody = {
-            prompt: message,
-          };
-          break;
-        case "Gemini":
-          apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-          requestBody = {
-            contents: [{ parts: [{ text: message }] }],
-          };
-          break;
-        default:
-          console.log("Unknown API provider, using mock response.");
-      }
+    const content = data.choices?.[0]?.message?.content?.trim() ?? 
+      "I'm sorry, I couldn't generate a response right now. Please try again.";
 
-      if (apiUrl) {
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("API Error:", errorData);
-          throw new Error(
-            `API request failed: ${errorData.error?.message || response.statusText}`,
-          );
-        }
-
-        const data = await response.json();
-
-        let content = "";
-        switch (apiProvider) {
-          case "OpenAI":
-            content = data.choices[0]?.message?.content.trim() || "";
-            break;
-          case "DeepSeek":
-            content = data.choices[0]?.message?.content.trim() || "";
-            break;
-          case "Gemini":
-            content =
-              data.candidates[0]?.content?.parts[0]?.text.trim() || "";
-            break;
-          case "Grok":
-            console.log("Grok API response handling is not implemented yet.");
-            content = "Grok response (mocked).";
-            break;
-          default:
-            content = "Unknown API provider response.";
-        }
-
-        if (!content) {
-          console.error("No content found in API response:", data);
-          return {
-            content:
-              "Sorry, I received an empty response from the AI service.",
-          };
-        }
-
-        return { content };
-      }
-    } catch (error) {
-      console.error("API call failed:", error);
-      return {
-        content:
-          "Sorry, I am unable to connect to the AI service at the moment.",
-      };
-    }
+    return { content };
+  } catch (error) {
+    console.error("AI Communication Error:", error);
+    return {
+      content: "Sorry, I encountered an issue while communicating with the AI service. Please check your connection or try again later.",
+    };
   }
-
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // Simple response mapping based on keywords
-  let response = "";
-
-  if (message.toLowerCase().includes("help") || message.toLowerCase().includes("how to")) {
-    response =
-      "I can help you with your writing! What specific aspect would you like assistance with? I can provide feedback on structure, grammar, content, or research suggestions.";
-  } else if (
-    message.toLowerCase().includes("thesis") ||
-    message.toLowerCase().includes("argument")
-  ) {
-    response =
-      "A strong thesis statement is clear, specific, and arguable. Try to make your main argument focused on a specific aspect rather than being too broad. Would you like me to review your thesis statement?";
-  } else if (
-    message.toLowerCase().includes("citation") ||
-    message.toLowerCase().includes("reference")
-  ) {
-    response =
-      "For academic writing, it's important to follow the citation style required by your institution (APA, MLA, Chicago, etc.). Make sure to cite all sources properly to avoid plagiarism. Would you like information about a specific citation style?";
-  } else if (
-    message.toLowerCase().includes("structure") ||
-    message.toLowerCase().includes("organize")
-  ) {
-    response =
-      "A well-structured academic paper typically includes an introduction with a thesis statement, body paragraphs that each focus on a single idea, and a conclusion that synthesizes your arguments. Consider creating an outline before writing to organize your thoughts.";
-  } else if (
-    message.toLowerCase().includes("research") ||
-    message.toLowerCase().includes("sources")
-  ) {
-    response =
-      "When conducting research, focus on peer-reviewed journals, academic books, and reputable sources. University libraries and academic databases like JSTOR, Google Scholar, or PubMed are excellent places to start your research.";
-  } else {
-    response =
-      'I understand you\'re asking about \"' +
-      message +
-      '\". As your writing assistant, I can help with structure, content, grammar, citations, and research suggestions. Could you provide more details about what you need help with?';
-  }
-
-  return { content: response };
 };
 
 // ... (rest of the file remains the same)

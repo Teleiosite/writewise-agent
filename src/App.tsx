@@ -36,34 +36,36 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <PrivateRoute>
-                      <Index />
-                    </PrivateRoute>
-                  }
-                />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/wallet" element={<PrivateRoute><Wallet /></PrivateRoute>} />
-                <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
-                <Route path="/features" element={<Features />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/help" element={<HelpCenter />} />
-                <Route path="/support" element={<ContactSupport />} />
-                <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <div className="min-h-screen bg-background text-foreground duration-300">
+                <Routes>
+                  <Route
+                    path="/"
+                    element={
+                      <PrivateRoute>
+                        <Index />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/testimonials" element={<Testimonials />} />
+                  <Route path="/wallet" element={<PrivateRoute><Wallet /></PrivateRoute>} />
+                  <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+                  <Route path="/features" element={<Features />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/help" element={<HelpCenter />} />
+                  <Route path="/support" element={<ContactSupport />} />
+                  <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
