@@ -9,41 +9,53 @@ export interface NormalizedAIResponse {
   }>;
 }
 
-/**
- * Calls Pollinations.ai — a free, no-auth, CORS-friendly AI API.
- * Used as a fallback when the user hasn't configured a provider/key.
- */
-async function callPollinationsApi(
-  messages: Array<{ role: string; content: string }>
+type Msg = { role: string; content: string };
+
+// ─── Gemini — called directly from the browser ───────────────────────────────
+// Google's Generative Language API sends proper CORS headers, so we can hit it
+// straight from the client without routing through the Vercel proxy.
+async function callGeminiDirect(
+  apiKey: string,
+  model: string,
+  messages: Msg[]
 ): Promise<NormalizedAIResponse> {
-  const response = await fetch("https://text.pollinations.ai/", {
+  const m = model.trim() || "gemini-2.0-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey.trim()}`;
+
+  const systemMsg = messages.find((msg) => msg.role === "system")?.content;
+  const chatMessages = messages.filter((msg) => msg.role !== "system");
+
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      messages,
-      model: "openai",
-      private: true,
+      ...(systemMsg && { systemInstruction: { parts: [{ text: systemMsg }] } }),
+      contents: chatMessages.map((msg) => ({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: msg.content }],
+      })),
     }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Pollinations API error: ${response.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Gemini API error: ${res.status}`);
   }
 
-  const text = await response.text();
-  return { choices: [{ message: { content: text.trim() } }] };
+  const data = await res.json();
+  const content =
+    data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+  return { choices: [{ message: { content } }] };
 }
 
-/**
- * Calls the user's configured provider via the Vercel serverless proxy /api/chat.
- * The proxy handles CORS and forwards the key server-side so it never leaks in the browser.
- * All provider responses are normalised to the OpenAI choices[] shape.
- */
-async function callUserConfiguredApi(
+// ─── Proxy — for providers that don't support browser CORS ───────────────────
+// (OpenAI, DeepSeek, Grok, Claude all require Authorization headers which
+//  browsers won't send cross-origin — so we relay via /api/chat on Vercel)
+async function callViaProxy(
   provider: string,
   apiKey: string,
   model: string | null,
-  messages: Array<{ role: string; content: string }>
+  messages: Msg[]
 ): Promise<NormalizedAIResponse> {
   const response = await fetch("/api/chat", {
     method: "POST",
@@ -58,37 +70,63 @@ async function callUserConfiguredApi(
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.error || `Proxy error: ${response.status}`);
+    throw new Error(err.error || `Proxy error ${response.status}`);
   }
 
-  // All providers now return normalised choices[] from the proxy
+  // Check that we got JSON and not an HTML page (which would mean the proxy
+  // route wasn't matched and the rewrite returned index.html instead)
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      "The AI proxy returned an unexpected response. Please check your Vercel deployment."
+    );
+  }
+
   return (await response.json()) as NormalizedAIResponse;
 }
 
-/**
- * Main AI entry point used by every AI feature in the app.
- *
- * Priority:
- *  1. User's saved provider + model + API key  → Vercel proxy
- *  2. No key configured                        → free Pollinations.ai fallback
- */
+// ─── Pollinations fallback ────────────────────────────────────────────────────
+async function callPollinationsApi(messages: Msg[]): Promise<NormalizedAIResponse> {
+  const response = await fetch("https://text.pollinations.ai/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages, model: "openai", private: true }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Pollinations API error: ${response.status}`);
+  }
+
+  const text = await response.text();
+  if (!text.trim()) throw new Error("Pollinations returned an empty response.");
+  return { choices: [{ message: { content: text.trim() } }] };
+}
+
+// ─── Main entry point ─────────────────────────────────────────────────────────
 export async function callChatGptApi(
   systemPrompt: string,
   userMessage: string
 ): Promise<NormalizedAIResponse> {
-  const messages = [
+  const messages: Msg[] = [
     { role: "system", content: systemPrompt },
     { role: "user",   content: userMessage  },
   ];
 
-  const apiProvider = localStorage.getItem("apiProvider");
-  const apiKey      = localStorage.getItem("apiKey");
-  const apiModel    = localStorage.getItem("apiModel"); // may be null
+  const apiProvider = localStorage.getItem("apiProvider")?.trim() ?? "";
+  const apiKey      = localStorage.getItem("apiKey")?.trim()      ?? "";
+  const apiModel    = localStorage.getItem("apiModel")?.trim()    ?? null;
 
   try {
     if (apiProvider && apiKey) {
-      return await callUserConfiguredApi(apiProvider, apiKey, apiModel, messages);
+      // Gemini: direct browser call (CORS supported, no proxy needed)
+      if (apiProvider === "Gemini") {
+        return await callGeminiDirect(apiKey, apiModel ?? "gemini-2.0-flash", messages);
+      }
+      // All others: Vercel serverless proxy
+      return await callViaProxy(apiProvider, apiKey, apiModel, messages);
     }
+
+    // No key configured — free fallback
     return await callPollinationsApi(messages);
   } catch (error) {
     handleError(error, "API Error", "Failed to communicate with the AI service");

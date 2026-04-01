@@ -60,11 +60,14 @@ export function ChatAssistant() {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error getting response:", error);
-      toast({
-        title: "Error",
-        description: "Could not get a response. Please try again.",
-        variant: "destructive",
-      });
+      const errMsg = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `⚠️ ${errMsg}\n\nTip: Go to Settings and check your AI provider and API key.`,
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
