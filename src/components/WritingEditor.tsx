@@ -13,12 +13,13 @@ function EditorContent({ projectName }: { projectName: string }) {
   const { 
     showCitationsPanel, 
     showPdfReaderPanel, 
+    showAnalysisPanel,
     addContentToActiveSection,
     insertCitation 
   } = useEditor();
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)]">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)] transition-all duration-500">
       <div className="md:col-span-3 h-full">
         <EditorSidebar />
         {showPdfReaderPanel && (
@@ -33,17 +34,19 @@ function EditorContent({ projectName }: { projectName: string }) {
         )}
       </div>
 
-      <div className="md:col-span-6 h-full min-h-[800px]">
+      <div className={`${showAnalysisPanel ? 'md:col-span-6' : 'md:col-span-9'} h-full min-h-[800px] transition-all duration-500 ease-in-out`}>
         <EditorMain 
           projectName={projectName} 
         />
       </div>
 
-      <div className="md:col-span-3 h-full">
-        <div className="sticky top-6">
-          <TextAnalysis />
+      {showAnalysisPanel && (
+        <div className="md:col-span-3 h-full animate-in slide-in-from-right duration-300">
+          <div className="sticky top-6">
+            <TextAnalysis />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

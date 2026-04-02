@@ -13,7 +13,8 @@ import {
   BarChart2,
   Target,
   AlertTriangle,
-  Zap
+  Zap,
+  PenTool
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../editor/pdf/components/ThemeToggle";
@@ -36,6 +37,9 @@ interface EditorHeaderProps {
   onClose?: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  showAnalysisPanel: boolean;
+  analysisTab: string;
+  toggleAnalysisPanel: (tab?: string) => void;
 }
 
 export function EditorHeader({
@@ -48,7 +52,10 @@ export function EditorHeader({
   togglePdfChatPanel,
   onClose,
   activeTab,
-  setActiveTab
+  setActiveTab,
+  showAnalysisPanel,
+  analysisTab,
+  toggleAnalysisPanel
 }: EditorHeaderProps) {
   
   // Navigation mapping to ensure we use the correct tab values
@@ -58,6 +65,12 @@ export function EditorHeader({
     { label: "AI Detector", value: "ai-detector", icon: <AlertTriangle className="h-3.5 w-3.5" /> },
     { label: "Analytics", value: "stats", icon: <BarChart2 className="h-3.5 w-3.5" /> },
     { label: "Humanizer", value: "humanizer", icon: <Zap className="h-3.5 w-3.5" /> },
+  ];
+
+  // MS Word-style Analysis Controls (Integrated into top header)
+  const analysisNav = [
+    { label: "Writing", value: "writing", icon: <PenTool className="h-3.5 w-3.5" /> },
+    { label: "Grammar", value: "grammar", icon: <Zap className="h-3.5 w-3.5" /> },
   ];
 
   const secondaryNav = [
@@ -109,6 +122,23 @@ export function EditorHeader({
                   className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md transition-all whitespace-nowrap active:scale-95
                     ${activeTab === item.value 
                       ? 'bg-blue-50 text-blue-700 font-bold dark:bg-blue-900/30 dark:text-blue-400 ring-1 ring-blue-100 dark:ring-blue-800/50' 
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                >
+                  <span className="flex items-center justify-center">{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+
+              <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block" />
+
+              {/* Analysis (Word-style) Buttons */}
+              {activeTab === 'editor' && analysisNav.map(item => (
+                <button 
+                  key={item.value} 
+                  onClick={() => toggleAnalysisPanel(item.value)}
+                  className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md transition-all whitespace-nowrap active:scale-95
+                    ${showAnalysisPanel && analysisTab === item.value 
+                      ? 'bg-orange-50 text-orange-700 font-bold dark:bg-orange-900/30 dark:text-orange-400 ring-1 ring-orange-100 dark:ring-orange-800/50' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'}`}
                 >
                   <span className="flex items-center justify-center">{item.icon}</span>

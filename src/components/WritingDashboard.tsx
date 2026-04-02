@@ -32,9 +32,12 @@ function ProjectHeader({
     showCitationsPanel, 
     showPdfReaderPanel, 
     showPdfChatPanel,
+    showAnalysisPanel,
+    analysisTab,
     toggleCitationsPanel, 
     togglePdfReaderPanel, 
-    togglePdfChatPanel 
+    togglePdfChatPanel,
+    toggleAnalysisPanel
   } = useEditor();
 
   return (
@@ -49,6 +52,9 @@ function ProjectHeader({
       onClose={onClose}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
+      showAnalysisPanel={showAnalysisPanel}
+      analysisTab={analysisTab}
+      toggleAnalysisPanel={toggleAnalysisPanel}
     />
   );
 }

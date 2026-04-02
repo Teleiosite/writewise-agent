@@ -16,6 +16,8 @@ export interface EditorContextType {
   showCitationsPanel: boolean;
   showPdfReaderPanel: boolean;
   showPdfChatPanel: boolean;
+  showAnalysisPanel: boolean;
+  analysisTab: string;
   wordCount: number;
   readingTime: number;
   isAutoSaving?: boolean;
@@ -30,6 +32,7 @@ export interface EditorContextType {
   toggleCitationsPanel: () => void;
   togglePdfReaderPanel: () => void;
   togglePdfChatPanel: () => void;
+  toggleAnalysisPanel: (tab?: string) => void;
   saveProject: () => void;
   exportDocument: (format: string) => Promise<void>;
   addContentToActiveSection: (content: string) => void;
