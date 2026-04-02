@@ -1,5 +1,5 @@
 
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "./RichTextEditor";
 
 interface EditorContentProps {
   content: string;
@@ -13,11 +13,12 @@ export function EditorContent({
   onChange
 }: EditorContentProps) {
   return (
-    <Textarea
-      value={content}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="min-h-[500px] resize-none"
-    />
+    <div className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8 min-h-screen">
+      <RichTextEditor 
+        content={content}
+        onChange={onChange}
+        placeholder={placeholder}
+      />
+    </div>
   );
 }

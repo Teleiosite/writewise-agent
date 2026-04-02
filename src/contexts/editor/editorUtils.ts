@@ -2,7 +2,9 @@
 import { Section } from './types';
 
 export const calculateWordCount = (content: string): number => {
-  return content.trim().split(/\s+/).filter(Boolean).length;
+  // Strip HTML tags for accurate word count
+  const plainText = content.replace(/<[^>]*>/g, ' ');
+  return plainText.trim().split(/\s+/).filter(Boolean).length;
 };
 
 export const calculateReadingTime = (wordCount: number): number => {

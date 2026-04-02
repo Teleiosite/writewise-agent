@@ -1,11 +1,12 @@
 
-import { Card } from "@/components/ui/card";
 import { useEditor } from "@/contexts/editor";
 import { EditorHeader } from "./EditorHeader";
 import { EditorContent } from "./EditorContent";
+import { EditorToolbar } from "./EditorToolbar";
 import { EditorCitationsPanel } from "./EditorCitationsPanel";
 import { EditorPdfPanel } from "./EditorPdfPanel";
 import { EditorPdfChatPanel } from "./EditorPdfChatPanel";
+import { Card } from "@/components/ui/card";
 
 interface EditorMainProps {
   projectName: string;
@@ -34,9 +35,9 @@ export function EditorMain({ projectName }: EditorMainProps) {
   };
 
   return (
-    <Card className="glass-card p-4">
+    <div className="flex flex-col h-full bg-gray-50 border rounded-xl overflow-hidden shadow-2xl relative">
       <EditorHeader 
-        title={sectionTitle || projectName}
+        title={projectName}
         showCitationsPanel={showCitationsPanel}
         showPdfReaderPanel={showPdfReaderPanel}
         showPdfChatPanel={showPdfChatPanel}
@@ -45,26 +46,38 @@ export function EditorMain({ projectName }: EditorMainProps) {
         togglePdfChatPanel={togglePdfChatPanel}
       />
       
-      <EditorCitationsPanel 
-        onInsertCitation={insertCitation}
-        show={showCitationsPanel}
-      />
-      
-      <EditorPdfPanel 
-        onAddContent={handleAddPdfContent}
-        show={showPdfReaderPanel}
-      />
+      <EditorToolbar />
 
-      <EditorPdfChatPanel
-        onAddContent={handleAddPdfContent}
-        show={showPdfChatPanel}
-      />
-      
-      <EditorContent
-        content={content}
-        placeholder={`Start writing your ${sectionTitle || "project"}...`}
-        onChange={updateSectionContent}
-      />
-    </Card>
+      <div className="flex-1 overflow-y-auto bg-[#F8F9FA] custom-scrollbar">
+        <EditorCitationsPanel 
+          onInsertCitation={insertCitation}
+          show={showCitationsPanel}
+        />
+        
+        <EditorPdfPanel 
+          onAddContent={handleAddPdfContent}
+          show={showPdfReaderPanel}
+        />
+
+        <EditorPdfChatPanel
+          onAddContent={handleAddPdfContent}
+          show={showPdfChatPanel}
+        />
+        
+        <div className="max-w-5xl mx-auto py-2 px-1">
+           {/* Section Title indicator like Google Docs sub-header */}
+           <div className="px-12 py-4 text-muted-foreground text-sm flex items-center gap-2 font-medium">
+             <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] uppercase">Section</span>
+             <span>{sectionTitle || "Main Document"}</span>
+           </div>
+           
+           <EditorContent
+            content={content}
+            placeholder={`Start writing your ${sectionTitle || "project"}...`}
+            onChange={updateSectionContent}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
