@@ -2,6 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { PenTool, BookOpen, FileText } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { PenTool, BookOpen, FileText } from "lucide-react";
+
 interface AnalysisTabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -16,6 +19,7 @@ export function AnalysisTabs({ activeTab, onTabChange, isLoading }: AnalysisTabs
         size="sm"
         onClick={() => onTabChange("writing")}
         disabled={isLoading}
+        className={activeTab === "writing" ? "bg-blue-600 hover:bg-blue-700" : ""}
       >
         <PenTool className="w-4 h-4 mr-1" />
         Writing
@@ -25,6 +29,7 @@ export function AnalysisTabs({ activeTab, onTabChange, isLoading }: AnalysisTabs
         size="sm"
         onClick={() => onTabChange("grammar")}
         disabled={isLoading}
+        className={activeTab === "grammar" ? "bg-blue-600 hover:bg-blue-700" : ""}
       >
         <BookOpen className="w-4 h-4 mr-1" />
         Grammar
@@ -34,6 +39,7 @@ export function AnalysisTabs({ activeTab, onTabChange, isLoading }: AnalysisTabs
         size="sm"
         onClick={() => onTabChange("generate")}
         disabled={isLoading}
+        className={activeTab === "generate" ? "bg-blue-600 hover:bg-blue-700" : ""}
       >
         <FileText className="w-4 h-4 mr-1" />
         Generate
