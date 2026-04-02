@@ -1,11 +1,11 @@
 # WriteWise Agent 📝
 
-> AI-Powered Writing Productivity Platform with Real-Time Collaboration
+> High-Fidelity AI Writing Workstation & Academic Research Platform
 
 [![Deployment Status](https://img.shields.io/badge/deployment-live-brightgreen)](https://writewise-app.vercel.app)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb)](https://reactjs.org/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![AI-Powered](https://img.shields.io/badge/AI--Powered-Gemini%20%7C%20GPT--4-purple)](https://writewise-app.vercel.app)
 
 **[Live Demo](https://writewise-app.vercel.app)** | **[Report Bug](https://github.com/Teleiosite/writewise-agent/issues)** | **[Request Feature](https://github.com/Teleiosite/writewise-agent/issues)**
 
@@ -13,52 +13,49 @@
 
 ## 📖 Overview
 
-WriteWise Agent is a comprehensive, full-stack SaaS writing productivity platform designed to enhance the writing process through AI-powered assistance, intelligent document analysis, and seamless project management. Built with modern web technologies and deployed on production infrastructure, it serves as a professional writing companion for students, academics, and content creators.
+WriteWise Agent is a premium, **Microsoft Word-style AI workstation** designed for hyper-productive academic research and content creation. It transforms the writing process into a structured, high-fidelity experience by integrating real-time AI analysis, structural drafting for scientific chapters, and a distraction-free wide-writing environment.
 
 ### 🎯 Key Highlights
 
-- ✅ **Full-Stack Production Deployment** - Live on Vercel with Supabase backend
-- ✅ **Multi-User Authentication** - Secure user management with email/password authentication
-- ✅ **Real-Time Data Persistence** - PostgreSQL database with Row-Level Security
-- ✅ **AI Integration Framework** - Ready for production AI API integration
-- ✅ **Responsive Design** - Mobile-first approach with dark/light theme support
+- 🚀 **Global Pro Navigation** - Unified header-based control for the entire writing workstation.
+- ✍️ **Wide Writing Space** - Dynamic document canvas that expands for a focused writing experience.
+- 🤖 **Structural AI Drafting** - Intelligent generation of Chapters 1-5 (Introduction, Literature Review, etc.) with contextual topic awareness.
+- 📊 **Real AI Analytics** - Scientific data analysis and writing productivity insights.
+- ✅ **Full-Stack Production Ready** - Deployed on Vercel with a robust Supabase (PostgreSQL) backend.
 
 ---
 
 ## ✨ Features
 
-### Core Functionality
+### Premium Workstation Experience
 
-#### 🤖 AI-Powered Writing Tools
-- **AI Content Detector** - Identifies AI-generated content with confidence scoring
-- **Text Humanizer** - Converts AI-generated text to natural, human-like writing
-- **Grammar & Style Suggestions** - Real-time writing feedback and improvements
-- **Content Generation** - AI-assisted content creation based on prompts
+#### 🖥️ Global Pro Navigation
+- **Unified Control Center** - No more cluttered sidebars. All AI tools (Writing, Grammar, Humanizer) are consolidated into a professional "AI Tools" header dropdown.
+- **Persistent Project Header** - Seamlessly switch between the Editor, Assistance, and Analytics without losing project context.
 
-#### 📚 Document Management
-- **Project-Based Organization** - Create and manage multiple writing projects
-- **Rich-Text Editor** - Comprehensive formatting toolbar with Markdown support
-- **Document Templates** - Pre-built templates for essays, reports, articles, and more
-- **Auto-Save** - Automatic document saving to prevent data loss
+#### 📄 Focused Writing Canvas
+- **Dynamic Layout** - The editor automatically expands to a wide-writing format when analysis panels are closed, providing a distraction-free Word-style workstation.
+- **Section-Based Drafting** - Manage your document through intuitive logical sections for better organization.
 
-#### 📖 Citation Management
-- **Multiple Citation Styles** - Support for APA, MLA, Chicago, and more
-- **Citation Search** - Import citations from external academic databases
-- **Manual Entry** - Create and edit custom citations
-- **In-Text Citations** - Insert formatted citations directly into documents
-- **Bibliography Generation** - Automatic reference list creation
+#### 🤖 Advanced AI Research Tools
+- **Structural Drafting (Ch 1-5)** - Specifically tuned AI for generating high-fidelity academic chapters (Introduction, Literature Review, Methodology, Results, Conclusion).
+- **Topic-Aware Generation** - Input your specific "Research Focus" to ensure AI outputs are contextually accurate for your study.
+- **Grammar & Academic Tone** - Real-time analysis of punctuation, syntax, and scholarly language.
+- **AI Humanizer** - Instantly refines AI-generated text to maintain a natural, human flow while preserving academic rigor.
 
-#### 📄 PDF Interaction
-- **Built-in PDF Reader** - View and annotate PDF documents in-browser
-- **PDF Chat** - Interactive Q&A interface for PDF documents
-- **Document Search** - Quick text search within uploaded PDFs
-- **Annotation Support** - Highlight and note important sections
+### Research & Data Tools
 
-#### 📊 Analytics & Insights
-- **Writing Statistics** - Word count, reading time, and productivity metrics
-- **Goal Tracking** - Set and monitor daily/weekly writing targets
-- **Progress Visualization** - Charts and graphs for writing habits
-- **Content Distribution Analysis** - Breakdown by document sections
+#### 📖 Citation & Source Management
+- **Universal Citation Engine** - Support for APA, MLA, Chicago, and more.
+- **Library Integration** - Import and manage references directly within the project workflow.
+
+#### 📄 PDF Intelligence
+- **Interactive PDF Chat** - Ask questions to your research papers and get instant summaries.
+- **Side-by-Side Reading** - Reference your PDFs directly next to your active drafting area.
+
+#### 📊 Scientific Analytics
+- **Writing Productivity** - Track daily streaks, word counts, and writing time.
+- **AI Research Insights** - Get critical scientific analysis and logical gap identification from your document content.
 
 ### User Experience
 
@@ -75,192 +72,72 @@ WriteWise Agent is a comprehensive, full-stack SaaS writing productivity platfor
 ### High-Level Architecture
 ```mermaid
 graph TB
-    subgraph Frontend["🎨 Frontend Layer (Vercel)"]
-        A[React + TypeScript + Vite]
-        A --> B[📊 Dashboard]
-        A --> C[✍️ Writing Editor]
-        A --> D[📁 Project Manager]
-        A --> E[📖 Citation Manager]
-        A --> F[📄 PDF Reader]
-        A --> G[🔐 Auth UI]
+    subgraph Frontend["🎨 Pro Workstation (Vercel)"]
+        A[React 19 + TypeScript]
+        A --> B[📊 Analytics & AI Insights]
+        A --> C[✍️ Wide-Writing Editor]
+        A --> D[📁 Project Workspace]
+        A --> E[🤖 AI Structural Drafter]
+        A --> F[📄 PDF Intelligence]
     end
 
-    subgraph Backend["⚙️ Backend Layer (Supabase)"]
-        H[(💾 PostgreSQL Database)]
-        I[🔑 Authentication Service]
-        J[📦 Storage Service]
+    subgraph Backend["⚙️ Backend Infrastructure (Supabase)"]
+        H[(💾 PostgreSQL + RLS)]
+        I[🔑 Managed Auth]
+        J[📦 Research Storage]
         
         H --> H1[users]
         H --> H2[projects]
-        H --> H3[documents]
+        H --> H3[academic_sections]
         H --> H4[citations]
-        H --> H5[analytics]
+        H --> H5[data_analysis]
     end
 
-    subgraph External["🌐 External Services"]
-        K[🤖 OpenAI API]
-        L[🤖 Gemini API]
-        M[📚 Citation APIs]
+    subgraph AI_Core["🧠 AI Intelligence Layer"]
+        K[🤖 OpenAI GPT-4o]
+        L[🤖 Google Gemini 1.5 Pro]
+        M[🌐 Vercel AI Proxy]
     end
 
-    B & C & D & E & F & G -->|REST API + JWT| I
-    I -->|Validate & Query| H
-    J -->|File Storage| H
+    B & C & E & F -->|Proxy Streaming| M
+    M --> K & L
+    A -->|JWT Authenticated| I
+    I -->|Postgres Query| H
+    F -->|Document RAG| J
 
-    C -.->|Planned Integration| K
-    C -.->|Planned Integration| L
-    E -.->|Planned Integration| M
-
-    style Frontend fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Backend fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    style External fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-```
-
-### Database Schema
-```mermaid
-erDiagram
-    USERS ||--o{ PROJECTS : creates
-    USERS ||--o{ DOCUMENTS : owns
-    USERS ||--o{ CITATIONS : manages
-    USERS ||--o{ ANALYTICS : generates
-    PROJECTS ||--o{ DOCUMENTS : contains
-    DOCUMENTS ||--o{ CITATIONS : references
-
-    USERS {
-        uuid id PK
-        string email UK
-        string full_name
-        string avatar_url
-        timestamp created_at
-    }
-
-    PROJECTS {
-        uuid id PK
-        uuid user_id FK
-        string title
-        text description
-        string status
-        timestamp created_at
-    }
-
-    DOCUMENTS {
-        uuid id PK
-        uuid project_id FK
-        uuid user_id FK
-        string title
-        text content
-        int word_count
-        string status
-        timestamp created_at
-    }
-
-    CITATIONS {
-        uuid id PK
-        uuid user_id FK
-        uuid document_id FK
-        string citation_type
-        string citation_style
-        jsonb citation_data
-        timestamp created_at
-    }
-
-    ANALYTICS {
-        uuid id PK
-        uuid user_id FK
-        string event_type
-        jsonb event_data
-        timestamp created_at
-    }
-```
-
-### Request Flow
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant Supabase
-    participant Database
-    
-    User->>Frontend: Create New Document
-    Frontend->>Supabase: POST /documents (JWT Token)
-    Supabase->>Supabase: Validate JWT
-    Supabase->>Database: Check RLS Policy
-    Database->>Database: INSERT document
-    Database-->>Supabase: Document Created
-    Supabase-->>Frontend: Success Response
-    Frontend-->>User: Show New Document
-```
-
-## 🏗️ System Architecture
-
-### High-Level Architecture
-```
-┌──────────────────────────────────────────────────────┐
-│              PRESENTATION LAYER                      │
-│                                                      │
-│  React Frontend (Vercel)                            │
-│  ├─ Dashboard (Analytics & Overview)                │
-│  ├─ Writing Editor (Rich-Text)                      │
-│  ├─ Project Manager (CRUD)                          │
-│  ├─ Citation Manager                                │
-│  ├─ PDF Reader & Chat                               │
-│  └─ Authentication UI                               │
-│                                                      │
-└──────────────┬───────────────────────────────────────┘
-               │
-               │ HTTPS/REST API + JWT Auth
-               │
-               ▼
-┌──────────────────────────────────────────────────────┐
-│              BACKEND LAYER (Supabase)                │
-│                                                      │
-│  PostgreSQL Database                                │
-│  ├─ users (auth & profiles)                         │
-│  ├─ projects (writing projects)                     │
-│  ├─ documents (individual docs)                     │
-│  ├─ citations (references)                          │
-│  └─ analytics (usage stats)                         │
-│                                                      │
-│  Authentication Service                             │
-│  ├─ Email/Password auth                             │
-│  ├─ JWT tokens                                      │
-│  └─ Session management                              │
-│                                                      │
-│  Storage Service                                    │
-│  ├─ Document files                                  │
-│  ├─ PDF uploads                                     │
-│  └─ User content                                    │
-│                                                      │
-└──────────────┬───────────────────────────────────────┘
-               │
-               │ API Calls (Planned)
-               │
-               ▼
-┌──────────────────────────────────────────────────────┐
-│          EXTERNAL SERVICES (In Development)          │
-│                                                      │
-│  ├─ OpenAI API (Content generation)                 │
-│  ├─ Gemini API (Alternative AI)                     │
-│  ├─ Citation APIs (Academic search)                 │
-│  └─ Plagiarism Detection                            │
-└──────────────────────────────────────────────────────┘
+    style Frontend fill:#f0f7ff,stroke:#0070f3,stroke-width:2px
+    style Backend fill:#fff7ed,stroke:#f97316,stroke-width:2px
+    style AI_Core fill:#f5f3ff,stroke:#8b5cf6,stroke-width:2px
 ```
 
 ### Technology Stack
 
-#### Frontend
+#### High-Fidelity Frontend
 ```yaml
-Framework: React 19
+Framework: React 19 (Production Grade)
 Language: TypeScript 5.0
-Build Tool: Vite 6.0
-Styling: Tailwind CSS 3.4
-UI Components: shadcn/ui (Radix UI primitives)
-State Management: React Context API + Custom Hooks
-Routing: React Router DOM 7.0
+Design System: Tailwind CSS 3.4 + shadcn/ui
+Animations: Framer Motion
 Icons: Lucide React
-Rich Text Editor: Custom implementation with formatting toolbar
-PDF Handling: pdfjs-dist, mammoth
-Charts: Recharts
+Editor Core: TipTap/Rich-Text
+Charts: Recharts (Scientific Data Visualization)
+PDF Core: pdfjs-dist + Mammoth
+```
+
+#### Production Backend (BaaS)
+```yaml
+Platform: Supabase
+Database: PostgreSQL 15 (with Row-Level Security)
+Authentication: Supabase Auth (JWT & Session Persistence)
+Storage: Supabase S3-Compatible Buckets
+API Gateway: Vercel Serverless Functions
+```
+
+#### AI Intelligence
+```yaml
+Models: Gemini 1.5 Pro, GPT-4o, Claude 3.5
+Proxy: Custom Vercel AI Proxy for secure API injection
+Capabilities: Structural Drafting, Grammar Analysis, Data Interpretation
 ```
 
 #### Backend (BaaS)
@@ -555,28 +432,23 @@ npm run preview
 
 ## 📊 Current Status
 
-### ✅ Completed Features
+### ✅ Completed Features (Pro Mode)
 
-- [x] Full-stack authentication system (email/password)
-- [x] Multi-user database with RLS
-- [x] Project creation and management
-- [x] Document CRUD operations
-- [x] Rich-text editor with formatting
-- [x] Citation management system
-- [x] PDF reader integration
-- [x] Dashboard with analytics
-- [x] Responsive UI with dark/light themes
-- [x] Production deployment (Vercel + Supabase)
-- [x] Automatic CI/CD pipeline
+- [x] **Global Pro Navigation** - Unified Microsoft Word-style workstation header.
+- [x] **Chapter 1-5 Generator** - Structural academic drafting with topic awareness.
+- [x] **Wide Writing Space** - Dynamic layout for distraction-free writing.
+- [x] **Real-Time AI Analysis** - Grammar, tone, and scientific gap identification.
+- [x] **Vercel AI Proxy** - Secure, production-ready AI API integration.
+- [x] **Citation Manager** - Full APA/MLA support and project library.
+- [x] **PDF Chat & Reader** - High-fidelity PDF interaction.
+- [x] **Production Infrastructure** - Fully deployed on Vercel with Supabase DB.
 
 ### 🚧 In Progress
 
-- [ ] AI content generation integration (OpenAI/Gemini API)
-- [ ] Real-time collaboration features
-- [ ] Advanced PDF chat with RAG
-- [ ] Plagiarism detection
-- [ ] Export to multiple formats (PDF, DOCX, Markdown)
-- [ ] Mobile app (React Native)
+- [ ] **AI Research Analyst v2** - Advanced numerical data interpretation (CSV/Excel).
+- [ ] **Real-time Collaboration** - Multi-user document presence.
+- [ ] **Export to DOCX** - Academic-ready document exporting.
+- [ ] **Plagiarism Search** - Deep-web scientific integrity checking.
 
 ### 🐛 Known Issues
 
@@ -585,13 +457,8 @@ npm run preview
    - **Workaround:** Using `--legacy-peer-deps` flag
    - **Status:** Monitoring for upstream fix
 
-2. **AI Features**
-   - Current AI suggestions are placeholders
-   - **Status:** API integration in development
-   - **ETA:** Next release
-
-3. **PDF Processing**
-   - Large PDF files (>10MB) may be slow
+2. **Large File PDF Processing**
+   - Large PDF files (>10MB) may be slow in the browser reader
    - **Status:** Optimization planned
    - **Workaround:** Compress PDFs before upload
 
