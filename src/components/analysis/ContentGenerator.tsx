@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, PlusCircle, LayoutTemplate } from "lucide-react";
+import { Loader2, PlusCircle, LayoutTemplate, Target } from "lucide-react";
 import { generateSectionContent } from "@/services/ai-services";
 import { useToast } from "@/hooks/use-toast";
 import { useEditor } from "@/contexts/editor";
+import { Input } from "@/components/ui/input";
 
 export function ContentGenerator({ onSuggestionClick }: { onSuggestionClick: (s: string) => void }) {
   const academicSections = [
@@ -21,14 +22,24 @@ export function ContentGenerator({ onSuggestionClick }: { onSuggestionClick: (s:
   
   const [generatedContent, setGeneratedContent] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [topic, setTopic] = useState<string>("");
   const { toast } = useToast();
   const { sections } = useEditor();
 
   const generateSection = async (section: string) => {
+    if (!topic.trim()) {
+      toast({
+        title: "Context Required",
+        description: "Please enter your research topic to generate relevant content.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const projectTitle = localStorage.getItem('projectName') || "Research Paper";
-      const result = await generateSectionContent(projectTitle, section);
+      const result = await generateSectionContent(projectTitle, section, topic);
       setGeneratedContent(result.content);
       
       toast({
@@ -57,7 +68,21 @@ export function ContentGenerator({ onSuggestionClick }: { onSuggestionClick: (s:
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-orange-500" />
+          <h4 className="text-[11px] font-black uppercase tracking-[0.1em] text-muted-foreground/80">Research Focus</h4>
+        </div>
+        <Input 
+          placeholder="Enter your specific research topic..." 
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          className="text-xs border-gray-200 dark:border-gray-800 focus:ring-orange-500/20 focus:border-orange-500 transition-all rounded-xl h-10 bg-white/50 dark:bg-black/20"
+        />
+        <p className="text-[10px] text-muted-foreground italic px-1">This context ensures the AI generates high-fidelity content for your specific study.</p>
+      </div>
+
       <div className="flex items-center gap-2 mb-2">
         <LayoutTemplate className="w-3.5 h-3.5 text-blue-500" />
         <h4 className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">Structural Drafting</h4>

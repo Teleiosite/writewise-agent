@@ -34,13 +34,14 @@ export function TextAnalysis() {
             isLoading={isLoading}
           />
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="icon" 
-            className="h-7 w-7 rounded-full text-gray-400 hover:text-gray-900"
+            className="h-8 w-8 rounded-full border-gray-200 dark:border-gray-800 text-gray-400 hover:text-red-500 hover:border-red-100 dark:hover:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-90"
             onClick={() => toggleAnalysisPanel()}
+            title="Close Analysis Panel"
           >
             <span className="sr-only">Close</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </Button>
         </div>
       </div>

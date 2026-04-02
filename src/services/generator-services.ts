@@ -5,10 +5,10 @@
 import { AIResponse } from './ai-types';
 import { callChatGptApi } from './api-client';
 
-export async function generateSectionContent(title: string, section: string): Promise<AIResponse> {
+export async function generateSectionContent(title: string, section: string, topic?: string): Promise<AIResponse> {
   try {
     const systemPrompt = `You are an expert academic writer. Generate a well-structured ${section} section for an academic paper. Follow academic writing conventions and maintain a formal tone.`;
-    const userMessage = `Write a ${section} section for a paper titled: "${title}"`;
+    const userMessage = `Write a ${section} section for a paper titled: "${title}". ${topic ? `The specific research topic is: "${topic}".` : ''}`;
     
     const data = await callChatGptApi(systemPrompt, userMessage);
     
