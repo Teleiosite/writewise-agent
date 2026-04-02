@@ -82,6 +82,13 @@ export default function Settings() {
   const [apiModel, setApiModel]       = React.useState("");
   const [apiKey, setApiKey]           = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [testStatus, setTestStatus] = React.useState<{
+    status: "idle" | "testing" | "success" | "error";
+    message?: string;
+  }>({ status: "idle" });
+
+  // Help detect suspicious key formats
+  const isGeminiKeyFormatValid = apiProvider === "Gemini" ? apiKey.trim().startsWith("AIza") : true;
 
   // Load saved settings on mount
   React.useEffect(() => {
@@ -106,7 +113,46 @@ export default function Settings() {
     setApiProvider("");
     setApiModel("");
     setApiKey("");
+    setTestStatus({ status: "idle" });
     toast({ title: "Settings cleared", description: "Your AI configuration has been removed." });
+  };
+
+  const handleTestConnection = async () => {
+    if (!apiProvider || !apiKey || !apiModel) {
+      toast({
+        title: "Missing information",
+        description: "Please select a provider and model, and enter your API key to test.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTestStatus({ status: "testing" });
+    
+    try {
+      const { testAiConnection } = await import("@/services/api-client");
+      const result = await testAiConnection(apiProvider, apiKey, apiModel);
+      
+      setTestStatus({
+        status: result.success ? "success" : "error",
+        message: result.message
+      });
+
+      if (!result.success) {
+        toast({
+          title: "Connection Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Your API key is valid and working!",
+        });
+      }
+    } catch (err: any) {
+      setTestStatus({ status: "error", message: err.message });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -246,21 +292,51 @@ export default function Settings() {
               type="password"
               placeholder={selectedProvider ? `Paste your ${selectedProvider.label} key here` : "Select a provider first"}
               value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              onChange={(e) => {
+                setApiKey(e.target.value);
+                setTestStatus({ status: "idle" }); // reset test status on change
+              }}
               disabled={!apiProvider}
+              className={!isGeminiKeyFormatValid ? "border-orange-500 focus-visible:ring-orange-500" : ""}
             />
+            {!isGeminiKeyFormatValid && (
+              <p className="text-xs text-orange-600 font-medium">
+                Note: Gemini keys usually start with "AIza". Please double check your key.
+              </p>
+            )}
+            {testStatus.status === "error" && (
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 mt-2">
+                <p className="text-xs text-red-600 dark:text-red-400 font-mono whitespace-pre-wrap">
+                  Error: {testStatus.message}
+                </p>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">
               Your key is stored only in your browser's localStorage and is sent server-side through our secure proxy — never exposed in the browser.
             </p>
           </div>
 
-          <Button
-            type="submit"
-            disabled={isSubmitting || !apiProvider || !apiKey || !apiModel}
-            className="w-full"
-          >
-            {isSubmitting ? "Saving..." : "Save Settings"}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={testStatus.status === "testing" || !apiProvider || !apiKey}
+              onClick={handleTestConnection}
+              className="flex-1"
+            >
+              {testStatus.status === "testing" ? "Testing..." : 
+               testStatus.status === "success" ? "Connection Verified!" : 
+               "Test Connection"}
+            </Button>
+            
+            <Button
+              type="submit"
+              disabled={isSubmitting || !apiProvider || !apiKey || !apiModel}
+              className="flex-1"
+            >
+              {isSubmitting ? "Saving..." : "Save Settings"}
+            </Button>
+          </div>
         </form>
 
         {/* Free fallback info */}

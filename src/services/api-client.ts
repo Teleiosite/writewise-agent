@@ -11,16 +11,15 @@ export interface NormalizedAIResponse {
 
 type Msg = { role: string; content: string };
 
-// ─── Gemini — called directly from the browser ───────────────────────────────
-// Google's Generative Language API sends proper CORS headers, so we can hit it
-// straight from the client without routing through the Vercel proxy.
+// ─── Gemini Direct Browser Call ─────────────────────────────────────────────
 async function callGeminiDirect(
   apiKey: string,
   model: string,
-  messages: Msg[]
+  messages: Msg[],
+  version: "v1" | "v1beta" = "v1"
 ): Promise<NormalizedAIResponse> {
   const m = model.trim() || "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey.trim()}`;
+  const url = `https://generativelanguage.googleapis.com/${version}/models/${m}:generateContent?key=${apiKey.trim()}`;
 
   const systemMsg = messages.find((msg) => msg.role === "system")?.content;
   const chatMessages = messages.filter((msg) => msg.role !== "system");
@@ -39,18 +38,24 @@ async function callGeminiDirect(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Gemini API error: ${res.status}`);
+    const rawError = err.error?.message || `HTTP ${res.status}`;
+
+    // If v1 fails with 404 (model not found), try v1beta automatically
+    // (since gemini-2.0-flash is often preview-only in some regions)
+    if (res.status === 404 && version === "v1" && m.includes("2.0")) {
+      console.warn("Gemini v1 failed (404), falling back to v1beta...");
+      return await callGeminiDirect(apiKey, model, messages, "v1beta");
+    }
+
+    throw new Error(`Gemini API: ${rawError}`);
   }
 
   const data = await res.json();
-  const content =
-    data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
   return { choices: [{ message: { content } }] };
 }
 
-// ─── Proxy — for providers that don't support browser CORS ───────────────────
-// (OpenAI, DeepSeek, Grok, Claude all require Authorization headers which
-//  browsers won't send cross-origin — so we relay via /api/chat on Vercel)
+// ─── Proxy Call (OpenAI, Claude, etc) ────────────────────────────────────────
 async function callViaProxy(
   provider: string,
   apiKey: string,
@@ -73,19 +78,15 @@ async function callViaProxy(
     throw new Error(err.error || `Proxy error ${response.status}`);
   }
 
-  // Check that we got JSON and not an HTML page (which would mean the proxy
-  // route wasn't matched and the rewrite returned index.html instead)
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
-    throw new Error(
-      "The AI proxy returned an unexpected response. Please check your Vercel deployment."
-    );
+    throw new Error("Proxy returned unexpected response (not JSON)");
   }
 
   return (await response.json()) as NormalizedAIResponse;
 }
 
-// ─── Pollinations fallback ────────────────────────────────────────────────────
+// ─── Pollinations (Free Fallback) ────────────────────────────────────────────
 async function callPollinationsApi(messages: Msg[]): Promise<NormalizedAIResponse> {
   const response = await fetch("https://text.pollinations.ai/", {
     method: "POST",
@@ -102,7 +103,31 @@ async function callPollinationsApi(messages: Msg[]): Promise<NormalizedAIRespons
   return { choices: [{ message: { content: text.trim() } }] };
 }
 
-// ─── Main entry point ─────────────────────────────────────────────────────────
+// ─── DIAGNOSTICS: Test simple connection ─────────────────────────────────────
+export async function testAiConnection(
+  provider: string,
+  apiKey: string,
+  model: string
+): Promise<{ success: boolean; message: string }> {
+  const testMessage: Msg[] = [{ role: "user", content: "Hello" }];
+  
+  try {
+    if (provider === "Gemini") {
+      await callGeminiDirect(apiKey, model, testMessage);
+    } else {
+      await callViaProxy(provider, apiKey, model, testMessage);
+    }
+    return { success: true, message: "Connection successful! Your AI key is working." };
+  } catch (error: any) {
+    console.error("Test connection failed:", error);
+    return { 
+      success: false, 
+      message: error.message || "Unknown error during test connection." 
+    };
+  }
+}
+
+// ─── Main API Client Entry Point ─────────────────────────────────────────────
 export async function callChatGptApi(
   systemPrompt: string,
   userMessage: string
@@ -118,18 +143,15 @@ export async function callChatGptApi(
 
   try {
     if (apiProvider && apiKey) {
-      // Gemini: direct browser call (CORS supported, no proxy needed)
       if (apiProvider === "Gemini") {
         return await callGeminiDirect(apiKey, apiModel ?? "gemini-2.0-flash", messages);
       }
-      // All others: Vercel serverless proxy
       return await callViaProxy(apiProvider, apiKey, apiModel, messages);
     }
 
-    // No key configured — free fallback
     return await callPollinationsApi(messages);
   } catch (error) {
-    handleError(error, "API Error", "Failed to communicate with the AI service");
+    handleError(error, "AI Request Error", "Failed to communicate with the AI service");
     throw error;
   }
 }
