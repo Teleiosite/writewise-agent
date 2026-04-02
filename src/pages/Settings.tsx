@@ -133,15 +133,20 @@ export default function Settings() {
       const { testAiConnection } = await import("@/services/api-client");
       const result = await testAiConnection(apiProvider, apiKey, apiModel);
       
+      let displayMessage = result.message;
+      if (!result.success && result.message.includes("limit: 0") && apiModel.includes("2.0")) {
+        displayMessage += "\n\n💡 TIP: Your region or account may have a '0' limit for Gemini 2.0. Try switching to 'Gemini 1.5 Flash' in the dropdown above.";
+      }
+
       setTestStatus({
         status: result.success ? "success" : "error",
-        message: result.message
+        message: displayMessage
       });
 
       if (!result.success) {
         toast({
           title: "Connection Failed",
-          description: result.message,
+          description: "See the error message below for details.",
           variant: "destructive",
         });
       } else {
