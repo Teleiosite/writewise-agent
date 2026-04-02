@@ -34,7 +34,11 @@ function ProjectHeader({
     showPdfChatPanel,
     toggleCitationsPanel, 
     togglePdfReaderPanel, 
-    togglePdfChatPanel 
+    togglePdfChatPanel,
+    showLeftSidebar,
+    showRightSidebar,
+    toggleLeftSidebar,
+    toggleRightSidebar
   } = useEditor();
 
   return (
@@ -49,6 +53,10 @@ function ProjectHeader({
       onClose={onClose}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
+      showLeftSidebar={showLeftSidebar}
+      showRightSidebar={showRightSidebar}
+      setShowLeftSidebar={toggleLeftSidebar}
+      setShowRightSidebar={toggleRightSidebar}
     />
   );
 }

@@ -9,7 +9,15 @@ import type { TemplateType } from "./DocumentTemplates";
 import { useEditor } from "@/contexts/editor";
 
 // This component uses the context but needs to be inside the provider
-function EditorContent({ projectName }: { projectName: string }) {
+function EditorContent({ 
+  projectName, 
+  showLeftSidebar, 
+  showRightSidebar 
+}: { 
+  projectName: string, 
+  showLeftSidebar: boolean, 
+  showRightSidebar: boolean 
+}) {
   const { 
     showCitationsPanel, 
     showPdfReaderPanel, 
@@ -17,32 +25,43 @@ function EditorContent({ projectName }: { projectName: string }) {
     insertCitation 
   } = useEditor();
   
+  // Calculate grid columns based on visibility
+  // Max columns are 12. 
+  // Sidebar takes 3. Analysis takes 3.
+  const mainColSpan = 12 - (showLeftSidebar ? 3 : 0) - (showRightSidebar ? 3 : 0);
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)]">
-      <div className="md:col-span-3 h-full">
-        <EditorSidebar />
-        {showPdfReaderPanel && (
-          <div className="mt-4">
-            <PdfReaderPanel onAddContent={addContentToActiveSection} />
+    <div className="flex justify-center w-full bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)]">
+      <div className={`grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 w-full ${mainColSpan === 12 ? 'max-w-7xl' : 'max-w-full'}`}>
+        {showLeftSidebar && (
+          <div className="md:col-span-3 h-full animate-in slide-in-from-left duration-300">
+            <EditorSidebar />
+            {showPdfReaderPanel && (
+              <div className="mt-4">
+                <PdfReaderPanel onAddContent={addContentToActiveSection} />
+              </div>
+            )}
+            {showCitationsPanel && (
+              <div className="mt-4">
+                <CitationManager onInsertCitation={insertCitation} />
+              </div>
+            )}
           </div>
         )}
-        {showCitationsPanel && (
-          <div className="mt-4">
-            <CitationManager onInsertCitation={insertCitation} />
-          </div>
-        )}
-      </div>
 
-      <div className="md:col-span-6 h-full min-h-[800px]">
-        <EditorMain 
-          projectName={projectName} 
-        />
-      </div>
-
-      <div className="md:col-span-3 h-full">
-        <div className="sticky top-6">
-          <TextAnalysis />
+        <div className={`h-full min-h-[800px] transition-all duration-500 ease-in-out md:col-span-${mainColSpan}`}>
+          <EditorMain 
+            projectName={projectName} 
+          />
         </div>
+
+        {showRightSidebar && (
+          <div className="md:col-span-3 h-full animate-in slide-in-from-right duration-300">
+            <div className="sticky top-6">
+              <TextAnalysis />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -67,10 +86,14 @@ export function WritingEditor({
   activeTab,
   setActiveTab
 }: WritingEditorProps) {
+  const { showLeftSidebar, showRightSidebar } = useEditor();
+
   return (
     <div className="w-full animate-fadeIn overflow-x-hidden">
       <EditorContent 
         projectName={projectName} 
+        showLeftSidebar={showLeftSidebar}
+        showRightSidebar={showRightSidebar}
       />
     </div>
   );

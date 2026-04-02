@@ -13,7 +13,13 @@ import {
   BarChart2,
   Target,
   AlertTriangle,
-  Zap
+  Zap,
+  PanelLeft,
+  PanelRight,
+  Sparkles,
+  Search,
+  CheckCircle2,
+  ListRestart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../editor/pdf/components/ThemeToggle";
@@ -24,6 +30,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator 
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 interface EditorHeaderProps {
   title: string;
@@ -36,6 +43,10 @@ interface EditorHeaderProps {
   onClose?: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  showLeftSidebar: boolean;
+  showRightSidebar: boolean;
+  setShowLeftSidebar: (show: boolean) => void;
+  setShowRightSidebar: (show: boolean) => void;
 }
 
 export function EditorHeader({
@@ -48,8 +59,13 @@ export function EditorHeader({
   togglePdfChatPanel,
   onClose,
   activeTab,
-  setActiveTab
+  setActiveTab,
+  showLeftSidebar,
+  showRightSidebar,
+  setShowLeftSidebar,
+  setShowRightSidebar
 }: EditorHeaderProps) {
+  const [showAiSubmenu, setShowAiSubmenu] = useState(false);
   
   // Navigation mapping to ensure we use the correct tab values
   const primaryNav = [
@@ -67,26 +83,44 @@ export function EditorHeader({
     { label: "Goals", value: "goals", value_internal: "goals", icon: <Target className="h-3.5 w-3.5" /> },
   ];
 
+  const aiAnalysisTools = [
+    { label: "Writing", icon: <Sparkles className="h-3.5 w-3.5 text-blue-500" />, shortcut: "W" },
+    { label: "Grammar", icon: <Search className="h-3.5 w-3.5 text-green-500" />, shortcut: "G" },
+    { label: "Generate", icon: <Zap className="h-3.5 w-3.5 text-purple-500" />, shortcut: "Shift+G" },
+    { label: "Ready to verify", icon: <CheckCircle2 className="h-3.5 w-3.5 text-sky-500" /> },
+    { label: "Analyze Style", icon: <ListRestart className="h-3.5 w-3.5 text-orange-500" /> },
+  ];
+
   return (
     <div className="flex flex-col border-b bg-white dark:bg-gray-900 px-4 py-2 print:hidden shadow-sm sticky top-0 z-50 transition-all duration-300">
       {/* Top Row: Title and Icons */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5 md:gap-3">
-          {/* Enhanced Back Button */}
-          <div className="flex items-center">
+          {/* Sidebar Toggles & Back */}
+          <div className="flex items-center gap-0.5">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={onClose}
-              className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full h-9 w-9 text-gray-500 transition-transform active:scale-95"
+              className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full h-9 w-9 text-gray-500"
               title="Back to Projects"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             
-            <div className="p-1.5 bg-blue-600 rounded-lg ml-1 hidden sm:block shadow-sm">
-              <FileText className="h-4 w-4 text-white" />
-            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setShowLeftSidebar(!showLeftSidebar)}
+              className={`rounded-full h-8 w-8 transition-colors ${!showLeftSidebar ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}`}
+              title={showLeftSidebar ? "Hide Sections" : "Show Sections"}
+            >
+              <PanelLeft className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="p-1.5 bg-blue-600 rounded-lg hidden sm:block shadow-sm">
+            <FileText className="h-4 w-4 text-white" />
           </div>
 
           <div className="flex flex-col">
@@ -101,31 +135,55 @@ export function EditorHeader({
             </div>
 
             {/* Menu Row: Functional Navigation */}
-            <div className="flex items-center gap-1 md:gap-3 text-[13.5px] overflow-x-auto no-scrollbar py-0.5">
+            <div className="flex items-center gap-1 md:gap-2 text-[13px] overflow-x-auto no-scrollbar py-0.5">
               {primaryNav.map(item => (
                 <button 
                   key={item.value} 
                   onClick={() => setActiveTab(item.value)}
-                  className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md transition-all whitespace-nowrap active:scale-95
+                  className={`flex items-center gap-1.5 cursor-pointer px-2 py-0.5 rounded-md transition-all whitespace-nowrap
                     ${activeTab === item.value 
-                      ? 'bg-blue-50 text-blue-700 font-bold dark:bg-blue-900/30 dark:text-blue-400 ring-1 ring-blue-100 dark:ring-blue-800/50' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                      ? 'bg-blue-50 text-blue-700 font-bold dark:bg-blue-900/30' 
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100'}`}
                 >
-                  <span className="flex items-center justify-center">{item.icon}</span>
                   {item.label}
                 </button>
               ))}
+
+              <div className="w-px h-4 bg-gray-200 mx-1 hidden md:block"></div>
+
+              {/* NEW: AI Analysis Conditional Menu */}
+              <DropdownMenu onOpenChange={setShowAiSubmenu}>
+                <DropdownMenuTrigger asChild>
+                  <button className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all font-medium
+                    ${showAiSubmenu ? 'bg-purple-50 text-purple-700 dark:bg-purple-900/20' : 'text-purple-600 hover:bg-purple-50'}`}>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>AI Analysis</span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56 shadow-xl border-purple-100">
+                  <div className="px-2 py-1.5 text-[10px] font-bold text-purple-400 uppercase tracking-widest">AI Intelligence</div>
+                  {aiAnalysisTools.map(tool => (
+                    <DropdownMenuItem key={tool.label} className="flex items-center justify-between py-2 cursor-pointer focus:bg-purple-50 focus:text-purple-700">
+                      <div className="flex items-center gap-2.5">
+                        {tool.icon}
+                        <span className="font-medium">{tool.label}</span>
+                      </div>
+                      {tool.shortcut && <span className="text-[10px] text-gray-400 font-mono">{tool.shortcut}</span>}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               {/* Overflow / Three Dots Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 cursor-pointer px-2 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all active:scale-95">
+                  <button className="flex items-center gap-1 cursor-pointer px-2 py-1 rounded-md text-gray-500 hover:bg-gray-100 transition-all">
                     <MoreHorizontal className="h-4 w-4" />
-                    <ChevronDown className="h-3 w-3 opacity-40 shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 shadow-xl border-gray-200 dark:border-gray-800">
-                  <div className="px-2 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-gray-50/50 dark:bg-gray-800/20 mb-1">Features & Tools</div>
+                <DropdownMenuContent align="start" className="w-56 shadow-xl border-gray-100">
+                  <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">More Tools</div>
                   {secondaryNav.map(item => (
                     <DropdownMenuItem 
                       key={item.label}
@@ -133,17 +191,12 @@ export function EditorHeader({
                         if (item.action) item.action();
                         if (item.value_internal) setActiveTab(item.value_internal);
                       }}
-                      className="flex items-center gap-2.5 py-2 cursor-pointer focus:bg-blue-50 dark:focus:bg-blue-900/20 focus:text-blue-700 dark:focus:text-blue-400"
+                      className="flex items-center gap-2.5 py-2 cursor-pointer"
                     >
-                      <div className="text-gray-500 group-focus:text-blue-600">{item.icon}</div>
-                      <span className="font-medium text-sm">{item.label}</span>
+                      {item.icon}
+                      <span className="font-medium">{item.label}</span>
                     </DropdownMenuItem>
                   ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-blue-600 dark:text-blue-400 font-bold cursor-pointer py-2 px-3 hover:bg-blue-50/50 dark:hover:bg-blue-900/10">
-                    <Zap className="h-3.5 w-3.5 mr-2 fill-blue-600/10" />
-                    Premium AI Insights
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -151,6 +204,16 @@ export function EditorHeader({
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setShowRightSidebar(!showRightSidebar)}
+            className={`rounded-full h-9 w-9 transition-colors ${!showRightSidebar ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}`}
+            title={showRightSidebar ? "Hide Intelligence" : "Show Intelligence"}
+          >
+            <PanelRight className="h-4 w-4" />
+          </Button>
+
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>

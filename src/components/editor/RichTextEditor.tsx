@@ -1,5 +1,6 @@
 
 import React, { useRef, useEffect } from "react";
+import { useEditor } from "@/contexts/editor";
 
 interface RichTextEditorProps {
   content: string;
@@ -9,6 +10,8 @@ interface RichTextEditorProps {
 
 export function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const { showLeftSidebar, showRightSidebar } = useEditor();
+  const isWideMode = !showLeftSidebar && !showRightSidebar;
 
   // Initialize content once
   useEffect(() => {
@@ -31,7 +34,7 @@ export function RichTextEditor({ content, onChange, placeholder }: RichTextEdito
   };
 
   return (
-    <div className="w-full h-full min-h-[11in] bg-white shadow-xl mx-auto p-[1in] border border-gray-200 outline-none print:shadow-none transition-all">
+    <div className={`h-full min-h-[11in] bg-white shadow-xl mx-auto border border-gray-200 outline-none print:shadow-none transition-all duration-500 ease-in-out ${isWideMode ? 'p-[0.5in] md:p-[0.75in] w-full' : 'p-[1in] w-full'}`}>
       <div
         ref={editorRef}
         contentEditable

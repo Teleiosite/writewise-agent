@@ -19,6 +19,8 @@ export interface EditorContextType {
   wordCount: number;
   readingTime: number;
   isAutoSaving?: boolean;
+  showLeftSidebar: boolean;
+  showRightSidebar: boolean;
   
   // Actions
   setSections: (sections: Section[]) => void;
@@ -30,6 +32,8 @@ export interface EditorContextType {
   toggleCitationsPanel: () => void;
   togglePdfReaderPanel: () => void;
   togglePdfChatPanel: () => void;
+  toggleLeftSidebar: () => void;
+  toggleRightSidebar: () => void;
   saveProject: () => void;
   exportDocument: (format: string) => Promise<void>;
   addContentToActiveSection: (content: string) => void;
