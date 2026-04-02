@@ -9,14 +9,10 @@ import { ContentGenerator } from "./analysis/ContentGenerator";
 import { useEditor } from "@/contexts/editor";
 
 export function TextAnalysis() {
-  const { 
-    getCurrentSectionContent, 
-    addContentToActiveSection, 
-    activeAiTab, 
-    setActiveAiTab 
-  } = useEditor();
-  
+  const [activeTab, setActiveTab] = useState<string>("writing");
   const [isLoading, setIsLoading] = useState(false);
+  const { getCurrentSectionContent, addContentToActiveSection } = useEditor();
+  
   const content = getCurrentSectionContent();
 
   return (
@@ -27,28 +23,28 @@ export function TextAnalysis() {
           <h3 className="font-semibold">AI Analysis</h3>
         </div>
         <AnalysisTabs 
-          activeTab={activeAiTab} 
-          onTabChange={setActiveAiTab} 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
           isLoading={isLoading}
         />
       </div>
 
       <ScrollArea className="h-[600px] mt-4 pr-3">
         <div className="pb-8">
-          {activeAiTab === "writing" && (
+          {activeTab === "writing" && (
             <WritingSuggestions 
               content={content}
               onSuggestionClick={addContentToActiveSection}
             />
           )}
           
-          {activeAiTab === "grammar" && (
+          {activeTab === "grammar" && (
             <GrammarAnalysis 
               content={content}
             />
           )}
-
-          {activeAiTab === "generate" && (
+          
+          {activeTab === "generate" && (
             <ContentGenerator 
               onSuggestionClick={addContentToActiveSection}
             />

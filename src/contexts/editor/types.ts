@@ -19,10 +19,6 @@ export interface EditorContextType {
   wordCount: number;
   readingTime: number;
   isAutoSaving?: boolean;
-  showLeftSidebar: boolean;
-  showRightSidebar: boolean;
-  activeAiTab: string;
-  aiTriggerToken: number;
   
   // Actions
   setSections: (sections: Section[]) => void;
@@ -34,10 +30,6 @@ export interface EditorContextType {
   toggleCitationsPanel: () => void;
   togglePdfReaderPanel: () => void;
   togglePdfChatPanel: () => void;
-  toggleLeftSidebar: () => void;
-  toggleRightSidebar: () => void;
-  setActiveAiTab: (tab: string) => void;
-  triggerAiAction: (tool: string) => void;
   saveProject: () => void;
   exportDocument: (format: string) => Promise<void>;
   addContentToActiveSection: (content: string) => void;

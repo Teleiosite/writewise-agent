@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Loader2, ShieldCheck, AlertCircle } from "lucide-react";
 import { getGrammarAnalysis } from "@/services/ai-services";
@@ -15,7 +15,7 @@ export function GrammarAnalysis({ content }: GrammarAnalysisProps) {
   const [grammarIssues, setGrammarIssues] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { sections, aiTriggerToken, activeAiTab } = useEditor();
+  const { sections } = useEditor();
 
   const analyzeGrammar = async () => {
     if (!content.trim()) {
@@ -55,13 +55,6 @@ export function GrammarAnalysis({ content }: GrammarAnalysisProps) {
     }
   };
 
-  // Listen for global trigger
-  useEffect(() => {
-    if (aiTriggerToken > 0 && activeAiTab === "grammar") {
-      analyzeGrammar();
-    }
-  }, [aiTriggerToken]);
-
   if (sections.length === 0) {
     return (
       <div className="p-6 text-center border-2 border-dashed rounded-lg bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800">
@@ -73,7 +66,25 @@ export function GrammarAnalysis({ content }: GrammarAnalysisProps) {
 
   return (
     <div className="space-y-4">
-      {/* Clutter-free UI - No manual trigger header */}
+      <div className="flex justify-between items-center bg-rose-50/50 dark:bg-rose-950/20 p-3 rounded-xl border border-rose-100/50 dark:border-rose-900/30">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-rose-500" />
+          <p className="text-xs font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-tight">Manual Inspection</p>
+        </div>
+        <Button 
+          size="sm" 
+          variant="destructive"
+          onClick={analyzeGrammar} 
+          disabled={isLoading || !content.trim()}
+          className="bg-rose-600 hover:bg-rose-700 text-white rounded-full px-4 h-8 text-xs font-bold shadow-lg shadow-rose-200 dark:shadow-none transition-all hover:scale-105"
+        >
+          {isLoading ? (
+            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+          ) : (
+            "Scan Grammar"
+          )}
+        </Button>
+      </div>
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-2xl bg-white/50 dark:bg-black/20">
