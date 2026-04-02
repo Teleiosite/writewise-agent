@@ -21,8 +21,10 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
   const isMobile = useIsMobile();
 
   return (
-    <div className="max-w-7xl mx-auto animate-fadeIn">
-      <DashboardHeader projectName={projectName} onClose={onClose} />
+    <div className={`mx-auto animate-fadeIn ${activeTab === 'editor' ? 'max-w-full px-0' : 'max-w-7xl'}`}>
+      {activeTab !== 'editor' && (
+        <DashboardHeader projectName={projectName} onClose={onClose} />
+      )}
 
       {isMobile && (
         <Alert className="mb-4">
@@ -35,7 +37,9 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <DashboardTabs activeTab={activeTab} onChange={setActiveTab} />
+        {activeTab !== 'editor' && (
+          <DashboardTabs activeTab={activeTab} onChange={setActiveTab} />
+        )}
         
         <DashboardTabContent 
           activeTab={activeTab}

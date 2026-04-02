@@ -12,6 +12,7 @@ interface EditorHeaderProps {
   toggleCitationsPanel: () => void;
   togglePdfReaderPanel: () => void;
   togglePdfChatPanel: () => void;
+  onClose?: () => void;
 }
 
 export function EditorHeader({
@@ -21,7 +22,8 @@ export function EditorHeader({
   showPdfChatPanel,
   toggleCitationsPanel,
   togglePdfReaderPanel,
-  togglePdfChatPanel
+  togglePdfChatPanel,
+  onClose
 }: EditorHeaderProps) {
   const menuItems = ["File", "Edit", "View", "Insert", "Format", "Tools", "Gemini", "Help"];
 
@@ -30,9 +32,17 @@ export function EditorHeader({
       {/* Top Row: Title and Icons */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-3">
-          <div className="p-1 bg-blue-600 rounded">
-            <FileText className="h-5 w-5 text-white" />
-          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose}
+            className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full h-10 w-10 shrink-0"
+            title="Back to Projects"
+          >
+            <div className="p-1.5 bg-blue-600 rounded-lg">
+              <FileText className="h-5 w-5 text-white" />
+            </div>
+          </Button>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <span className="text-lg font-medium text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 px-2 rounded -ml-2">{title}</span>

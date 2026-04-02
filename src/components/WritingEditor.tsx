@@ -9,7 +9,7 @@ import type { TemplateType } from "./DocumentTemplates";
 import { useEditor } from "@/contexts/editor";
 
 // This component uses the context but needs to be inside the provider
-function EditorContent({ projectName }: { projectName: string }) {
+function EditorContent({ projectName, onClose }: { projectName: string, onClose?: () => void }) {
   const { 
     showCitationsPanel, 
     showPdfReaderPanel, 
@@ -18,8 +18,8 @@ function EditorContent({ projectName }: { projectName: string }) {
   } = useEditor();
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-      <div className="md:col-span-3">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)]">
+      <div className="md:col-span-3 h-full">
         <EditorSidebar />
         {showPdfReaderPanel && (
           <div className="mt-4">
@@ -33,12 +33,14 @@ function EditorContent({ projectName }: { projectName: string }) {
         )}
       </div>
 
-      <div className="md:col-span-6 space-y-4">
-        <EditorMain projectName={projectName} />
+      <div className="md:col-span-6 h-full min-h-[800px]">
+        <EditorMain projectName={projectName} onClose={onClose} />
       </div>
 
-      <div className="md:col-span-3">
-        <TextAnalysis />
+      <div className="md:col-span-3 h-full">
+        <div className="sticky top-6">
+          <TextAnalysis />
+        </div>
       </div>
     </div>
   );
@@ -61,9 +63,8 @@ export function WritingEditor({
 }: WritingEditorProps) {
   return (
     <EditorProvider projectName={projectName} template={template}>
-      <div className="max-w-7xl mx-auto animate-fadeIn space-y-4">
-        <EditorToolbar onClose={onClose} />
-        <EditorContent projectName={projectName} />
+      <div className="w-full animate-fadeIn overflow-x-hidden">
+        <EditorContent projectName={projectName} onClose={onClose} />
       </div>
     </EditorProvider>
   );
