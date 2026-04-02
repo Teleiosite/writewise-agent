@@ -7,6 +7,13 @@ export function usePanelManager() {
   const [showPdfChatPanel, setShowPdfChatPanel] = useState(false);
   const [showLeftSidebar, setShowLeftSidebar] = useState(true);
   const [showRightSidebar, setShowRightSidebar] = useState(true);
+  const [activeAiTab, setActiveAiTab] = useState("writing");
+  const [aiTriggerToken, setAiTriggerToken] = useState(0);
+
+  const triggerAiAction = (tool: string) => {
+    setActiveAiTab(tool);
+    setAiTriggerToken(prev => prev + 1);
+  };
 
   const toggleCitationsPanel = () => {
     setShowCitationsPanel(!showCitationsPanel);
@@ -41,10 +48,14 @@ export function usePanelManager() {
     showPdfChatPanel,
     showLeftSidebar,
     showRightSidebar,
+    activeAiTab,
+    aiTriggerToken,
     toggleCitationsPanel,
     togglePdfReaderPanel,
     togglePdfChatPanel,
     toggleLeftSidebar,
-    toggleRightSidebar
+    toggleRightSidebar,
+    setActiveAiTab,
+    triggerAiAction
   };
 }

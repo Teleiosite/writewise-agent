@@ -21,6 +21,8 @@ export interface EditorContextType {
   isAutoSaving?: boolean;
   showLeftSidebar: boolean;
   showRightSidebar: boolean;
+  activeAiTab: string;
+  aiTriggerToken: number;
   
   // Actions
   setSections: (sections: Section[]) => void;
@@ -34,6 +36,8 @@ export interface EditorContextType {
   togglePdfChatPanel: () => void;
   toggleLeftSidebar: () => void;
   toggleRightSidebar: () => void;
+  setActiveAiTab: (tab: string) => void;
+  triggerAiAction: (tool: string) => void;
   saveProject: () => void;
   exportDocument: (format: string) => Promise<void>;
   addContentToActiveSection: (content: string) => void;

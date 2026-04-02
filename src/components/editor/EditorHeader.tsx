@@ -47,6 +47,8 @@ interface EditorHeaderProps {
   showRightSidebar: boolean;
   setShowLeftSidebar: (show: boolean) => void;
   setShowRightSidebar: (show: boolean) => void;
+  setActiveAiTab: (tab: string) => void;
+  triggerAiAction: (tool: string) => void;
 }
 
 export function EditorHeader({
@@ -63,7 +65,9 @@ export function EditorHeader({
   showLeftSidebar,
   showRightSidebar,
   setShowLeftSidebar,
-  setShowRightSidebar
+  setShowRightSidebar,
+  setActiveAiTab,
+  triggerAiAction
 }: EditorHeaderProps) {
   const [showAiSubmenu, setShowAiSubmenu] = useState(false);
   
@@ -84,12 +88,17 @@ export function EditorHeader({
   ];
 
   const aiAnalysisTools = [
-    { label: "Writing", icon: <Sparkles className="h-3.5 w-3.5 text-blue-500" />, shortcut: "W" },
-    { label: "Grammar", icon: <Search className="h-3.5 w-3.5 text-green-500" />, shortcut: "G" },
-    { label: "Generate", icon: <Zap className="h-3.5 w-3.5 text-purple-500" />, shortcut: "Shift+G" },
-    { label: "Ready to verify", icon: <CheckCircle2 className="h-3.5 w-3.5 text-sky-500" /> },
-    { label: "Analyze Style", icon: <ListRestart className="h-3.5 w-3.5 text-orange-500" /> },
+    { label: "Writing", value: "writing", icon: <Sparkles className="h-3.5 w-3.5 text-blue-500" /> },
+    { label: "Grammar", value: "grammar", icon: <Search className="h-3.5 w-3.5 text-green-500" /> },
+    { label: "Generate", value: "generate", icon: <Sparkles className="h-3.5 w-3.5 text-purple-500" /> },
   ];
+
+  const handleAiToolClick = (toolValue: string) => {
+    triggerAiAction(toolValue);
+    if (!showRightSidebar) {
+      setShowRightSidebar(true);
+    }
+  };
 
   return (
     <div className="flex flex-col border-b bg-white dark:bg-gray-900 px-4 py-2 print:hidden shadow-sm sticky top-0 z-50 transition-all duration-300">
@@ -164,12 +173,15 @@ export function EditorHeader({
                 <DropdownMenuContent align="start" className="w-56 shadow-xl border-purple-100">
                   <div className="px-2 py-1.5 text-[10px] font-bold text-purple-400 uppercase tracking-widest">AI Intelligence</div>
                   {aiAnalysisTools.map(tool => (
-                    <DropdownMenuItem key={tool.label} className="flex items-center justify-between py-2 cursor-pointer focus:bg-purple-50 focus:text-purple-700">
+                    <DropdownMenuItem 
+                      key={tool.label} 
+                      onClick={() => handleAiToolClick(tool.value)}
+                      className="flex items-center justify-between py-2 cursor-pointer focus:bg-purple-50 focus:text-purple-700"
+                    >
                       <div className="flex items-center gap-2.5">
                         {tool.icon}
                         <span className="font-medium">{tool.label}</span>
                       </div>
-                      {tool.shortcut && <span className="text-[10px] text-gray-400 font-mono">{tool.shortcut}</span>}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

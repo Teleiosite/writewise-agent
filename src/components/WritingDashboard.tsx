@@ -38,7 +38,9 @@ function ProjectHeader({
     showLeftSidebar,
     showRightSidebar,
     toggleLeftSidebar,
-    toggleRightSidebar
+    toggleRightSidebar,
+    setActiveAiTab,
+    triggerAiAction
   } = useEditor();
 
   return (
@@ -57,6 +59,8 @@ function ProjectHeader({
       showRightSidebar={showRightSidebar}
       setShowLeftSidebar={toggleLeftSidebar}
       setShowRightSidebar={toggleRightSidebar}
+      setActiveAiTab={setActiveAiTab}
+      triggerAiAction={triggerAiAction}
     />
   );
 }
