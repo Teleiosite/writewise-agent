@@ -18,7 +18,7 @@ async function callGeminiDirect(
   messages: Msg[],
   version: "v1" | "v1beta" = "v1"
 ): Promise<NormalizedAIResponse> {
-  const m = model.trim() || "gemini-2.0-flash";
+  const m = model.trim() || "gemini-3.1-flash-preview";
   const encodedKey = encodeURIComponent(apiKey.trim());
   const url = `https://generativelanguage.googleapis.com/${version}/models/${m}:generateContent?key=${encodedKey}`;
 
