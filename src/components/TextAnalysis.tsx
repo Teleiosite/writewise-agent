@@ -29,25 +29,27 @@ export function TextAnalysis() {
         />
       </div>
 
-      <ScrollArea className="h-[400px] mt-4">
-        {activeTab === "writing" && (
-          <WritingSuggestions 
-            content={content}
-            onSuggestionClick={addContentToActiveSection}
-          />
-        )}
-        
-        {activeTab === "grammar" && (
-          <GrammarAnalysis 
-            content={content}
-          />
-        )}
-        
-        {activeTab === "generate" && (
-          <ContentGenerator 
-            onSuggestionClick={addContentToActiveSection}
-          />
-        )}
+      <ScrollArea className="h-[600px] mt-4 pr-3">
+        <div className="pb-8">
+          {activeTab === "writing" && (
+            <WritingSuggestions 
+              content={content}
+              onSuggestionClick={addContentToActiveSection}
+            />
+          )}
+          
+          {activeTab === "grammar" && (
+            <GrammarAnalysis 
+              content={content}
+            />
+          )}
+          
+          {activeTab === "generate" && (
+            <ContentGenerator 
+              onSuggestionClick={addContentToActiveSection}
+            />
+          )}
+        </div>
       </ScrollArea>
     </Card>
   );

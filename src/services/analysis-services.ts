@@ -7,8 +7,8 @@ import { callChatGptApi } from './api-client';
 
 export async function getGrammarAnalysis(text: string): Promise<AIResponse> {
   try {
-    const systemPrompt = 'You are a grammar expert. Analyze the text and provide detailed feedback on grammar, punctuation, and sentence structure. Return results as a JSON object with "issues" array and "suggestions" array.';
-    const userMessage = `Analyze the grammar in this text: ${text}`;
+    const systemPrompt = 'You are a grammar expert. Analyze the text and provide a concise, bulleted list of the most important issues (punctuation, syntax, spelling). Start each issue on a new line with a bullet point like "- ". Be specific and brief.';
+    const userMessage = `Check grammar for: ${text}`;
     
     const data = await callChatGptApi(systemPrompt, userMessage);
     
@@ -32,8 +32,8 @@ export async function getGrammarAnalysis(text: string): Promise<AIResponse> {
 
 export async function getContentStructure(text: string): Promise<AIResponse> {
   try {
-    const systemPrompt = 'You are a document structure expert. Analyze the text and provide feedback on organization, flow, and logical structure. Return results as a JSON object with "sections" array and "improvements" array.';
-    const userMessage = `Analyze the structure of this text: ${text}`;
+    const systemPrompt = 'You are an expert writing assistant. Provide exactly 3 or 4 specific, actionable writing suggestions to improve the text quality. Format these as a bulleted list starting with "- ". Focus on academic clarity and style.';
+    const userMessage = `Provide suggestions for: ${text}`;
     
     const data = await callChatGptApi(systemPrompt, userMessage);
     
