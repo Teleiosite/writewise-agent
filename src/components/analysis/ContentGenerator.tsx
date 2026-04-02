@@ -10,12 +10,13 @@ import { useEditor } from "@/contexts/editor";
 export function ContentGenerator({ onSuggestionClick }: { onSuggestionClick: (s: string) => void }) {
   const academicSections = [
     "Abstract",
-    "Introduction",
-    "Literature Review",
-    "Methodology",
-    "Results",
-    "Discussion",
-    "Conclusion"
+    "Chapter 1: Introduction",
+    "Chapter 2: Literature Review",
+    "Chapter 3: Methodology",
+    "Chapter 4: Results",
+    "Chapter 5: Conclusion / Discussion",
+    "Conclusion",
+    "Data Analysis"
   ];
   
   const [generatedContent, setGeneratedContent] = useState<string>("");

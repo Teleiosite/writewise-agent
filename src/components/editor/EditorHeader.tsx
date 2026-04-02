@@ -14,7 +14,8 @@ import {
   Target,
   AlertTriangle,
   Zap,
-  PenTool
+  PenTool,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../editor/pdf/components/ThemeToggle";
@@ -131,22 +132,58 @@ export function EditorHeader({
 
               <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1 hidden md:block" />
 
-              {/* Analysis (Word-style) Buttons */}
-              {activeTab === 'editor' && analysisNav.map(item => (
-                <button 
-                  key={item.value} 
-                  onClick={() => toggleAnalysisPanel(item.value)}
-                  className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md transition-all whitespace-nowrap active:scale-95
-                    ${showAnalysisPanel && analysisTab === item.value 
-                      ? 'bg-orange-50 text-orange-700 font-bold dark:bg-orange-900/30 dark:text-orange-400 ring-1 ring-orange-100 dark:ring-orange-800/50' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'}`}
-                >
-                  <span className="flex items-center justify-center">{item.icon}</span>
-                  {item.label}
-                </button>
-              ))}
+              {/* Consolidated AI Tools Dropdown (Word-style) */}
+              {activeTab === 'editor' && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button 
+                      className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md transition-all whitespace-nowrap active:scale-95
+                        ${showAnalysisPanel 
+                          ? 'bg-orange-50 text-orange-700 font-bold dark:bg-orange-900/30 dark:text-orange-400 ring-1 ring-orange-100 dark:ring-orange-800/50' 
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="hidden lg:inline text-[12px] ml-0.5">AI Tools</span>
+                      <ChevronDown className="h-3 w-3 opacity-40 shrink-0" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 shadow-xl border-gray-200 dark:border-gray-800">
+                    <div className="px-2 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-gray-50/50 dark:bg-gray-800/20 mb-1">AI Assistant & Writing</div>
+                    
+                    <DropdownMenuItem 
+                      onClick={() => toggleAnalysisPanel("writing")}
+                      className={`flex items-center gap-2.5 py-2 cursor-pointer ${analysisTab === 'writing' && showAnalysisPanel ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700' : ''}`}
+                    >
+                      <PenTool className="h-4 w-4" />
+                      <span className="font-medium text-sm">Writing Suggestions</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem 
+                      onClick={() => toggleAnalysisPanel("grammar")}
+                      className={`flex items-center gap-2.5 py-2 cursor-pointer ${analysisTab === 'grammar' && showAnalysisPanel ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700' : ''}`}
+                    >
+                      <Zap className="h-4 w-4" />
+                      <span className="font-medium text-sm">Grammar Analysis</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem 
+                      onClick={() => toggleAnalysisPanel("generate")}
+                      className={`flex items-center gap-2.5 py-2 cursor-pointer ${analysisTab === 'generate' && showAnalysisPanel ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700' : ''}`}
+                    >
+                      <Sparkles className="h-4 w-4 text-blue-500" />
+                      <span className="font-medium text-sm">Generate Sections (Ch. 1-5)</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-blue-600 dark:text-blue-400 font-bold cursor-pointer py-2 px-3 hover:bg-blue-50/50 dark:hover:bg-blue-900/10">
+                      <Zap className="h-3.5 w-3.5 mr-2 fill-blue-600/10" />
+                      Academic Master Plan
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               
-              {/* Overflow / Three Dots Menu */}
+              {/* Secondary Features Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-1 cursor-pointer px-2 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all active:scale-95">
