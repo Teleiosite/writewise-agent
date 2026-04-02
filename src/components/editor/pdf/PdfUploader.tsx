@@ -4,8 +4,8 @@ import { AlertCircle, FileUp, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Configure PDF.js worker - using unpkg mjs for version 5+ compatibility
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 interface PdfUploaderProps {
   onPdfLoaded: (pdfName: string, pdfContent: string) => void;
@@ -55,6 +55,7 @@ export function PdfUploader({ onPdfLoaded }: PdfUploaderProps) {
       setIsLoading(false);
       
     } catch (err) {
+      console.error("PDF upload error:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to upload PDF";
       setError(errorMessage);
       

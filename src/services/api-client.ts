@@ -38,6 +38,10 @@ async function callGeminiDirect(
           role: msg.role === "user" ? "user" : "model",
           parts: [{ text: msg.content }],
         })),
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 0.7,
+        }
       }),
     });
 
@@ -154,7 +158,7 @@ export async function callChatGptApi(
   try {
     if (apiProvider && apiKey) {
       if (apiProvider === "Gemini") {
-        return await callGeminiDirect(apiKey, apiModel ?? "gemini-2.0-flash", messages);
+        return await callGeminiDirect(apiKey, apiModel ?? "gemini-3.1-flash-preview", messages);
       }
       return await callViaProxy(apiProvider, apiKey, apiModel, messages);
     }

@@ -33,6 +33,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               role: m.role === 'user' ? 'user' : 'model',
               parts: [{ text: m.content }],
             })),
+            generationConfig: {
+              maxOutputTokens: 8192,
+              temperature: 0.7,
+            }
           }),
         });
       };
@@ -88,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 1024,
+          max_tokens: 4096,
           messages: messages.map((m: any) => ({
             role: m.role === 'system' ? 'user' : m.role, // Anthropic handles system differently, but this is simple fallback
             content: m.content
