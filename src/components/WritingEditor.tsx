@@ -9,7 +9,7 @@ import type { TemplateType } from "./DocumentTemplates";
 import { useEditor } from "@/contexts/editor";
 
 // This component uses the context but needs to be inside the provider
-function EditorContent({ projectName, onClose }: { projectName: string, onClose?: () => void }) {
+function EditorContent({ projectName }: { projectName: string }) {
   const { 
     showCitationsPanel, 
     showPdfReaderPanel, 
@@ -34,7 +34,9 @@ function EditorContent({ projectName, onClose }: { projectName: string, onClose?
       </div>
 
       <div className="md:col-span-6 h-full min-h-[800px]">
-        <EditorMain projectName={projectName} onClose={onClose} />
+        <EditorMain 
+          projectName={projectName} 
+        />
       </div>
 
       <div className="md:col-span-3 h-full">
@@ -52,6 +54,8 @@ interface WritingEditorProps {
   template?: TemplateType;
   showCitations?: boolean;
   showPdfReader?: boolean;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
 export function WritingEditor({
@@ -59,13 +63,15 @@ export function WritingEditor({
   projectName,
   template,
   showCitations = false,
-  showPdfReader = false
+  showPdfReader = false,
+  activeTab,
+  setActiveTab
 }: WritingEditorProps) {
   return (
-    <EditorProvider projectName={projectName} template={template}>
-      <div className="w-full animate-fadeIn overflow-x-hidden">
-        <EditorContent projectName={projectName} onClose={onClose} />
-      </div>
-    </EditorProvider>
+    <div className="w-full animate-fadeIn overflow-x-hidden">
+      <EditorContent 
+        projectName={projectName} 
+      />
+    </div>
   );
 }

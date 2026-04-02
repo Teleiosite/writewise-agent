@@ -10,10 +10,9 @@ import { Card } from "@/components/ui/card";
 
 interface EditorMainProps {
   projectName: string;
-  onClose?: () => void;
 }
 
-export function EditorMain({ projectName, onClose }: EditorMainProps) {
+export function EditorMain({ projectName }: EditorMainProps) {
   const { 
     getCurrentSectionTitle, 
     getCurrentSectionContent,
@@ -37,17 +36,6 @@ export function EditorMain({ projectName, onClose }: EditorMainProps) {
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-x md:border rounded-xl md:rounded-2xl overflow-hidden shadow-2xl relative transition-all animate-in fade-in duration-700">
-      <EditorHeader 
-        title={projectName}
-        showCitationsPanel={showCitationsPanel}
-        showPdfReaderPanel={showPdfReaderPanel}
-        showPdfChatPanel={showPdfChatPanel}
-        toggleCitationsPanel={toggleCitationsPanel}
-        togglePdfReaderPanel={togglePdfReaderPanel}
-        togglePdfChatPanel={togglePdfChatPanel}
-        onClose={onClose}
-      />
-      
       <EditorToolbar />
 
       <div className="flex-1 overflow-y-auto bg-[#F8F9FA] custom-scrollbar">

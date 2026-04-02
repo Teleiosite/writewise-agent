@@ -15,6 +15,7 @@ interface DashboardTabContentProps {
   onClose: () => void;
   template?: TemplateType;
   activeFeature?: string | null;
+  setActiveTab: (tab: string) => void;
 }
 
 export function DashboardTabContent({ 
@@ -22,7 +23,8 @@ export function DashboardTabContent({
   projectName, 
   onClose, 
   template, 
-  activeFeature 
+  activeFeature,
+  setActiveTab
 }: DashboardTabContentProps) {
   return (
     <>
@@ -33,6 +35,8 @@ export function DashboardTabContent({
           template={template} 
           showCitations={activeFeature === "Citation Manager"}
           showPdfReader={activeFeature === "Read PDF"}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
         />
       </TabsContent>
       
