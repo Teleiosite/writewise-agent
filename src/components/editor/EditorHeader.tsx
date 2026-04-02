@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   Zap,
   PenTool,
-  Sparkles
+  Sparkles,
+  FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../editor/pdf/components/ThemeToggle";
@@ -26,6 +27,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator 
 } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
 interface EditorHeaderProps {
   title: string;
@@ -58,6 +60,7 @@ export function EditorHeader({
   analysisTab,
   toggleAnalysisPanel
 }: EditorHeaderProps) {
+  const navigate = useNavigate();
   
   // Navigation mapping to ensure we use the correct tab values
   const primaryNav = [
@@ -79,6 +82,7 @@ export function EditorHeader({
     { label: "PDF Reader", value: "pdf-reader", action: togglePdfReaderPanel, icon: <FileText className="h-3.5 w-3.5" /> },
     { label: "PDF Chat", value: "pdf-chat", action: togglePdfChatPanel, icon: <MessageSquare className="h-3.5 w-3.5" /> },
     { label: "Goals", value: "goals", value_internal: "goals", icon: <Target className="h-3.5 w-3.5" /> },
+    { label: "Data Analysis", value: "data-analysis", action: () => navigate("/data-analysis"), icon: <FlaskConical className="h-3.5 w-3.5" /> },
   ];
 
   return (

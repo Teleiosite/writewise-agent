@@ -7,6 +7,8 @@ import { PdfReaderPanel } from "./editor/PdfReaderPanel";
 import { CitationManager } from "./citations/CitationManager";
 import type { TemplateType } from "./DocumentTemplates";
 import { useEditor } from "@/contexts/editor";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 // This component uses the context but needs to be inside the provider
 function EditorContent({ projectName }: { projectName: string }) {
@@ -17,7 +19,17 @@ function EditorContent({ projectName }: { projectName: string }) {
     addContentToActiveSection,
     insertCitation 
   } = useEditor();
-  
+
+  // Inject narrative from Data Analysis page if one is pending
+  useEffect(() => {
+    const pending = sessionStorage.getItem('pendingNarrative');
+    if (pending) {
+      sessionStorage.removeItem('pendingNarrative');
+      addContentToActiveSection('\n\n' + pending);
+      toast.success('Chapter 4 & 5 narrative inserted into your document!');
+    }
+  }, [addContentToActiveSection]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)] transition-all duration-500">
       <div className="md:col-span-3 h-full">

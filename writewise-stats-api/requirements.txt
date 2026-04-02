@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pandas
+numpy
+scipy
+statsmodels
+pingouin
+scikit-learn
+factor_analyzer
+semopy
+lifelines
+openpyxl
+pyreadstat
+python-multipart

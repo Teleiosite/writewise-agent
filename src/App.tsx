@@ -21,6 +21,7 @@ import HelpCenter from "./pages/HelpCenter";
 import ContactSupport from "./pages/ContactSupport";
 import Settings from "./pages/Settings";
 import PrivateRoute from "./components/PrivateRoute";
+import DataAnalysis from "./pages/DataAnalysis";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -61,6 +62,7 @@ const App = () => {
                 <Route path="/help" element={<HelpCenter />} />
                 <Route path="/support" element={<ContactSupport />} />
                 <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+                <Route path="/data-analysis" element={<PrivateRoute><DataAnalysis /></PrivateRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
