@@ -19,40 +19,50 @@ async function callGeminiDirect(
   version: "v1" | "v1beta" = "v1"
 ): Promise<NormalizedAIResponse> {
   const m = model.trim() || "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/${version}/models/${m}:generateContent?key=${apiKey.trim()}`;
+  const encodedKey = encodeURIComponent(apiKey.trim());
+  const url = `https://generativelanguage.googleapis.com/${version}/models/${m}:generateContent?key=${encodedKey}`;
 
   const systemMsg = messages.find((msg) => msg.role === "system")?.content;
   const chatMessages = messages.filter((msg) => msg.role !== "system");
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...(systemMsg && { systemInstruction: { parts: [{ text: systemMsg }] } }),
-      contents: chatMessages.map((msg) => ({
-        role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: msg.content }],
-      })),
-    }),
-  });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey.trim() // Pass in header too for extra reliability
+      },
+      body: JSON.stringify({
+        ...(systemMsg && { systemInstruction: { parts: [{ text: systemMsg }] } }),
+        contents: chatMessages.map((msg) => ({
+          role: msg.role === "user" ? "user" : "model",
+          parts: [{ text: msg.content }],
+        })),
+      }),
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const rawError = err.error?.message || `HTTP ${res.status}`;
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const rawError = err.error?.message || `HTTP ${res.status}`;
 
-    // If v1 fails with 404 (model not found), try v1beta automatically
-    // (since gemini-2.0-flash is often preview-only in some regions)
-    if (res.status === 404 && version === "v1" && m.includes("2.0")) {
-      console.warn("Gemini v1 failed (404), falling back to v1beta...");
-      return await callGeminiDirect(apiKey, model, messages, "v1beta");
+      // If one version fails, try the other automatically (v1 <-> v1beta)
+      if (version === "v1") {
+        console.warn(`Gemini v1 failed (${res.status}), trying v1beta...`);
+        return await callGeminiDirect(apiKey, model, messages, "v1beta");
+      }
+
+      throw new Error(`Gemini API: ${rawError}`);
     }
 
-    throw new Error(`Gemini API: ${rawError}`);
+    const data = await res.json();
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
+    return { choices: [{ message: { content } }] };
+  } catch (err: any) {
+    if (version === "v1") {
+      return await callGeminiDirect(apiKey, model, messages, "v1beta");
+    }
+    throw err;
   }
-
-  const data = await res.json();
-  const content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
-  return { choices: [{ message: { content } }] };
 }
 
 // ─── Proxy Call (OpenAI, Claude, etc) ────────────────────────────────────────
