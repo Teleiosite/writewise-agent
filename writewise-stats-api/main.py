@@ -749,18 +749,49 @@ def compute_moderation(df, iv_col, mod_col, dv_col, cb_map):
 
 
 # ─── Utility ──────────────────────────────────────────────────────────────────
+import math
+
 def safe_json(obj):
-    """Recursively convert numpy types to Python native types."""
-    if isinstance(obj, dict):
-        return {k: safe_json(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [safe_json(v) for v in obj]
-    if isinstance(obj, (np.integer,)):
+    """Recursively convert all types to JSON-safe Python natives.
+    Handles: numpy types, Python float NaN/Inf, pandas NA, None."""
+    if obj is None:
+        return None
+    # numpy integer types
+    if isinstance(obj, np.integer):
         return int(obj)
-    if isinstance(obj, (np.floating,)):
-        return None if np.isnan(obj) else float(obj)
-    if isinstance(obj, (np.ndarray,)):
-        return safe_json(obj.tolist())
-    if isinstance(obj, (np.bool_,)):
+    # numpy float types (covers np.nan, np.inf)
+    if isinstance(obj, np.floating):
+        if np.isnan(obj) or np.isinf(obj):
+            return None
+        return float(obj)
+    # numpy bool
+    if isinstance(obj, np.bool_):
         return bool(obj)
+    # numpy array
+    if isinstance(obj, np.ndarray):
+        return safe_json(obj.tolist())
+    # Python native float (pandas .mean(), .std() can return these with NaN)
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    # Python native bool (before int check — bool is subclass of int)
+    if isinstance(obj, bool):
+        return obj
+    # Python native int
+    if isinstance(obj, int):
+        return obj
+    # dict
+    if isinstance(obj, dict):
+        return {str(k): safe_json(v) for k, v in obj.items()}
+    # list / tuple
+    if isinstance(obj, (list, tuple)):
+        return [safe_json(v) for v in obj]
+    # pandas NA / NaT
+    try:
+        import pandas as pd
+        if pd.isna(obj):
+            return None
+    except (TypeError, ValueError):
+        pass
     return obj
