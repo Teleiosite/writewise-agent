@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { FileUploader } from '@/components/analysis/FileUploader';
 import { CodebookEditor } from '@/components/analysis/CodebookEditor';
@@ -47,7 +48,7 @@ export default function DataAnalysis() {
   const handleInsertToEditor = () => {
     // Store narrative in sessionStorage so the editor can pick it up
     sessionStorage.setItem('pendingNarrative', analysis.narrative);
-    navigate('/');
+    navigate(-1); // go back to wherever we came from (editor)
   };
 
   return (
@@ -56,7 +57,7 @@ export default function DataAnalysis() {
       <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="rounded-full h-9 w-9 text-gray-500">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full h-9 w-9 text-gray-500">
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-2">
@@ -326,7 +327,16 @@ export default function DataAnalysis() {
                 <Button variant="outline" size="sm" onClick={() => analysis.setStage('configure')} className="gap-1.5 text-xs">
                   <RotateCcw className="w-3.5 h-3.5" /> Re-run
                 </Button>
-                <Button variant="outline" size="sm" onClick={analysis.save} disabled={analysis.isSaved} className="gap-1.5 text-xs">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await analysis.save();
+                    toast.info('Analysis saved! Find it in your project dashboard under the Analytics tab.');
+                  }}
+                  disabled={analysis.isSaved}
+                  className="gap-1.5 text-xs"
+                >
                   <Save className="w-3.5 h-3.5" /> {analysis.isSaved ? 'Saved ✓' : 'Save to Project'}
                 </Button>
                 <Button size="sm" onClick={() => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white">

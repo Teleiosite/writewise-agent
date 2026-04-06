@@ -82,7 +82,7 @@ export function EditorHeader({
     { label: "PDF Reader", value: "pdf-reader", action: togglePdfReaderPanel, icon: <FileText className="h-3.5 w-3.5" /> },
     { label: "PDF Chat", value: "pdf-chat", action: togglePdfChatPanel, icon: <MessageSquare className="h-3.5 w-3.5" /> },
     { label: "Goals", value: "goals", value_internal: "goals", icon: <Target className="h-3.5 w-3.5" /> },
-    { label: "Data Analysis", value: "data-analysis", action: () => navigate("/data-analysis"), icon: <FlaskConical className="h-3.5 w-3.5" /> },
+    { label: "Data Analysis", value: "data-analysis", action: () => navigate("/data-analysis", { state: { from: 'editor' } }), icon: <FlaskConical className="h-3.5 w-3.5" /> },
   ];
 
   return (
@@ -190,8 +190,9 @@ export function EditorHeader({
               {/* Secondary Features Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 cursor-pointer px-2 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all active:scale-95">
+                  <button className="flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all active:scale-95">
                     <MoreHorizontal className="h-4 w-4" />
+                    <span className="text-[12px] hidden lg:inline">Tools</span>
                     <ChevronDown className="h-3 w-3 opacity-40 shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
