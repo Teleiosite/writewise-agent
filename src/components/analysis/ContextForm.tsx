@@ -123,9 +123,40 @@ export function ContextForm({ context, onChange }: ContextFormProps) {
         </Field>
       </div>
 
+      {/* Writing Style Sample — key differentiator */}
+      <div className="rounded-2xl border-2 border-dashed border-blue-200 dark:border-blue-800/50 bg-blue-50/40 dark:bg-blue-900/10 p-5 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+            <span className="text-white text-base">✍️</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">
+              Writing Style Sample <span className="text-blue-500 font-normal text-xs ml-1">(Highly Recommended)</span>
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+              Paste a paragraph or section from a previous chapter, your supervisor's sample, or your institution's chapter format.
+              The AI will <strong>mirror the exact heading style, sentence structure, table layout, and citation pattern</strong> — so the output feels like it was written by you.
+            </p>
+          </div>
+        </div>
+        <textarea
+          value={context.writing_sample || ''}
+          onChange={e => update({ writing_sample: e.target.value || null })}
+          className={textareaCls + ' font-mono text-xs leading-relaxed'}
+          rows={10}
+          placeholder={`Paste a sample of how you want Chapter 4 & 5 to be written. For example:\n\n4.1 Demographic Characteristics of Respondents\nTable 4.1 below presents the demographic profiles of the 196 respondents...\n\n| Variable       | Category     | Frequency | Percentage |\n|----------------|--------------|-----------|------------|\n| Gender         | Male         | 64        | 32.7%      |\n|                | Female       | 132       | 67.3%      |\n\nThe table reveals that the majority of respondents were female (67.3%, n=132)...`}
+        />
+        {context.writing_sample && (
+          <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1.5">
+            <span>✓</span> Style sample captured — the AI will follow this exact pattern for headings, tables, and prose.
+          </p>
+        )}
+      </div>
+
       <p className="text-xs text-gray-400 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl py-2 px-3">
         All fields are optional. The more context you provide, the more specific and academically rigorous the AI narrative will be.
       </p>
     </div>
   );
 }
+

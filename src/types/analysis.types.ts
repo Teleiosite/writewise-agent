@@ -17,6 +17,7 @@ export interface ResearchContext {
   research_questions: string[];
   hypothesis: string | null;
   theoretical_framework: string | null;
+  writing_sample: string | null; // user's sample chapter for style matching
 }
 
 // ─── Descriptive Results ──────────────────────────────────────────────────────

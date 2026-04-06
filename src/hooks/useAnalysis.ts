@@ -39,7 +39,9 @@ const DEFAULT_CONTEXT: ResearchContext = {
   research_questions: [''],
   hypothesis: null,
   theoretical_framework: null,
+  writing_sample: null,
 };
+
 
 const DEFAULT_CONFIG: AnalysisConfig = {
   mode: 'auto',
