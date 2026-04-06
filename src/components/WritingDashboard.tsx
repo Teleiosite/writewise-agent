@@ -65,7 +65,7 @@ export function WritingDashboard({ projectName, onClose, template, activeFeature
 
   return (
     <EditorProvider projectName={projectName} template={template}>
-      <div className={`mx-auto animate-fadeIn min-h-screen bg-white dark:bg-gray-950 ${activeTab === 'editor' ? 'max-w-full px-0' : 'max-w-7xl px-4'}`}>
+      <div className={`mx-auto animate-fadeIn min-h-screen bg-white dark:bg-gray-950 ${(activeTab === 'editor' || activeTab === 'data-analysis') ? 'max-w-full px-0' : 'max-w-7xl px-4'}`}>
         <ProjectHeader 
           projectName={projectName} 
           onClose={onClose} 
