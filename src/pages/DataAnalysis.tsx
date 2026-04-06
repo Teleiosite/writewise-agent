@@ -172,15 +172,35 @@ export default function DataAnalysis() {
               onFile={analysis.handleFileUpload}
               isLoading={analysis.status === 'parsing' || analysis.status === 'detecting'}
             />
-            {analysis.rawData.length > 0 && (
+
+            {/* Parsing in progress — informative message */}
+            {(analysis.status === 'parsing' || analysis.status === 'detecting') && (
+              <div className="mt-4 flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl px-4 py-3">
+                <svg className="w-4 h-4 text-blue-500 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  <strong>Please wait</strong> — {analysis.progressLabel || 'Parsing your dataset...'}
+                  {' '}The page will advance automatically when ready.
+                </p>
+              </div>
+            )}
+
+            {/* Ready — show Continue button only after parsing is fully done */}
+            {analysis.rawData.length > 0 && analysis.status !== 'parsing' && analysis.status !== 'detecting' && (
               <div className="mt-4 flex justify-end">
-                <Button onClick={analysis.goToContext} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                <Button
+                  onClick={() => analysis.setStage('codebook')}
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                >
                   Continue to Codebook <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
             )}
           </div>
         )}
+
 
         {/* ── Stage 2: Codebook ───────────────────────────────────────────── */}
         {analysis.stage === 'codebook' && (
