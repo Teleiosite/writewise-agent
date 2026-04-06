@@ -7,6 +7,7 @@ import { WritingStats } from "@/components/WritingStats";
 import { WritingTracker } from "@/components/WritingTracker";
 import { AIDetector } from "@/components/AIDetector";
 import { TextHumanizer } from "@/components/TextHumanizer";
+import DataAnalysis from "@/pages/DataAnalysis";
 import type { TemplateType } from "@/components/DocumentTemplates";
 
 interface DashboardTabContentProps {
@@ -89,6 +90,11 @@ export function DashboardTabContent({
       
       <TabsContent value="humanizer">
         <TextHumanizer />
+      </TabsContent>
+
+      {/* Data Analysis — embedded mode: no page header, lives inside editor tab system */}
+      <TabsContent value="data-analysis">
+        <DataAnalysis embedded onBack={() => setActiveTab('editor')} />
       </TabsContent>
     </>
   );

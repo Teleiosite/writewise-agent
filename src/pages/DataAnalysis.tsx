@@ -30,7 +30,12 @@ const STAGES: { id: AnalysisStage; label: string; icon: React.ReactNode; desc: s
 
 const STAGE_ORDER: AnalysisStage[] = ['upload', 'codebook', 'context', 'configure', 'results'];
 
-export default function DataAnalysis() {
+interface DataAnalysisProps {
+  embedded?: boolean;   // when true: no page-level header, lives inside editor tabs
+  onBack?: () => void;  // called by Insert into Document / back in embedded mode
+}
+
+export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisProps = {}) {
   const navigate = useNavigate();
   const analysis = useAnalysis();
   const [selectedModel, setSelectedModel] = useState(localStorage.getItem('apiProvider') || 'Gemini');
@@ -40,20 +45,24 @@ export default function DataAnalysis() {
   const canProceed = {
     upload: analysis.rawData.length > 0,
     codebook: analysis.codebook.length > 0,
-    context: true, // always optional
+    context: true,
     configure: true,
     results: false,
   };
 
   const handleInsertToEditor = () => {
-    // Store narrative in sessionStorage so the editor can pick it up
     sessionStorage.setItem('pendingNarrative', analysis.narrative);
-    navigate(-1); // go back to wherever we came from (editor)
+    if (embedded && onBack) {
+      onBack();       // stay in the editor tab system
+    } else {
+      navigate(-1);   // standalone route: go back in browser history
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-      {/* Header */}
+    <div className={embedded ? 'bg-gray-50 dark:bg-gray-950 flex flex-col' : 'min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col'}>
+      {/* Header — only shown in standalone route mode */}
+      {!embedded && (
       <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -91,6 +100,7 @@ export default function DataAnalysis() {
           </div>
         </div>
       </div>
+      )} {/* end !embedded header */}
 
       {/* Stage Indicator */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">

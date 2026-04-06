@@ -82,7 +82,7 @@ export function EditorHeader({
     { label: "PDF Reader", value: "pdf-reader", action: togglePdfReaderPanel, icon: <FileText className="h-3.5 w-3.5" /> },
     { label: "PDF Chat", value: "pdf-chat", action: togglePdfChatPanel, icon: <MessageSquare className="h-3.5 w-3.5" /> },
     { label: "Goals", value: "goals", value_internal: "goals", icon: <Target className="h-3.5 w-3.5" /> },
-    { label: "Data Analysis", value: "data-analysis", action: () => navigate("/data-analysis", { state: { from: 'editor' } }), icon: <FlaskConical className="h-3.5 w-3.5" /> },
+    { label: "Data Analysis", value: "data-analysis", action: () => setActiveTab("data-analysis"), icon: <FlaskConical className="h-3.5 w-3.5" /> },
   ];
 
   return (
