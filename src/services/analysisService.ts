@@ -225,43 +225,186 @@ export async function parseExcelFile(file: File): Promise<{
   });
 }
 
-// ─── Export DOCX ─────────────────────────────────────────────────────────────
+// ─── Export DOCX (with real Word tables) ─────────────────────────────────────
 
 export async function exportToDocx(
   title: string,
   narrative: string,
   syntax: string
 ): Promise<void> {
-  const { Document, Paragraph, TextRun, HeadingLevel, Packer } = await import('docx');
+  const {
+    Document, Paragraph, TextRun, HeadingLevel, Packer,
+    Table, TableRow, TableCell, WidthType, BorderStyle,
+    AlignmentType, ShadingType,
+  } = await import('docx');
 
-  const narLines = narrative.split('\n').filter(Boolean);
-  const children = narLines.map(line => {
-    if (line.startsWith('#')) {
-      const level = line.match(/^#+/)?.[0].length || 1;
-      return new Paragraph({
-        text: line.replace(/^#+\s*/, ''),
-        heading: level === 1 ? HeadingLevel.HEADING_1 : level === 2 ? HeadingLevel.HEADING_2 : HeadingLevel.HEADING_3,
-      });
+  // ── Parse markdown into docx children ──────────────────────────────────────
+  function parseBold(text: string): TextRun[] {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map(p => {
+      if (p.startsWith('**') && p.endsWith('**')) {
+        return new TextRun({ text: p.slice(2, -2), bold: true, font: 'Times New Roman', size: 24 });
+      }
+      return new TextRun({ text: p.replace(/\*/g, ''), font: 'Times New Roman', size: 24 });
+    });
+  }
+
+  function isTableRow(line: string) {
+    return line.trim().startsWith('|');
+  }
+  function isSeparatorRow(line: string) {
+    return /^\|[\s\-:|]+\|/.test(line.trim());
+  }
+  function parseTableLine(line: string): string[] {
+    return line.split('|').map(c => c.trim()).filter((_, i, a) => i !== 0 && i !== a.length - 1);
+  }
+
+  function buildWordTable(lines: string[]): Table {
+    const nonSep = lines.filter(l => !isSeparatorRow(l));
+    const headers = parseTableLine(nonSep[0]);
+    const rows = nonSep.slice(1).map(parseTableLine);
+    const colCount = headers.length;
+    const colWidth = Math.floor(9000 / colCount);
+
+    const apaBorder = { style: BorderStyle.SINGLE, size: 6, color: '1e40af' };
+    const noBorder  = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+
+    const headerRow = new TableRow({
+      tableHeader: true,
+      children: headers.map(h => new TableCell({
+        width: { size: colWidth, type: WidthType.DXA },
+        shading: { type: ShadingType.SOLID, color: 'EFF6FF' },
+        borders: { top: apaBorder, bottom: apaBorder, left: noBorder, right: noBorder },
+        children: [new Paragraph({
+          children: [new TextRun({ text: h, bold: true, font: 'Times New Roman', size: 22 })],
+          alignment: AlignmentType.LEFT,
+        })],
+      })),
+    });
+
+    const dataRows = rows.map((cells, ri) => new TableRow({
+      children: cells.map(cell => new TableCell({
+        width: { size: colWidth, type: WidthType.DXA },
+        borders: {
+          top: noBorder,
+          bottom: ri === rows.length - 1 ? apaBorder : { style: BorderStyle.SINGLE, size: 2, color: 'e2e8f0' },
+          left: noBorder,
+          right: noBorder,
+        },
+        children: [new Paragraph({
+          children: [new TextRun({ text: cell, font: 'Times New Roman', size: 22 })],
+        })],
+      })),
+    }));
+
+    return new Table({
+      width: { size: 9000, type: WidthType.DXA },
+      rows: [headerRow, ...dataRows],
+    });
+  }
+
+  const children: (Paragraph | Table)[] = [];
+  const lines = narrative.split('\n');
+  let i = 0;
+
+  // Title
+  children.push(new Paragraph({
+    text: title,
+    heading: HeadingLevel.TITLE,
+    alignment: AlignmentType.CENTER,
+  }));
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Collect markdown table block
+    if (isTableRow(line) && lines[i + 1] && isSeparatorRow(lines[i + 1])) {
+      const tableLines: string[] = [];
+      while (i < lines.length && isTableRow(lines[i])) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      children.push(buildWordTable(tableLines));
+      // Small gap after table
+      children.push(new Paragraph({ text: '' }));
+      continue;
     }
-    return new Paragraph({ children: [new TextRun(line)] });
-  });
 
+    // CHAPTER headings (all-caps)
+    if (/^CHAPTER\s+(FOUR|FIVE)/i.test(line.trim())) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: line.trim(), bold: true, font: 'Times New Roman', size: 28, allCaps: true })],
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 400, after: 200 },
+      }));
+    } else if (line.startsWith('# ')) {
+      children.push(new Paragraph({
+        text: line.slice(2),
+        heading: HeadingLevel.HEADING_1,
+        alignment: AlignmentType.CENTER,
+      }));
+    } else if (line.startsWith('## ') || /^\d+\.\d+\s+\S/.test(line)) {
+      children.push(new Paragraph({
+        text: line.replace(/^##\s*/, ''),
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 300, after: 120 },
+      }));
+    } else if (line.startsWith('### ') || /^\d+\.\d+\.\d+\s+\S/.test(line)) {
+      children.push(new Paragraph({
+        text: line.replace(/^###\s*/, ''),
+        heading: HeadingLevel.HEADING_3,
+        spacing: { before: 200, after: 100 },
+      }));
+    } else if (line.trim() === '') {
+      children.push(new Paragraph({ text: '', spacing: { after: 120 } }));
+    } else {
+      children.push(new Paragraph({
+        children: parseBold(line),
+        alignment: AlignmentType.BOTH,
+        spacing: { after: 160, line: 360 }, // double-spaced
+      }));
+    }
+    i++;
+  }
+
+  // SPSS Syntax appendix
   if (syntax) {
-    children.push(new Paragraph({ text: 'APPENDIX: SPSS Syntax', heading: HeadingLevel.HEADING_1 }));
+    children.push(new Paragraph({ text: '', spacing: { before: 400 } }));
+    children.push(new Paragraph({
+      text: 'APPENDIX: SPSS SYNTAX',
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+    }));
     syntax.split('\n').forEach(line => {
-      children.push(new Paragraph({ children: [new TextRun({ text: line, font: 'Courier New', size: 18 })] }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: line, font: 'Courier New', size: 18 })],
+      }));
     });
   }
 
   const doc = new Document({
-    sections: [{ properties: {}, children }],
+    styles: {
+      default: {
+        document: { run: { font: 'Times New Roman', size: 24 } },
+      },
+    },
+    sections: [{
+      properties: {
+        page: {
+          margin: { top: 1440, bottom: 1440, left: 1800, right: 1440 }, // 1-inch margins
+        },
+      },
+      children,
+    }],
   });
 
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${title.replace(/[^a-z0-9]/gi, '_')}_analysis.docx`;
+  a.download = `${title.replace(/[^a-z0-9]/gi, '_')}_chapter4_5.docx`;
   a.click();
   URL.revokeObjectURL(url);
 }
+

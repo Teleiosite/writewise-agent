@@ -123,6 +123,53 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Copy as rich text (HTML) — tables paste as real tables in Word / Google Docs
+  const [copiedRich, setCopiedRich] = useState(false);
+  const handleCopyRich = async () => {
+    try {
+      // Build a complete self-contained HTML document for clipboard
+      const html = `
+        <html><body style="font-family: Times New Roman, serif; font-size: 12pt; line-height: 2;">
+        <style>
+          h1 { font-size: 14pt; text-align: center; text-transform: uppercase; }
+          h2 { font-size: 12pt; font-weight: bold; }
+          h3 { font-size: 12pt; font-weight: bold; font-style: italic; }
+          p  { text-align: justify; margin: 0 0 8pt; }
+          table { border-collapse: collapse; width: 100%; margin: 12pt 0; font-size: 11pt; }
+          th { border-top: 2px solid #1e40af; border-bottom: 1px solid #1e40af;
+               background: #eff6ff; padding: 4pt 8pt; text-align: left; font-weight: bold; }
+          td { padding: 3pt 8pt; border-bottom: 1px solid #e2e8f0; }
+          tr:last-child td { border-bottom: 2px solid #1e40af; }
+        </style>
+        ${renderedHtml}
+        </body></html>`;
+
+      if (typeof ClipboardItem !== 'undefined') {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }) }),
+        ]);
+      } else {
+        // Fallback: inject hidden div, select, execCommand (older browsers)
+        const el = document.createElement('div');
+        el.innerHTML = html;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        document.body.appendChild(el);
+        const range = document.createRange();
+        range.selectNode(el);
+        window.getSelection()?.removeAllRanges();
+        window.getSelection()?.addRange(range);
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+      setCopiedRich(true);
+      setTimeout(() => setCopiedRich(false), 2500);
+    } catch {
+      // Fallback to plain text
+      handleCopy();
+    }
+  };
+
   const wordCount = narrative.trim().split(/\s+/).filter(Boolean).length;
   const renderedHtml = narrative ? renderMarkdown(narrative) : '';
 
@@ -153,7 +200,17 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
               </button>
               <Button variant="outline" size="sm" onClick={handleCopy} className="gap-1.5 text-xs h-8">
                 {copied ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? 'Copied!' : 'Copy All'}
+                {copied ? 'Copied!' : 'Copy Plain Text'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyRich}
+                className="gap-1.5 text-xs h-8 border-green-200 text-green-700 dark:border-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                title="Copies with real table formatting — paste directly into Microsoft Word or Google Docs"
+              >
+                {copiedRich ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedRich ? 'Copied for Word! ✓' : 'Copy for Word / Docs'}
               </Button>
               {onInsertToEditor && (
                 <Button size="sm" onClick={onInsertToEditor} className="gap-1.5 text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white">
@@ -165,6 +222,7 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
           )}
         </div>
       </div>
+
 
       {/* Content */}
       <div
