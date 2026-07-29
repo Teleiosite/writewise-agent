@@ -35,10 +35,10 @@ const LoginPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-950 text-white">
+      <div className="flex items-center justify-center min-h-screen bg-black text-white font-mono text-xs">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-medium text-slate-400">Loading WriteWise Workspace...</p>
+          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <p>Initialising Workspace...</p>
         </div>
       </div>
     );
@@ -49,64 +49,62 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white dark:bg-black text-black dark:text-white font-sans">
       {/* Left Column: Brand Hero */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-blue-900/40 via-transparent to-transparent pointer-events-none" />
-
-        <div className="relative z-10">
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-black text-white border-r border-zinc-800 bg-grid-pattern">
+        <div>
           <Logo size="lg" />
         </div>
 
-        <div className="relative z-10 max-w-lg">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold accent-badge mb-6">
+        <div className="max-w-lg">
+          <div className="mono-badge mb-6">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Academic Research Operating System</span>
           </div>
 
-          <h2 className="text-3xl font-extrabold tracking-tight mb-4 text-white leading-tight">
-            Workstation for Verifiable Academic Research
+          <h2 className="text-4xl font-extrabold tracking-tight mb-6 leading-tight">
+            Workstation for <span className="font-serif-italic font-normal">verifiable</span> research
           </h2>
 
-          <p className="text-slate-300 text-sm leading-relaxed mb-8">
+          <p className="text-zinc-400 text-sm leading-relaxed mb-8">
             Access your Python-powered statistical engine, SPSS syntax generator, and structured academic workspace.
           </p>
 
-          <div className="space-y-3 pt-4 border-t border-slate-800">
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <Cpu className="w-4 h-4 text-blue-400 shrink-0" />
+          <div className="space-y-3 pt-6 border-t border-zinc-800 font-mono text-xs text-zinc-300">
+            <div className="flex items-center gap-3">
+              <Cpu className="w-4 h-4 text-white shrink-0" />
               <span>100% deterministic Python (Pandas + SciPy) statistics</span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Automatic SPSS syntax for independent supervisor verification</span>
+            <div className="flex items-center gap-3">
+              <Code2 className="w-4 h-4 text-white shrink-0" />
+              <span>Automatic SPSS syntax for supervisor verification</span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Chapter 4 & 5 narrative generation grounded in verified outputs</span>
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+              <span>Chapter 4 & 5 prose generated from verified outputs</span>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 text-xs text-slate-500">
-          © {new Date().getFullYear()} WriteWise Agent. Built for rigorous research integrity.
+        <div className="font-mono text-xs text-zinc-500">
+          © {new Date().getFullYear()} WriteWise Agent. Built for research integrity.
         </div>
       </div>
 
       {/* Right Column: Form */}
       <div className="flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-2xl shadow-xl">
-          <div className="text-center lg:text-left">
+        <div className="w-full max-w-md space-y-8 border border-black dark:border-zinc-800 p-8 rounded-none bg-white dark:bg-black">
+          <div>
             <div className="lg:hidden flex justify-center mb-6">
               <Logo size="md" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Welcome back</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Sign in to your research workspace</p>
+            <h1 className="text-2xl font-bold tracking-tight">Sign in to WriteWise</h1>
+            <p className="text-xs font-mono text-zinc-500 mt-1 uppercase tracking-wider">Academic Research Workspace</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="email" className="text-xs font-mono uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                 Academic Email
               </label>
               <Input
@@ -117,17 +115,17 @@ const LoginPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-10 text-sm border-slate-300 dark:border-slate-800"
+                className="h-11 text-sm rounded-none border-black dark:border-zinc-800 focus:ring-1 focus:ring-black dark:focus:ring-white"
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label htmlFor="password" className="text-xs font-mono uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                   Password
                 </label>
-                <Link to="/reset-password" tabIndex={-1} className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                  Forgot password?
+                <Link to="/reset-password" tabIndex={-1} className="text-xs font-mono text-zinc-500 hover:text-black dark:hover:text-white underline">
+                  Forgot?
                 </Link>
               </div>
               <Input
@@ -137,19 +135,19 @@ const LoginPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-10 text-sm border-slate-300 dark:border-slate-800"
+                className="h-11 text-sm rounded-none border-black dark:border-zinc-800 focus:ring-1 focus:ring-black dark:focus:ring-white"
               />
             </div>
 
-            <Button type="submit" className="w-full h-10 font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-11 font-mono text-xs uppercase tracking-wider bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border border-black dark:border-white" disabled={isSubmitting}>
               {isSubmitting ? 'Signing In...' : 'Sign In to Workspace'}
             </Button>
           </form>
 
-          <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <div className="text-center text-xs font-mono text-zinc-500 pt-4 border-t border-black dark:border-zinc-800">
             Don't have an account?{" "}
-            <Link to="/register" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
-              Create account
+            <Link to="/register" className="text-black dark:text-white font-bold hover:underline">
+              Create Account
             </Link>
           </div>
         </div>

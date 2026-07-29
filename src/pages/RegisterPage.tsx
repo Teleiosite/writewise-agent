@@ -31,64 +31,62 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white dark:bg-black text-black dark:text-white font-sans">
       {/* Left Column: Brand Hero */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-blue-900/40 via-transparent to-transparent pointer-events-none" />
-
-        <div className="relative z-10">
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-black text-white border-r border-zinc-800 bg-grid-pattern">
+        <div>
           <Logo size="lg" />
         </div>
 
-        <div className="relative z-10 max-w-lg">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold accent-badge mb-6">
+        <div className="max-w-lg">
+          <div className="mono-badge mb-6">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Research Starter Plan — Free Forever</span>
+            <span>Research Starter Tier — Free Forever</span>
           </div>
 
-          <h2 className="text-3xl font-extrabold tracking-tight mb-4 text-white leading-tight">
-            Start Your Verifiable Research Journey
+          <h2 className="text-4xl font-extrabold tracking-tight mb-6 leading-tight">
+            Join postgrads producing <span className="font-serif-italic font-normal">verifiable</span> research
           </h2>
 
-          <p className="text-slate-300 text-sm leading-relaxed mb-8">
-            Join researchers and postgraduates using Python-verified statistics and SPSS syntax for transparent dissertations.
+          <p className="text-zinc-400 text-sm leading-relaxed mb-8">
+            Create an account to run Python-powered statistical analyses and generate reproducible SPSS syntax.
           </p>
 
-          <div className="space-y-3 pt-4 border-t border-slate-800">
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="space-y-3 pt-6 border-t border-zinc-800 font-mono text-xs text-zinc-300">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
               <span>3 full statistical analyses per month on free tier</span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <Cpu className="w-4 h-4 text-blue-400 shrink-0" />
-              <span>Full Python SciPy engine & automatic SPSS syntax</span>
+            <div className="flex items-center gap-3">
+              <Cpu className="w-4 h-4 text-white shrink-0" />
+              <span>Python SciPy engine & automatic SPSS syntax export</span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-300">
-              <Code2 className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Chapter 1–5 academic drafting workstation</span>
+            <div className="flex items-center gap-3">
+              <Code2 className="w-4 h-4 text-white shrink-0" />
+              <span>Chapter 1–5 academic drafting workspace</span>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 text-xs text-slate-500">
-          © {new Date().getFullYear()} WriteWise Agent. Built for rigorous research integrity.
+        <div className="font-mono text-xs text-zinc-500">
+          © {new Date().getFullYear()} WriteWise Agent. Built for research integrity.
         </div>
       </div>
 
       {/* Right Column: Form */}
       <div className="flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-2xl shadow-xl">
-          <div className="text-center lg:text-left">
+        <div className="w-full max-w-md space-y-8 border border-black dark:border-zinc-800 p-8 rounded-none bg-white dark:bg-black">
+          <div>
             <div className="lg:hidden flex justify-center mb-6">
               <Logo size="md" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Create Account</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Get started with WriteWise in 60 seconds</p>
+            <h1 className="text-2xl font-bold tracking-tight">Create Workspace Account</h1>
+            <p className="text-xs font-mono text-zinc-500 mt-1 uppercase tracking-wider">Free Researcher Tier</p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="name" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="name" className="text-xs font-mono uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                 Full Name
               </label>
               <Input
@@ -99,13 +97,13 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setName(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-10 text-sm border-slate-300 dark:border-slate-800"
+                className="h-11 text-sm rounded-none border-black dark:border-zinc-800 focus:ring-1 focus:ring-black dark:focus:ring-white"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Academic / Institution Email
+              <label htmlFor="email" className="text-xs font-mono uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                Academic Email
               </label>
               <Input
                 id="email"
@@ -115,12 +113,12 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-10 text-sm border-slate-300 dark:border-slate-800"
+                className="h-11 text-sm rounded-none border-black dark:border-zinc-800 focus:ring-1 focus:ring-black dark:focus:ring-white"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="password" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="password" className="text-xs font-mono uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                 Password
               </label>
               <Input
@@ -131,19 +129,19 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-10 text-sm border-slate-300 dark:border-slate-800"
+                className="h-11 text-sm rounded-none border-black dark:border-zinc-800 focus:ring-1 focus:ring-black dark:focus:ring-white"
               />
             </div>
 
-            <Button type="submit" className="w-full h-10 font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 mt-2" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating Workspace Account...' : 'Create Free Account'}
+            <Button type="submit" className="w-full h-11 font-mono text-xs uppercase tracking-wider bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border border-black dark:border-white mt-2" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating Account...' : 'Create Free Account'}
             </Button>
           </form>
 
-          <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <div className="text-center text-xs font-mono text-zinc-500 pt-4 border-t border-black dark:border-zinc-800">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
-              Sign in
+            <Link to="/login" className="text-black dark:text-white font-bold hover:underline">
+              Sign In
             </Link>
           </div>
         </div>
