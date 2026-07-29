@@ -11,31 +11,31 @@ interface CreateProjectCardProps {
 
 export function CreateProjectCard({ onCreateProject, newProjectName, setNewProjectName }: CreateProjectCardProps) {
   return (
-    <Card className="glass-card border-blue-200 dark:border-slate-800 shadow-md">
-      <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-          <FlaskConical className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          Create Research Project
+    <Card className="border border-black dark:border-zinc-800 rounded-none shadow-none bg-white dark:bg-black font-sans">
+      <CardHeader className="bg-zinc-50 dark:bg-zinc-950 pb-3 border-b border-black dark:border-zinc-800">
+        <CardTitle className="flex items-center gap-2 text-base font-bold text-black dark:text-white">
+          <FlaskConical className="h-4 w-4" />
+          Create Research Workspace
         </CardTitle>
-        <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
-          Start a new dissertation, research chapter, or data analysis project
+        <CardDescription className="text-xs text-zinc-600 dark:text-zinc-400">
+          Start a new dissertation chapter, empirical survey, or statistical analysis project
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <Input
-            placeholder="e.g., Chapter 4: Financial Literacy Survey Analysis..."
+            placeholder="e.g., Chapter 4: Entrepreneurship Survey Analysis..."
             value={newProjectName}
             onChange={(e) => setNewProjectName(e.target.value)}
-            className="flex-grow h-10 text-sm focus:ring-2 focus:ring-blue-500 dark:bg-slate-950 dark:border-slate-800"
+            className="flex-grow h-10 text-sm rounded-none border-black dark:border-zinc-800 focus:ring-1 focus:ring-black dark:focus:ring-white bg-white dark:bg-black"
             onKeyDown={(e) => e.key === 'Enter' && onCreateProject()}
           />
           <Button 
             onClick={onCreateProject}
-            className="h-10 font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 shrink-0"
+            className="h-10 font-mono text-xs uppercase tracking-wider bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border border-black dark:border-white shrink-0"
           >
-            <Plus className="h-4 w-4 mr-1.5" />
-            Create Project
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            Create Workspace
           </Button>
         </div>
       </CardContent>

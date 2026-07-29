@@ -1,70 +1,44 @@
-
-import React from "react";
 import { Logo } from "@/components/Logo";
 import { Link } from "react-router-dom";
-import { Github, Twitter, Linkedin, Mail } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="mt-16 pt-8 pb-6 border-t border-border">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-wrap justify-between">
-          <div className="w-full md:w-4/12 mb-8 md:mb-0">
-            <Logo />
-            <p className="mt-3 text-sm text-muted-foreground">
-              Writewise helps academic writers with AI-powered tools for 
-              research, editing, and citation management.
+    <footer className="mt-20 border-t border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-xs text-zinc-600 dark:text-zinc-400 py-12">
+      <div className="container mx-auto px-4 sm:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-2">
+            <Logo size="md" />
+            <p className="mt-3 text-xs text-zinc-500 max-w-sm font-sans leading-relaxed">
+              WriteWise is the academic integrity layer for AI-assisted research — combining Python statistics, SPSS syntax generation, and transparent audit trails.
             </p>
-            <div className="flex mt-4 space-x-3">
-              <a href="#" className="text-muted-foreground hover:text-primary">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary">
-                <Mail className="h-5 w-5" />
-              </a>
-            </div>
           </div>
           
-          <div className="w-full md:w-2/12 mb-8 md:mb-0">
-            <h4 className="text-sm font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="text-muted-foreground hover:text-primary">Features</Link></li>
-              <li><Link to="/pricing" className="text-muted-foreground hover:text-primary">Pricing</Link></li>
-              <li><Link to="/testimonials" className="text-muted-foreground hover:text-primary">Testimonials</Link></li>
-              <li><Link to="/wallet" className="text-muted-foreground hover:text-primary">Token Wallet</Link></li>
+          <div>
+            <h4 className="font-bold text-black dark:text-white uppercase mb-3 tracking-wider">Product</h4>
+            <ul className="space-y-2">
+              <li><Link to="/app" className="hover:text-black dark:hover:text-white">Workspace</Link></li>
+              <li><Link to="/data-analysis" className="hover:text-black dark:hover:text-white">Data Engine</Link></li>
+              <li><Link to="/features" className="hover:text-black dark:hover:text-white">Capabilities</Link></li>
+              <li><Link to="/pricing" className="hover:text-black dark:hover:text-white">Pricing</Link></li>
             </ul>
           </div>
           
-          <div className="w-full md:w-2/12 mb-8 md:mb-0">
-            <h4 className="text-sm font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/about" className="text-muted-foreground hover:text-primary">About Us</Link></li>
-              <li><Link to="/contact" className="text-muted-foreground hover:text-primary">Contact</Link></li>
-              <li><Link to="/privacy" className="text-muted-foreground hover:text-primary">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="text-muted-foreground hover:text-primary">Terms of Service</Link></li>
-            </ul>
-          </div>
-          
-          <div className="w-full md:w-2/12">
-            <h4 className="text-sm font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/faq" className="text-muted-foreground hover:text-primary">FAQ</Link></li>
-              <li><Link to="/help" className="text-muted-foreground hover:text-primary">Help Center</Link></li>
-              <li><a href="mailto:support@writewise.com" className="text-muted-foreground hover:text-primary">Contact Support</a></li>
+          <div>
+            <h4 className="font-bold text-black dark:text-white uppercase mb-3 tracking-wider">Legal & Trust</h4>
+            <ul className="space-y-2">
+              <li><Link to="/about" className="hover:text-black dark:hover:text-white">About Us</Link></li>
+              <li><Link to="/privacy" className="hover:text-black dark:hover:text-white">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-black dark:hover:text-white">Terms of Service</Link></li>
+              <li><Link to="/contact" className="hover:text-black dark:hover:text-white">Contact</Link></li>
             </ul>
           </div>
         </div>
         
-        <div className="mt-8 border-t border-border pt-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Writewise. All rights reserved.
-          </p>
+        <div className="mt-12 pt-6 border-t border-black/10 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© {new Date().getFullYear()} WriteWise Agent. All rights reserved.</p>
+          <div className="mono-badge-outline text-[10px]">
+            <span>Verified Research Operating System</span>
+          </div>
         </div>
       </div>
     </footer>

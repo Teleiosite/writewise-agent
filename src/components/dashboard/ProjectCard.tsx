@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, FileText, Users, Edit, Trash2 } from "lucide-react";
+import { Calendar, FileText, Users, ArrowUpRight, Trash2 } from "lucide-react";
 
 export interface Project {
   id: string;
@@ -28,52 +27,52 @@ export function ProjectCard({ project, onOpenProject, onDeleteProject }: Project
   };
 
   return (
-    <Card key={project.id} className="overflow-hidden transition-all duration-300 hover:shadow-md dark:hoverable-card">
-      <div className="p-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 
-              className="text-lg font-semibold mb-1 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors"
-              onClick={() => onOpenProject(project.name)}
-            >
-              {project.name}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{project.description}</p>
-            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>{formatDate(project.lastEdited)}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FileText className="h-4 w-4" />
-                <span>{project.wordCount} words</span>
-              </div>
-              {project.collaborators > 0 && (
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{project.collaborators} collaborators</span>
-                </div>
-              )}
+    <Card key={project.id} className="rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black p-5 font-sans transition-all hover:border-black dark:hover:border-white shadow-none">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 
+            className="text-base font-bold mb-1 hover:underline cursor-pointer text-black dark:text-white flex items-center gap-1.5"
+            onClick={() => onOpenProject(project.name)}
+          >
+            {project.name}
+            <ArrowUpRight className="w-4 h-4 text-zinc-400" />
+          </h3>
+          <p className="text-zinc-600 dark:text-zinc-400 text-xs mb-3 leading-relaxed">{project.description}</p>
+          
+          <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-zinc-500">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{formatDate(project.lastEdited)}</span>
             </div>
+            <div className="flex items-center gap-1">
+              <FileText className="h-3.5 w-3.5" />
+              <span>{project.wordCount} words</span>
+            </div>
+            {project.collaborators > 0 && (
+              <div className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5" />
+                <span>{project.collaborators} collaborators</span>
+              </div>
+            )}
           </div>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onOpenProject(project.name)}
-              className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-            >
-              <Edit className="h-4 w-4 mr-1" /> Open
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              onClick={() => onDeleteProject(project.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+        </div>
+
+        <div className="flex items-center space-x-2 shrink-0">
+          <Button 
+            size="sm"
+            onClick={() => onOpenProject(project.name)}
+            className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider rounded-none px-4"
+          >
+            Open Workspace
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-red-600 dark:text-red-400 border-zinc-300 dark:border-zinc-800 rounded-none hover:bg-red-50 dark:hover:bg-red-950/50"
+            onClick={() => onDeleteProject(project.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
     </Card>

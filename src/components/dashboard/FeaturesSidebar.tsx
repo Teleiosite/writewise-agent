@@ -1,8 +1,6 @@
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BookOpen, Calendar, FileText, Users, AlertTriangle, Menu } from "lucide-react";
+import { BookOpen, Calendar, FileText, Users, FlaskConical } from "lucide-react";
 
 interface FeaturesSidebarProps {
   mobileMenuOpen: boolean;
@@ -15,52 +13,52 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
     {
       name: "AI Data Analysis",
       description: "Python-computed statistics, SPSS syntax generation, and Chapter 4/5 narrative creation.",
-      icon: BookOpen,
-      color: "blue"
+      icon: FlaskConical,
+      isPrimary: true
     },
     {
       name: "AI-Powered Editor",
       description: "Smart writing workstation with real-time academic grammar and structure guidance.",
       icon: FileText,
-      color: "emerald"
+      isPrimary: false
     },
     {
       name: "Citation Manager",
       description: "Manage references and citations in APA, MLA, Chicago, and Harvard formats.",
       icon: Users,
-      color: "green"
+      isPrimary: false
     },
     {
       name: "Research Assistant",
       description: "Extract insights, verify literature, and analyze scientific papers.",
       icon: BookOpen,
-      color: "amber"
+      isPrimary: false
     },
     {
       name: "Read PDF & Chat",
       description: "Import PDFs and interact with your literature directly alongside your canvas.",
       icon: FileText,
-      color: "purple"
+      isPrimary: false
     },
     {
       name: "Progress Tracking",
       description: "Track writing velocity, milestones, and daily research streak goals.",
       icon: Calendar,
-      color: "indigo"
+      isPrimary: false
     }
   ];
 
   return (
     <div className={`
-      fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 shadow-xl dark:shadow-slate-900/60 z-40 transform transition-transform duration-300 ease-in-out
+      fixed inset-y-0 left-0 w-64 bg-white dark:bg-black border-r border-black dark:border-zinc-800 z-40 transform transition-transform duration-200 ease-in-out font-sans
       md:static md:w-1/4 md:translate-x-0 md:shadow-none
       ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
     `}>
       <div className="h-full flex flex-col">
-        <div className="p-4 flex items-center justify-between border-b dark:border-slate-700/50">
+        <div className="p-4 flex items-center justify-between border-b border-black dark:border-zinc-800">
           <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <h2 className="font-bold dark:text-white">Features & Tools</h2>
+            <BookOpen className="h-4 w-4 text-black dark:text-white" />
+            <h2 className="font-bold text-sm tracking-tight uppercase font-mono text-black dark:text-white">Features & Tools</h2>
           </div>
           <Button 
             variant="ghost" 
@@ -78,15 +76,25 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
               <button
                 key={feature.name}
                 onClick={() => onFeatureClick(feature.name)}
-                className="w-full text-left p-3 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800/60 transition-colors group"
+                className={`w-full text-left p-3 rounded-none border transition-all group ${
+                  feature.isPrimary
+                    ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-none"
+                    : "border-transparent hover:border-black dark:hover:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-950"
+                }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`bg-${feature.color}-100 dark:bg-${feature.color}-900/30 text-${feature.color}-800 dark:text-${feature.color}-300 rounded-full w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                    <feature.icon className="h-4 w-4" />
+                  <div className={`w-7 h-7 shrink-0 flex items-center justify-center border text-xs font-mono ${
+                    feature.isPrimary
+                      ? "bg-white text-black dark:bg-black dark:text-white border-white dark:border-black"
+                      : "bg-zinc-100 dark:bg-zinc-900 border-black dark:border-zinc-800 text-black dark:text-white"
+                  }`}>
+                    <feature.icon className="h-3.5 w-3.5" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-sm mb-1 dark:text-white">{feature.name}</h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                    <h3 className={`font-bold text-xs mb-1 ${feature.isPrimary ? "text-white dark:text-black" : "text-black dark:text-white"}`}>
+                      {feature.name}
+                    </h3>
+                    <p className={`text-[11px] line-clamp-2 leading-relaxed ${feature.isPrimary ? "text-zinc-300 dark:text-zinc-700" : "text-zinc-600 dark:text-zinc-400"}`}>
                       {feature.description}
                     </p>
                   </div>
@@ -96,10 +104,10 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
           </div>
         </ScrollArea>
         
-        <div className="p-4 border-t dark:border-slate-700/50">
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md text-sm text-blue-800 dark:text-blue-300">
-            <p className="font-medium mb-1">Need Help?</p>
-            <p className="text-xs">Access our comprehensive documentation or contact support for assistance.</p>
+        <div className="p-4 border-t border-black dark:border-zinc-800 font-mono text-xs">
+          <div className="p-3 border border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-black dark:text-white">
+            <p className="font-bold uppercase tracking-wider mb-1">Methodology Help</p>
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400">Access documentation or verify statistical tests in your workspace.</p>
           </div>
         </div>
       </div>
