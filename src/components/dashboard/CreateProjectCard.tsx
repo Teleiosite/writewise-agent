@@ -1,9 +1,7 @@
-
-import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, FlaskConical } from "lucide-react";
 
 interface CreateProjectCardProps {
   onCreateProject: () => void;
@@ -13,31 +11,30 @@ interface CreateProjectCardProps {
 
 export function CreateProjectCard({ onCreateProject, newProjectName, setNewProjectName }: CreateProjectCardProps) {
   return (
-    <Card className="border-2 border-blue-400 dark:border-blue-700 shadow-lg dark:shadow-blue-900/20 animate-scale-in">
-      <CardHeader className="bg-blue-50 dark:bg-blue-950/40 dark:backdrop-blur-sm">
-        <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-          <Plus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          Create New Project
+    <Card className="glass-card border-blue-200 dark:border-slate-800 shadow-md">
+      <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+          <FlaskConical className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          Create Research Project
         </CardTitle>
-        <CardDescription className="dark:text-gray-400">
-          Start a new writing project with our AI-powered tools
+        <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+          Start a new dissertation, research chapter, or data analysis project
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-6">
-        <div className="flex flex-col md:flex-row gap-3">
+      <CardContent className="pt-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Input
-            placeholder="Enter your project name..."
+            placeholder="e.g., Chapter 4: Financial Literacy Survey Analysis..."
             value={newProjectName}
             onChange={(e) => setNewProjectName(e.target.value)}
-            className="flex-grow focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-700 dark:bg-slate-800/50 dark:border-slate-700"
+            className="flex-grow h-10 text-sm focus:ring-2 focus:ring-blue-500 dark:bg-slate-950 dark:border-slate-800"
             onKeyDown={(e) => e.key === 'Enter' && onCreateProject()}
           />
           <Button 
             onClick={onCreateProject}
-            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700 transition-all transform hover:scale-105"
-            size="lg"
+            className="h-10 font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 shrink-0"
           >
-            <Plus className="h-5 w-5 mr-2 animate-bounce" />
+            <Plus className="h-4 w-4 mr-1.5" />
             Create Project
           </Button>
         </div>

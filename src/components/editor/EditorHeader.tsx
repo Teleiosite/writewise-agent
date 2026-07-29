@@ -65,10 +65,9 @@ export function EditorHeader({
   // Navigation mapping to ensure we use the correct tab values
   const primaryNav = [
     { label: "Editor", value: "editor", icon: <Layout className="h-3.5 w-3.5" /> },
+    { label: "Data Analysis", value: "data-analysis", icon: <FlaskConical className="h-3.5 w-3.5" /> },
     { label: "Assistance", value: "assistant", icon: <MessageSquare className="h-3.5 w-3.5" /> },
-    { label: "AI Detector", value: "ai-detector", icon: <AlertTriangle className="h-3.5 w-3.5" /> },
     { label: "Analytics", value: "stats", icon: <BarChart2 className="h-3.5 w-3.5" /> },
-    { label: "Humanizer", value: "humanizer", icon: <Zap className="h-3.5 w-3.5" /> },
   ];
 
   // MS Word-style Analysis Controls (Integrated into top header)
@@ -82,7 +81,6 @@ export function EditorHeader({
     { label: "PDF Reader", value: "pdf-reader", action: togglePdfReaderPanel, icon: <FileText className="h-3.5 w-3.5" /> },
     { label: "PDF Chat", value: "pdf-chat", action: togglePdfChatPanel, icon: <MessageSquare className="h-3.5 w-3.5" /> },
     { label: "Goals", value: "goals", value_internal: "goals", icon: <Target className="h-3.5 w-3.5" /> },
-    { label: "Data Analysis", value: "data-analysis", action: () => setActiveTab("data-analysis"), icon: <FlaskConical className="h-3.5 w-3.5" /> },
   ];
 
   return (

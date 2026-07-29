@@ -13,46 +13,40 @@ interface FeaturesSidebarProps {
 export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureClick }: FeaturesSidebarProps) {
   const features = [
     {
-      name: "AI-Powered Editor",
-      description: "Smart writing suggestions and real-time grammar feedback as you write.",
-      icon: FileText,
+      name: "AI Data Analysis",
+      description: "Python-computed statistics, SPSS syntax generation, and Chapter 4/5 narrative creation.",
+      icon: BookOpen,
       color: "blue"
     },
     {
+      name: "AI-Powered Editor",
+      description: "Smart writing workstation with real-time academic grammar and structure guidance.",
+      icon: FileText,
+      color: "emerald"
+    },
+    {
       name: "Citation Manager",
-      description: "Easily manage references and citations in multiple formats (APA, MLA, Chicago).",
+      description: "Manage references and citations in APA, MLA, Chicago, and Harvard formats.",
       icon: Users,
       color: "green"
     },
     {
-      name: "Progress Tracking",
-      description: "Set goals, track your writing habits, and visualize your progress over time.",
-      icon: Calendar,
-      color: "purple"
-    },
-    {
       name: "Research Assistant",
-      description: "AI-powered research tools to find relevant sources and generate insights.",
+      description: "Extract insights, verify literature, and analyze scientific papers.",
       icon: BookOpen,
       color: "amber"
     },
     {
-      name: "AI Detector",
-      description: "Analyze text to determine if it was likely created by AI. Perfect for educators and reviewers.",
-      icon: AlertTriangle,
-      color: "red"
+      name: "Read PDF & Chat",
+      description: "Import PDFs and interact with your literature directly alongside your canvas.",
+      icon: FileText,
+      color: "purple"
     },
     {
-      name: "Text Humanizer",
-      description: "Transform AI-generated content into natural-sounding text that passes AI detection.",
-      icon: FileText,
+      name: "Progress Tracking",
+      description: "Track writing velocity, milestones, and daily research streak goals.",
+      icon: Calendar,
       color: "indigo"
-    },
-    {
-      name: "Read PDF",
-      description: "Import and analyze PDF documents to extract key information and insights.",
-      icon: FileText,
-      color: "orange"
     }
   ];
 

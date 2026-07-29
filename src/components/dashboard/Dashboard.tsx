@@ -24,7 +24,7 @@ export function Dashboard() {
       <div className="w-full md:w-3/4">
         <ProjectSearch onSearch={handleSearch} />
         
-        <div className="mb-8 animate-pulse hover:animate-none">
+        <div className="mb-8">
           <CreateProjectCard
             onCreateProject={handleCreateProject}
             newProjectName={newProjectName}

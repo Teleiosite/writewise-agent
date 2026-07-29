@@ -1,12 +1,18 @@
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import animatePlugin from "tailwindcss-animate";
+import type { Config } from "tailwindcss";
+
+export default {
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
+  ],
+  safelist: [
+    { pattern: /bg-(blue|green|purple|amber|red|indigo|orange|emerald|cyan|violet)-(100|800|900)/ },
+    { pattern: /text-(blue|green|purple|amber|red|indigo|orange|emerald|cyan|violet)-(300|800)/ },
   ],
   prefix: "",
   theme: {
@@ -123,5 +129,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-}
+  plugins: [animatePlugin],
+} satisfies Config;

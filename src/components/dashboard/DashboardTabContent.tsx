@@ -5,8 +5,6 @@ import { WritingEditor } from "@/components/WritingEditor";
 import { ChatAssistant } from "@/components/ChatAssistant";
 import { WritingStats } from "@/components/WritingStats";
 import { WritingTracker } from "@/components/WritingTracker";
-import { AIDetector } from "@/components/AIDetector";
-import { TextHumanizer } from "@/components/TextHumanizer";
 import DataAnalysis from "@/pages/DataAnalysis";
 import type { TemplateType } from "@/components/DocumentTemplates";
 
@@ -82,14 +80,6 @@ export function DashboardTabContent({
       
       <TabsContent value="goals">
         <WritingTracker projectName={projectName} />
-      </TabsContent>
-      
-      <TabsContent value="ai-detector">
-        <AIDetector />
-      </TabsContent>
-      
-      <TabsContent value="humanizer">
-        <TextHumanizer />
       </TabsContent>
 
       {/* Data Analysis — embedded mode: no page header, lives inside editor tab system */}

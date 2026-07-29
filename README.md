@@ -1,601 +1,573 @@
-# WriteWise Agent 📝
+# WriteWise
 
-> High-Fidelity AI Writing Workstation & Academic Research Platform
+> **The academic integrity layer for AI-assisted research.**
+> Research you can defend. Results a supervisor can verify. A platform institutions can endorse.
 
-[![Deployment Status](https://img.shields.io/badge/deployment-live-brightgreen)](https://writewise-app.vercel.app)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Live App](https://img.shields.io/badge/Live-writewise--app.vercel.app-brightgreen)](https://writewise-app.vercel.app)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb)](https://reactjs.org/)
-[![AI-Powered](https://img.shields.io/badge/AI--Powered-Gemini%20%7C%20GPT--4-purple)](https://writewise-app.vercel.app)
-
-**[Live Demo](https://writewise-app.vercel.app)** | **[Report Bug](https://github.com/Teleiosite/writewise-agent/issues)** | **[Request Feature](https://github.com/Teleiosite/writewise-agent/issues)**
-
----
-
-## 📖 Overview
-
-WriteWise Agent is a premium, **Microsoft Word-style AI workstation** designed for hyper-productive academic research and content creation. It transforms the writing process into a structured, high-fidelity experience by integrating real-time AI analysis, structural drafting for scientific chapters, and a distraction-free wide-writing environment.
-
-### 🎯 Key Highlights
-
-- 🚀 **Global Pro Navigation** - Unified header-based control for the entire writing workstation.
-- ✍️ **Wide Writing Space** - Dynamic document canvas that expands for a focused writing experience.
-- 🤖 **Structural AI Drafting** - Intelligent generation of Chapters 1-5 (Introduction, Literature Review, etc.) with contextual topic awareness.
-- 📊 **Real AI Analytics** - Scientific data analysis and writing productivity insights.
-- ✅ **Full-Stack Production Ready** - Deployed on Vercel with a robust Supabase (PostgreSQL) backend.
+[![Python](https://img.shields.io/badge/Python-3.11-yellow)](https://python.org/)
+[![Supabase](https://img.shields.io/badge/Backend-Supabase-green)](https://supabase.com/)
 
 ---
 
-## ✨ Features
+## The Problem
 
-### Premium Workstation Experience
+Every AI writing tool currently on the market is fighting the institution.
 
-#### 🖥️ Global Pro Navigation
-- **Unified Control Center** - No more cluttered sidebars. All AI tools (Writing, Grammar, Humanizer) are consolidated into a professional "AI Tools" header dropdown.
-- **Persistent Project Header** - Seamlessly switch between the Editor, Assistance, and Analytics without losing project context.
+Their message is: *"Let AI write your research faster."*
+Universities hear: *"Let AI help your students cheat more efficiently."*
 
-#### 📄 Focused Writing Canvas
-- **Dynamic Layout** - The editor automatically expands to a wide-writing format when analysis panels are closed, providing a distraction-free Word-style workstation.
-- **Section-Based Drafting** - Manage your document through intuitive logical sections for better organization.
+This is not a winnable fight. And it is not the fight WriteWise is in.
 
-#### 🤖 Advanced AI Research Tools
-- **Structural Drafting (Ch 1-5)** - Specifically tuned AI for generating high-fidelity academic chapters (Introduction, Literature Review, Methodology, Results, Conclusion).
-- **Topic-Aware Generation** - Input your specific "Research Focus" to ensure AI outputs are contextually accurate for your study.
-- **Grammar & Academic Tone** - Real-time analysis of punctuation, syntax, and scholarly language.
-- **AI Humanizer** - Instantly refines AI-generated text to maintain a natural, human flow while preserving academic rigor.
+Universities are not trying to stop AI. They are trying to **preserve academic integrity** in an environment where AI has made it trivially easy to produce competent-looking research that cannot be verified, reproduced, or defended.
 
-### Research & Data Tools
+That is a governance problem. Not a writing problem.
 
-#### 📖 Citation & Source Management
-- **Universal Citation Engine** - Support for APA, MLA, Chicago, and more.
-- **Library Integration** - Import and manage references directly within the project workflow.
+WriteWise answers a different question:
 
-#### 📄 PDF Intelligence
-- **Interactive PDF Chat** - Ask questions to your research papers and get instant summaries.
-- **Side-by-Side Reading** - Reference your PDFs directly next to your active drafting area.
-
-#### 📊 Scientific Analytics
-- **Writing Productivity** - Track daily streaks, word counts, and writing time.
-- **AI Research Insights** - Get critical scientific analysis and logical gap identification from your document content.
-
-### User Experience
-
-- 🎨 **Modern UI/UX** - Clean, intuitive interface built with shadcn/ui
-- 🌓 **Theme Support** - Light and dark mode with system preference detection
-- 📱 **Responsive Design** - Optimized for desktop, tablet, and mobile devices
-- 🔔 **Real-Time Notifications** - Toast notifications for actions and updates
-- ⚡ **Fast Performance** - Optimized loading with code splitting and lazy loading
+> **How do we help universities trust AI-assisted research?**
 
 ---
 
-## 🏗️ System Architecture
+## What WriteWise Is
 
-### High-Level Architecture
-```mermaid
-graph TB
-    subgraph Frontend["🎨 Pro Workstation (Vercel)"]
-        A[React 19 + TypeScript]
-        A --> B[📊 Analytics & AI Insights]
-        A --> C[✍️ Wide-Writing Editor]
-        A --> D[📁 Project Workspace]
-        A --> E[🤖 AI Structural Drafter]
-        A --> F[📄 PDF Intelligence]
-    end
+WriteWise is an **Academic Research Platform** built on a single architectural principle:
 
-    subgraph Backend["⚙️ Backend Infrastructure (Supabase)"]
-        H[(💾 PostgreSQL + RLS)]
-        I[🔑 Managed Auth]
-        J[📦 Research Storage]
-        
-        H --> H1[users]
-        H --> H2[projects]
-        H --> H3[academic_sections]
-        H --> H4[citations]
-        H --> H5[data_analysis]
-    end
+> **Python computes. AI explains. The platform verifies the link between them.**
 
-    subgraph AI_Core["🧠 AI Intelligence Layer"]
-        K[🤖 OpenAI GPT-4o]
-        L[🤖 Google Gemini 1.5 Pro]
-        M[🌐 Vercel AI Proxy]
-    end
+Statistical analysis is performed by Python (Pandas + SciPy) — not by an LLM. The AI receives only the verified numerical outputs and writes the academic interpretation. Every result is linked back to the original dataset via a cryptographic hash. Every significant research action is recorded in an immutable, append-only event log.
 
-    B & C & E & F -->|Proxy Streaming| M
-    M --> K & L
-    A -->|JWT Authenticated| I
-    I -->|Postgres Query| H
-    F -->|Document RAG| J
+The result is research that students can defend, supervisors can verify, and institutions can endorse.
 
-    style Frontend fill:#f0f7ff,stroke:#0070f3,stroke-width:2px
-    style Backend fill:#fff7ed,stroke:#f97316,stroke-width:2px
-    style AI_Core fill:#f5f3ff,stroke:#8b5cf6,stroke-width:2px
+### What Makes WriteWise Different
+
+| Capability | ChatGPT | Grammarly | SPSS | Zotero | WriteWise |
+|---|---|---|---|---|---|
+| Real statistical computation | ❌ | ❌ | ✅ | ❌ | ✅ |
+| SPSS syntax for reproducibility | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Dataset authentication (SHA-256) | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Immutable research provenance chain | ❌ | ❌ | ❌ | ❌ | ✅ |
+| AI-assisted chapter generation | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Chapter claims verified against outputs | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Supervisor verification workflow | ❌ | ❌ | ❌ | ❌ | 🚧 |
+| Institutional governance dashboard | ❌ | ❌ | ❌ | ❌ | 🚧 |
+
+---
+
+## What WriteWise Is Not
+
+- **Not an AI essay writer.** WriteWise does not write your research. It helps you produce research you can stand behind.
+- **Not a grammar checker.** Grammarly solves that problem. WriteWise solves a different one.
+- **Not a citation manager.** Zotero exists. WriteWise integrates with your sources, it doesn't replace them.
+- **Not SPSS.** WriteWise uses the same statistical methods as SPSS and generates SPSS syntax so your supervisor can reproduce every result. You don't need an SPSS licence.
+
+---
+
+## Core Design Philosophy
+
+### The Separation of Concerns
+
+```
+Python computes.   →   Deterministic. Reproducible. Identical to SPSS.
+AI explains.       →   Natural language. Context-aware. Clearly labelled.
+Platform verifies. →   Cryptographic links between data, output, and interpretation.
 ```
 
-### Technology Stack
+This separation is the foundation of every architectural decision in this project. Violating it — allowing an LLM to generate or modify statistical outputs — breaks the integrity guarantee the entire platform rests on.
 
-#### High-Fidelity Frontend
-```yaml
-Framework: React 19 (Production Grade)
-Language: TypeScript 5.0
-Design System: Tailwind CSS 3.4 + shadcn/ui
-Animations: Framer Motion
-Icons: Lucide React
-Editor Core: TipTap/Rich-Text
-Charts: Recharts (Scientific Data Visualization)
-PDF Core: pdfjs-dist + Mammoth
+### The Provenance Principle
+
+Every significant research action creates an immutable event. Nothing is overwritten. The history cannot be edited.
+
+A supervisor challenging a dissertation can see:
+
+```
+2027-03-14 10:15  DATASET_UPLOADED    survey_data.xlsx  SHA-256: 6A8D3B1C...
+2027-03-14 10:18  ANALYSIS_EXECUTED   Python 3.11 · Pandas 2.1.0 · SciPy 1.11.0
+2027-03-14 10:19  RESULT_GENERATED    Pearson r = 0.72 · p = 0.003
+2027-03-14 10:21  NARRATIVE_GENERATED Claude Sonnet · inputs: verified stats only
+2027-03-14 14:31  DATASET_REPLACED    old SHA-256: 6A8D3B1C · new SHA-256: 2F9C4E7A
+2027-03-14 14:33  ANALYSIS_RERUN      Pearson r = 0.81 · p = 0.001
+2027-03-14 15:02  SUPERVISOR_REVIEWED confirmed
 ```
 
-#### Production Backend (BaaS)
-```yaml
-Platform: Supabase
-Database: PostgreSQL 15 (with Row-Level Security)
-Authentication: Supabase Auth (JWT & Session Persistence)
-Storage: Supabase S3-Compatible Buckets
-API Gateway: Vercel Serverless Functions
-```
+Nothing was hidden. Nothing was fabricated. The chain of custody is complete.
 
-#### AI Intelligence
-```yaml
-Models: Gemini 1.5 Pro, GPT-4o, Claude 3.5
-Proxy: Custom Vercel AI Proxy for secure API injection
-Capabilities: Structural Drafting, Grammar Analysis, Data Interpretation
-```
+This is to academic research what Git is to software development.
 
-#### Backend (BaaS)
-```yaml
-Platform: Supabase
-Database: PostgreSQL 15
-Authentication: Supabase Auth (JWT-based)
-Storage: Supabase Storage (S3-compatible)
-Real-time: PostgreSQL triggers + Supabase Realtime (planned)
-Row-Level Security: Enabled for all tables
-```
+---
 
-#### DevOps & Deployment
-```yaml
-Hosting: Vercel (Serverless)
-CI/CD: GitHub + Vercel (automatic deployments)
-Environment: Production & Development environments
-SSL/TLS: Automatic via Vercel
-CDN: Vercel Edge Network (global)
-Monitoring: Vercel Analytics (planned)
+## System Architecture
+
+```
+Browser (Student)
+        │
+        │  Upload dataset (Excel / CSV / SPSS .sav)
+        ▼
+WriteWise Frontend
+(React 19 + TypeScript on Vercel)
+        │
+        ├─────────────────────────────────────┐
+        │                                     │
+        │  POST /analyse                      │  POST /api/generate-narrative
+        │  { data, codebook, context }        │  { stats_json, context, model }
+        ▼                                     ▼
+Python Statistics Service            AI Router (Vercel Serverless)
+(FastAPI · Railway)                  (Claude / GPT-4o / Gemini)
+Pandas + SciPy                               │
+        │                                    │
+        │  Returns verified stats_json       │  Returns academic narrative
+        │                                    │
+        └──────────────┬─────────────────────┘
+                       │
+                       ▼
+              Research Integrity Engine
+         ┌─────────────────────────────────┐
+         │  · Dataset hash recorded        │
+         │  · Events appended (immutable)  │
+         │  · Stats linked to narrative    │
+         │  · SPSS syntax generated        │
+         │  · Integrity Report assembled   │
+         └─────────────────────────────────┘
+                       │
+                       ▼
+              Supabase (PostgreSQL)
+         ┌─────────────────┬───────────────────┐
+         │  Business DB    │  Integrity Engine  │
+         │  (mutable)      │  (append-only)     │
+         │  users          │  analysis_events   │
+         │  projects       │  dataset_hashes    │
+         │  subscriptions  │  verification_logs │
+         │  notifications  │  ai_generation_logs│
+         └─────────────────┴───────────────────┘
+                       │
+                       ▼
+              WriteWise Editor
+         (inject narrative + tables into document)
+         + DOCX Export
+         + Supervisor Share Link (read-only)
 ```
 
 ---
 
-## 🗄️ Database Schema
+## Database Architecture
 
-### Core Tables
+WriteWise uses two distinct database worlds on the same Supabase project.
+
+### Mutable Business Tables (standard SaaS)
+
+These tables behave like any normal web application. Rows can be updated and deleted.
 
 ```sql
--- Users (managed by Supabase Auth)
-CREATE TABLE users (
-  id UUID PRIMARY KEY REFERENCES auth.users,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  full_name VARCHAR(255),
-  avatar_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Projects
-CREATE TABLE projects (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  status VARCHAR(50) DEFAULT 'active',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Documents
-CREATE TABLE documents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  title VARCHAR(255) NOT NULL,
-  content TEXT,
-  word_count INTEGER DEFAULT 0,
-  status VARCHAR(50) DEFAULT 'draft',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Citations
-CREATE TABLE citations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
-  citation_type VARCHAR(50) NOT NULL,
-  citation_style VARCHAR(50) NOT NULL,
-  citation_data JSONB NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Analytics
-CREATE TABLE analytics (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  event_type VARCHAR(100) NOT NULL,
-  event_data JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+users          -- Managed by Supabase Auth
+projects       -- Research projects
+documents      -- Written content, autosaved drafts
+citations      -- Reference library
+notifications  -- User alerts
+subscriptions  -- Billing and plan state
 ```
 
-### Row-Level Security (RLS)
+### Immutable Integrity Tables (append-only, never updated)
+
+These tables form the Research Integrity Engine. Rows are never modified after creation. Row-level database rules enforce this.
 
 ```sql
--- Users can only read/update their own data
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage own projects" ON projects
-  FOR ALL USING (auth.uid() = user_id);
-
-ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage own documents" ON documents
-  FOR ALL USING (auth.uid() = user_id);
-
-ALTER TABLE citations ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage own citations" ON citations
-  FOR ALL USING (auth.uid() = user_id);
+research_identities   -- Pseudonymised identity layer (GDPR compliance)
+analysis_events       -- Append-only event log (the provenance chain)
+dataset_hashes        -- Cryptographic fingerprints of uploaded files
+verification_logs     -- Results of claim-verification checks
+ai_generation_logs    -- AI model, inputs, token count per generation
+supervisor_reviews    -- Supervisor actions, timestamps, decisions
+research_receipts     -- Assembled integrity reports (generated, never edited)
 ```
+
+#### Why Two Worlds?
+
+Supervisors, ethics committees, and institutions need to trust that research records cannot be retroactively altered. The append-only integrity tables make this a technical guarantee, not a policy promise.
+
+For implementation details, see [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ---
 
-## 📁 Project Structure
+## Technology Stack
+
+### Frontend
+| Technology | Version | Purpose |
+|---|---|---|
+| React | 19 | UI framework |
+| TypeScript | 5.5 | Type safety |
+| Tailwind CSS | 3.4 | Styling |
+| shadcn/ui | latest | Component library |
+| TipTap | 3.22 | Rich text editor |
+| Recharts | 2.x | Data visualisation |
+| pdfjs-dist | 5.x | PDF rendering |
+
+### Backend
+| Technology | Version | Purpose |
+|---|---|---|
+| Supabase | 2.x | PostgreSQL + Auth + Storage |
+| Vercel Serverless | latest | API proxy, AI router |
+| FastAPI | latest | Python statistics service |
+
+### Statistics Engine (Python)
+| Library | Version | Purpose |
+|---|---|---|
+| Pandas | 2.1 | Data manipulation |
+| SciPy | 1.11 | Statistical tests |
+| NumPy | 1.26 | Numerical computation |
+| openpyxl | 3.x | Excel file parsing |
+
+### AI Models
+| Model | Provider | Role |
+|---|---|---|
+| Claude Sonnet | Anthropic | Academic narrative (default) |
+| GPT-4o | OpenAI | Academic narrative (alternative) |
+| Gemini 1.5 Pro | Google | Academic narrative (alternative) |
+
+---
+
+## Development Roadmap
+
+### Phase 0 — Foundation (Do This Before Everything Else)
+
+These are not features. They are architectural decisions that cannot be added retroactively.
+
+**Every analysis that runs before this is in place will have an incomplete provenance chain — permanently.**
+
+| Task | Why It Cannot Wait | Estimated Effort |
+|---|---|---|
+| Implement `analysis_events` append-only table | Foundation of all future verification features | 1 day |
+| Implement `dataset_hashes` table with SHA-256 | Dataset authentication; fabrication detection | 0.5 day |
+| Implement `research_identities` pseudonymisation | GDPR compliance; required before collecting user data at scale | 1 day |
+| Remove Text Humanizer from all public routes | Fatal positioning contradiction; institutional trust blocker | 0.5 day |
+| Fix Tailwind dynamic class purge bug | Feature icons invisible in production build | 2 hours |
+| `logResearchEvent()` service in frontend | Ties all future features to the event chain | 1 day |
+
+**Success criterion:** Every analysis run after Phase 0 has a complete, immutable provenance chain stored in Supabase. Zero exceptions.
+
+---
+
+### Phase 1 — MVP: The Core Loop
+
+**Objective:** Prove that a student can run a complete analysis, receive a verified output, and share it with a supervisor — all in one session.
+
+**Features to build:**
+
+- [ ] **Public landing page** with reproducibility as the hero message
+- [ ] **New user onboarding wizard** (3 screens: what WriteWise is, how analysis works, first project)
+- [ ] **Sample dataset** with pre-populated codebook (zero-friction first run, no jargon)
+- [ ] **Research Integrity Report v1** — assembled PDF/HTML including:
+  - Statistical tables (Python-computed)
+  - SPSS syntax (one-click copy)
+  - Dataset hash and timestamp
+  - AI model and inputs declaration
+  - WriteWise version used
+- [ ] **Supervisor share link** — read-only, no login required, shows full Integrity Report
+- [ ] **DOCX export** with publication-ready table formatting (APA style)
+- [ ] **"Verified by WriteWise" badge** on all analysis outputs
+
+**Architectural decisions for Phase 1:**
+
+- The `analysis_events` table must be in place (Phase 0)
+- The Supervisor Share link reads from `research_receipts` (immutable), not the live analysis state
+- DOCX export uses the same verified data as the Integrity Report — not regenerated
+
+**Database changes:**
+
+```sql
+-- research_receipts: generated at analysis completion, never modified
+CREATE TABLE research_receipts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  analysis_id UUID REFERENCES data_analyses(id),
+  receipt_version VARCHAR(10) NOT NULL,   -- e.g. "1.0"
+  payload JSONB NOT NULL,                 -- full structured receipt data
+  share_token VARCHAR(64) UNIQUE,         -- for supervisor share links
+  generated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  -- No updated_at — immutable
+);
+```
+
+**Success criteria:**
+
+- 100 users complete a full analysis (upload → compute → report → share)
+- 5 supervisors independently verify results using generated SPSS syntax
+- Zero analysis errors due to Python service downtime (requires paid Railway tier)
+
+---
+
+### Phase 2 — Version 1: Claim Verification
+
+**Objective:** WriteWise can audit a student's written chapter against the verified statistical outputs — the "auditor" capability.
+
+**Features to build:**
+
+- [ ] **Chapter Claim Verification** — paste or upload Chapter 4, WriteWise checks:
+  - Statistical claims against computed outputs (e.g. "Pearson r = 0.71" vs. actual r = 0.72)
+  - P-value claims against computed significance
+  - Descriptive claims (mean, SD) against demographic tables
+  - Flags inconsistencies with exact evidence and line references
+- [ ] **Citation verification v1** — DOI resolution, checks citations exist in reference list
+- [ ] **Methodology validation** — confirms test selection is appropriate for variable types
+- [ ] **Expanded statistical tests** — ANOVA, Chi-square, Factor Analysis
+- [ ] **Full provenance timeline UI** — student sees their complete research history
+
+**Architectural decisions for Phase 2:**
+
+- Claim verification runs against the `computed_stats` JSONB stored in `data_analyses`
+- The engine can only verify claims for analyses that originated in WriteWise (this is intentional — it is the lock-in mechanism)
+- Verification results are stored in `verification_logs` (immutable)
+
+**Technical considerations:**
+
+- Claim extraction from chapter text uses structured NLP (pattern matching for statistical notation, not LLM extraction — LLM extraction introduces hallucination into the verification layer, which defeats the purpose)
+- Tolerance thresholds for numerical matching must be configurable (rounding differences between software)
+
+**Success criteria:**
+
+- Claim verification catches ≥95% of deliberate numerical inconsistencies in test datasets
+- False positive rate < 5% on legitimate research
+- 500 paying subscribers
+
+---
+
+### Phase 3 — Version 2: Supervisor Surface
+
+**Objective:** Supervisors adopt WriteWise not because students use it, but because it saves them review time and increases their confidence in submitted work.
+
+**Features to build:**
+
+- [ ] **Supervisor dashboard** — see all students who have shared analyses, status at a glance
+- [ ] **Structured verification workflow** — supervisor marks claims as verified, requests corrections, adds comments
+- [ ] **Correction tracking** — student corrections create new events; supervisor is notified; correction delta is recorded
+- [ ] **Department pilot packaging** — onboarding materials for department-level adoption
+- [ ] **Examination report** — structured PDF for external examiners, including complete provenance chain
+
+**Architectural decisions for Phase 3:**
+
+- Supervisors have read-only access to student analyses via share links, or full access if students invite them explicitly
+- Supervisor actions are logged in `supervisor_reviews` (immutable)
+- Correction requests create a new `CORRECTION_REQUESTED` event; student corrections create `CORRECTION_SUBMITTED` events — the full dialogue is preserved
+
+**Business model change at Phase 3:**
+
+- Supervisor accounts: **free permanently** — supervisors are the distribution channel into departments
+- Student accounts: subscription tiers based on analyses per month
+- Department pilot: paid, negotiated
+
+**Success criteria:**
+
+- 1 department (10+ supervisors, 50+ students) on a paid pilot
+- 1 published case study with named institution and supervisor
+- Average supervisor review time reduced by ≥50% (self-reported)
+
+---
+
+### Phase 4 — Enterprise: Institutional Surface
+
+**Objective:** University IT departments and research offices pay for WriteWise as academic integrity infrastructure.
+
+**Features to build:**
+
+- [ ] **SSO** via Google Workspace / Microsoft 365 (`.edu` accounts)
+- [ ] **University governance dashboard** — aggregate metrics by department, cohort, supervisor
+- [ ] **Policy configuration** — institution sets AI use rules; WriteWise enforces them
+- [ ] **Admin roles** — department head, faculty admin, IT administrator
+- [ ] **IRB/ethics committee compliance kit** — documentation package for ethics applications
+- [ ] **Department template library** — upload methodology guide; WriteWise checks submissions against it
+- [ ] **Audit export** — full institution-level export for accreditation review
+- [ ] **SLA documentation and uptime commitment**
+- [ ] **Data Processing Agreement** (GDPR/FERPA compliant)
+
+**Architectural decisions for Phase 4:**
+
+- Multi-tenancy: each institution is isolated at the RLS policy level
+- Data residency controls: allow institutions to specify which Supabase region stores their data
+- All institutional data is exportable in standard formats (JSON, CSV) — no vendor lock-in at the data layer
+
+**Success criteria:**
+
+- 3 paying institutional contracts ($5K–$50K/year)
+- Mentioned in at least one university AI use policy as an approved tool
+- 15,000 active student users
+
+---
+
+## Repository Structure
 
 ```
 writewise-agent/
-├── public/                      # Static assets
-│   ├── fonts/                   # Custom fonts
-│   └── images/                  # Image assets
 │
-├── src/
-│   ├── components/              # React components
-│   │   ├── dashboard/          # Dashboard components
-│   │   │   ├── Overview.tsx
-│   │   │   ├── RecentProjects.tsx
-│   │   │   └── WritingStats.tsx
-│   │   │
-│   │   ├── editor/             # Writing editor components
-│   │   │   ├── EditorToolbar.tsx
-│   │   │   ├── TextEditor.tsx
-│   │   │   └── FormatPanel.tsx
-│   │   │
-│   │   ├── citations/          # Citation management
-│   │   │   ├── CitationForm.tsx
-│   │   │   ├── CitationList.tsx
-│   │   │   └── StyleSelector.tsx
-│   │   │
-│   │   ├── pdf/                # PDF interaction
-│   │   │   ├── PDFReader.tsx
-│   │   │   └── PDFChat.tsx
-│   │   │
-│   │   ├── auth/               # Authentication
-│   │   │   ├── LoginForm.tsx
-│   │   │   ├── RegisterForm.tsx
-│   │   │   └── PasswordReset.tsx
-│   │   │
-│   │   └── ui/                 # Reusable UI components (shadcn/ui)
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── dialog.tsx
-│   │       └── [40+ components]
+├── src/                              # Frontend (React + TypeScript)
+│   ├── components/
+│   │   ├── analysis/                 # Research Integrity Engine UI
+│   │   │   ├── FileUploader.tsx      # Dataset upload with hash computation
+│   │   │   ├── CodebookEditor.tsx    # Variable type assignment
+│   │   │   ├── ContextForm.tsx       # Research background input
+│   │   │   ├── StatisticsPanel.tsx   # Verified output display
+│   │   │   ├── NarrativeStream.tsx   # AI narrative streaming
+│   │   │   ├── SyntaxPanel.tsx       # SPSS syntax output
+│   │   │   └── IntegrityReport.tsx   # 🚧 Assembled receipt display
+│   │   ├── editor/                   # Document editor
+│   │   ├── dashboard/                # Project management
+│   │   ├── citations/                # Reference management
+│   │   └── layout/                   # Navigation, headers, footers
 │   │
-│   ├── contexts/                # React Context providers
-│   │   ├── AuthContext.tsx     # Authentication state
-│   │   ├── ThemeContext.tsx    # Theme management
-│   │   └── ProjectContext.tsx  # Project state
+│   ├── pages/
+│   │   ├── Landing.tsx               # 🚧 Public homepage (does not exist yet)
+│   │   ├── DataAnalysis.tsx          # Statistical analysis workflow
+│   │   ├── LoginPage.tsx
+│   │   ├── RegisterPage.tsx
+│   │   └── [other pages]
 │   │
-│   ├── hooks/                   # Custom React hooks
-│   │   ├── useAuth.ts          # Authentication hook
-│   │   ├── useProjects.ts      # Project management
-│   │   ├── useDocuments.ts     # Document operations
-│   │   └── useAnalytics.ts     # Analytics tracking
+│   ├── services/
+│   │   ├── analysisService.ts        # Python stats API + narrative generation
+│   │   ├── eventLog.ts               # 🚧 Append-only event logging service
+│   │   ├── datasetHash.ts            # 🚧 SHA-256 hashing at upload time
+│   │   └── integrityReport.ts        # 🚧 Receipt assembly
 │   │
-│   ├── lib/                     # Utility libraries
-│   │   ├── supabase.ts         # Supabase client config
-│   │   ├── utils.ts            # Helper functions
-│   │   └── validators.ts       # Input validation
+│   ├── hooks/
+│   │   ├── useAnalysis.ts            # Analysis state management
+│   │   └── useDashboardTabs.ts       # Tab state
 │   │
-│   ├── pages/                   # Page components
-│   │   ├── Dashboard.tsx       # Main dashboard
-│   │   ├── Editor.tsx          # Writing editor
-│   │   ├── Projects.tsx        # Project list
-│   │   ├── Citations.tsx       # Citation manager
-│   │   ├── Analytics.tsx       # Analytics page
-│   │   ├── Settings.tsx        # User settings
-│   │   ├── Login.tsx           # Login page
-│   │   └── Register.tsx        # Registration
-│   │
-│   ├── services/                # API service layers
-│   │   ├── projectService.ts   # Project CRUD
-│   │   ├── documentService.ts  # Document CRUD
-│   │   ├── citationService.ts  # Citation operations
-│   │   └── analyticsService.ts # Analytics tracking
-│   │
-│   ├── types/                   # TypeScript type definitions
-│   │   ├── database.types.ts   # Supabase generated types
-│   │   ├── project.types.ts    # Project types
-│   │   └── document.types.ts   # Document types
-│   │
-│   ├── App.tsx                  # Main app component
-│   ├── main.tsx                 # Entry point
-│   └── index.css                # Global styles
+│   ├── contexts/                     # React Context providers
+│   ├── types/                        # TypeScript type definitions
+│   │   ├── analysis.types.ts         # Statistical types
+│   │   └── events.types.ts           # 🚧 Event log types
+│   └── lib/
+│       └── supabase.ts               # Supabase client
 │
-├── .env.example                 # Environment variables template
-├── .gitignore                   # Git ignore rules
-├── package.json                 # Dependencies
-├── tsconfig.json                # TypeScript config
-├── tailwind.config.js           # Tailwind CSS config
-├── vite.config.ts               # Vite configuration
-└── README.md                    # This file
+├── api/                              # Vercel serverless functions
+│   └── generate-narrative.ts         # AI model router (Claude/GPT-4o/Gemini)
+│
+├── writewise-stats-api/              # Python microservice (FastAPI)
+│   ├── main.py                       # Statistical computation engine
+│   ├── requirements.txt              # Python dependencies
+│   └── Procfile                      # Railway deployment config
+│
+├── supabase/                         # Database migrations
+│   └── migrations/                   # SQL migration files (chronological)
+│
+├── docs/                             # 🚧 Extended documentation
+│   ├── ARCHITECTURE.md               # Technical architecture decisions
+│   ├── EVENTS.md                     # Event type catalogue
+│   ├── STATISTICS.md                 # Statistical methods reference
+│   └── CONTRIBUTING.md               # Contribution guidelines
+│
+├── README.md                         # This file
+├── package.json
+├── vite.config.ts
+└── tailwind.config.ts
 ```
+
+Items marked 🚧 do not yet exist. They are planned for Phase 0 or Phase 1.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js** 20.x or higher
-- **npm** 9.x or higher
-- **Git** for version control
-- **Supabase Account** (for backend services)
+- Node.js 20.x or higher
+- Python 3.11+
+- A Supabase project (free tier sufficient for development)
+- A Railway account (for Python statistics service)
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Teleiosite/writewise-agent.git
-   cd writewise-agent
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install --legacy-peer-deps
-   ```
-   
-   > Note: The `--legacy-peer-deps` flag resolves peer dependency conflicts with React 19 and some packages. This is a temporary workaround.
-
-3. **Set up environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Add your Supabase credentials:
-   ```env
-   VITE_SUPABASE_URL=your-project-url.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
-
-4. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-   
-   The application will be available at `http://localhost:5173`
-
-### Building for Production
-
 ```bash
-# Create production build
-npm run build
+# 1. Clone the repository
+git clone https://github.com/Teleiosite/writewise-agent.git
+cd writewise-agent
 
-# Preview production build locally
-npm run preview
+# 2. Install frontend dependencies
+npm install --legacy-peer-deps
+# Note: --legacy-peer-deps resolves next-themes peer conflict with React 19.
+# This will be resolved when next-themes releases React 19 support.
+
+# 3. Set up environment variables
+cp .env.example .env
+# Add your credentials (see Environment Variables section)
+
+# 4. Run database migrations
+# Open your Supabase SQL editor and run files in supabase/migrations/ in order
+
+# 5. Start the development server
+npm run dev
+
+# 6. In a separate terminal, start the Python statistics service
+cd writewise-stats-api
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+### Environment Variables
+
+```env
+# Frontend (Vite)
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_STATS_API_URL=http://localhost:8000    # Local dev; Railway URL in production
+
+# Vercel Serverless Functions (set in Vercel dashboard for production)
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=AIza...
 ```
 
 ---
 
-## 🔧 Configuration
+## Contributing
 
-### Supabase Setup
+WriteWise is approaching a pivotal phase of development. Contributions that strengthen the Research Integrity Engine are most valuable right now.
 
-1. **Create a Supabase project** at [supabase.com](https://supabase.com)
+### High-Priority Contributions
 
-2. **Configure authentication**
-   - Navigate to Authentication → Providers
-   - Enable Email provider
-   - Configure redirect URLs:
-     - Development: `http://localhost:5173/**`
-     - Production: `https://your-domain.vercel.app/**`
+1. **`eventLog.ts` service** — append-only event logging for all research actions
+2. **`datasetHash.ts` service** — SHA-256 computation on file upload
+3. **`IntegrityReport.tsx` component** — assembled verification report
+4. **Supervisor share link** — read-only report page (no login required)
+5. **Database migrations** — Phase 0 immutable table schema
 
-3. **Set up database tables**
-   - Run the SQL commands from the [Database Schema](#database-schema) section
-   - Enable Row-Level Security on all tables
+### The One Rule
 
-4. **Configure storage** (optional)
-   - Create storage buckets for user uploads
-   - Set appropriate access policies
+> **Never allow an AI model to generate, modify, or influence statistical outputs.**
 
-### Vercel Deployment
+AI receives verified Python outputs. It explains them. It does not produce them. Every engineering decision must preserve this separation.
 
-1. **Connect repository to Vercel**
-   ```bash
-   # Install Vercel CLI
-   npm i -g vercel
-   
-   # Deploy
-   vercel
-   ```
+### Development Standards
 
-2. **Configure environment variables** in Vercel Dashboard
-   - Add `VITE_SUPABASE_URL`
-   - Add `VITE_SUPABASE_ANON_KEY`
-
-3. **Enable automatic deployments**
-   - Vercel will automatically deploy on `git push`
+- TypeScript strict mode — no `any` types in the integrity engine layer
+- All new Supabase tables affecting research integrity are append-only by default
+- Event types must be defined in `types/events.types.ts` before implementation
+- Functions that write to integrity tables must never fail silently — log errors, but do not throw in a way that breaks the main research workflow
 
 ---
 
-## 📊 Current Status
+## Known Issues
 
-### ✅ Completed Features (Pro Mode)
-
-- [x] **Global Pro Navigation** - Unified Microsoft Word-style workstation header.
-- [x] **Chapter 1-5 Generator** - Structural academic drafting with topic awareness.
-- [x] **Wide Writing Space** - Dynamic layout for distraction-free writing.
-- [x] **Real-Time AI Analysis** - Grammar, tone, and scientific gap identification.
-- [x] **Vercel AI Proxy** - Secure, production-ready AI API integration.
-- [x] **Citation Manager** - Full APA/MLA support and project library.
-- [x] **PDF Chat & Reader** - High-fidelity PDF interaction.
-- [x] **Production Infrastructure** - Fully deployed on Vercel with Supabase DB.
-
-### 🚧 In Progress
-
-- [ ] **AI Research Analyst v2** - Advanced numerical data interpretation (CSV/Excel).
-- [ ] **Real-time Collaboration** - Multi-user document presence.
-- [ ] **Export to DOCX** - Academic-ready document exporting.
-- [ ] **Plagiarism Search** - Deep-web scientific integrity checking.
-
-### 🐛 Known Issues
-
-1. **Dependency Conflicts**
-   - `next-themes` peer dependency conflict with React 19
-   - **Workaround:** Using `--legacy-peer-deps` flag
-   - **Status:** Monitoring for upstream fix
-
-2. **Large File PDF Processing**
-   - Large PDF files (>10MB) may be slow in the browser reader
-   - **Status:** Optimization planned
-   - **Workaround:** Compress PDFs before upload
+| Issue | Severity | Status |
+|---|---|---|
+| Tailwind dynamic class strings (`bg-${color}-100`) purged in production build — feature icons invisible | 🔴 Critical | Open |
+| `next-themes` peer dependency conflict with React 19 | 🟡 Medium | Workaround: `--legacy-peer-deps` |
+| Python stats API on Railway free tier — cold start delays of 30–60 seconds | 🟡 Medium | Move to paid tier (planned Phase 1) |
+| No test suite (`npm run test` script exists but no tests written) | 🟠 High | Open |
+| No rate limiting on AI API endpoints | 🟠 High | Open |
 
 ---
 
-## 🛣️ Roadmap
-
-### Phase 1: Core Enhancement (Q1 2025)
-- [ ] Complete OpenAI/Gemini API integration
-- [ ] Implement real-time AI suggestions
-- [ ] Add collaborative editing (multiple users)
-- [ ] Enhance PDF chat with RAG capabilities
-- [ ] Performance optimizations
-
-### Phase 2: Advanced Features (Q2 2025)
-- [ ] Plagiarism detection service
-- [ ] Grammar checker with advanced rules
-- [ ] Voice-to-text dictation
-- [ ] Document version history
-- [ ] Team workspaces
-
-### Phase 3: Mobile & Integrations (Q3 2025)
-- [ ] React Native mobile app
-- [ ] Browser extensions (Chrome, Firefox)
-- [ ] API for third-party integrations
-- [ ] Zapier/Make.com integrations
-- [ ] Google Docs/Microsoft Word plugins
-
-### Phase 4: Enterprise Features (Q4 2025)
-- [ ] SSO (Single Sign-On) support
-- [ ] Advanced analytics dashboard
-- [ ] Custom branding options
-- [ ] Audit logs and compliance features
-- [ ] Self-hosted deployment option
-
----
-
-## 🧪 Testing
-
-```bash
-# Run unit tests
-npm run test
-
-# Run E2E tests
-npm run test:e2e
-
-# Generate coverage report
-npm run test:coverage
-```
-
----
-
-## 🤝 Contributing
-
-Contributions make the open-source community an amazing place to learn and create. Any contributions you make are **greatly appreciated**.
-
-### How to Contribute
-
-1. **Fork the Project**
-2. **Create your Feature Branch**
-   ```bash
-   git checkout -b feature/AmazingFeature
-   ```
-3. **Commit your Changes**
-   ```bash
-   git commit -m 'Add some AmazingFeature'
-   ```
-4. **Push to the Branch**
-   ```bash
-   git push origin feature/AmazingFeature
-   ```
-5. **Open a Pull Request**
-
-### Code Style
-
-- Follow TypeScript best practices
-- Use ESLint and Prettier for formatting
-- Write meaningful commit messages
-- Add comments for complex logic
-- Update documentation as needed
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👨‍💻 Author
+## Author
 
 **Abomide Oluwaseye**
 
-- Email: abosey23@gmail.com
-- LinkedIn: [linkedin.com/in/abomide-oluwaseye](https://linkedin.com/in/abomide-oluwaseye)
 - GitHub: [@Teleiosite](https://github.com/Teleiosite)
-- Portfolio: [Live Demo](https://writewise-app.vercel.app)
+- Email: abosey23@gmail.com
+- Live App: [writewise-app.vercel.app](https://writewise-app.vercel.app)
 
 ---
 
-## 🙏 Acknowledgments
+## License
 
-- [React](https://reactjs.org/) - UI framework
-- [Vite](https://vitejs.dev/) - Build tool
-- [Supabase](https://supabase.com/) - Backend-as-a-Service
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
-- [shadcn/ui](https://ui.shadcn.com/) - Component library
-- [Vercel](https://vercel.com/) - Deployment platform
-- [Lucide](https://lucide.dev/) - Icon library
+MIT License. See [LICENSE](LICENSE) for details.
 
----
-
-## 📚 Documentation
-
-For more detailed documentation, please refer to:
-
-- [API Documentation](docs/API.md) (coming soon)
-- [Component Documentation](docs/COMPONENTS.md) (coming soon)
-- [Deployment Guide](docs/DEPLOYMENT.md) (coming soon)
-- [Contributing Guidelines](CONTRIBUTING.md) (coming soon)
-
----
-
-## 📞 Support
-
-If you have any questions or need help, please:
-
-- 📧 Email: abosey23@gmail.com
-- 🐛 [Open an issue](https://github.com/Teleiosite/writewise-agent/issues)
-- 💬 [Start a discussion](https://github.com/Teleiosite/writewise-agent/discussions)
-
----
-
-<div align="center">
-
-**[⬆ back to top](#writewise-agent-)**
-
-Made with ❤️ by [Abomide Oluwaseye](https://github.com/Teleiosite)
-
-</div>
+> **Note on open-source licensing:** WriteWise's core Research Integrity Engine — particularly the append-only event architecture and dataset authentication layer — may be subject to a more restrictive licence in future versions as the platform moves toward institutional contracts. Contributors acknowledge this possibility.
