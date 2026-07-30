@@ -38,10 +38,11 @@ export function auditChapterClaims(
   let counter = 1;
 
   // Real statistical baseline figures from computedStats or verified default matrix
-  const actualR = computedStats?.correlation?.r ?? 0.724;
+  const actualR = computedStats?.correlation?.pearson_r ?? 0.724;
   const actualP = computedStats?.correlation?.p_value ?? 0.003;
   const actualAlpha = computedStats?.reliability?.[0]?.cronbach_alpha ?? 0.842;
-  const actualMean = computedStats?.section_stats?.[0]?.mean ?? 4.12;
+  const firstSection = computedStats?.section_stats ? Object.values(computedStats.section_stats)[0] : null;
+  const actualMean = firstSection?.section_mean ?? 4.12;
 
   lines.forEach((lineText, lineIdx) => {
     const lineNum = lineIdx + 1;

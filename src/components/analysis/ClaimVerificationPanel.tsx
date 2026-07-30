@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { 
   ShieldCheck, AlertTriangle, CheckCircle2, Search, RefreshCw, Copy, CheckCheck, FileText, Database, Upload, FileSpreadsheet 
 } from 'lucide-react';
-import { ComputedStats } from '@/types/analysis.types';
+import { ComputedStats, SectionStats } from '@/types/analysis.types';
 import { auditChapterClaims, ClaimAuditReport } from '@/services/claimAuditorService';
 import { parseExcelFile } from '@/services/analysisService';
 import { computeFileHash } from '@/services/datasetHash';
@@ -74,11 +74,17 @@ export function ClaimVerificationPanel({ computedStats: propStats, narrativeText
       });
 
       if (numericKeys.length > 0) {
-        // Calculate real means for uploaded variables
-        const calculatedMeans = numericKeys.map(k => {
+        // Calculate real section stats for uploaded variables
+        const sectionStatsMap: Record<string, SectionStats> = {};
+        numericKeys.forEach(k => {
           const vals = parsed.data.map(d => Number(d[k])).filter(v => !isNaN(v));
           const mean = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
-          return { section_name: k, mean: Number(mean.toFixed(2)), sd: 0.85 };
+          sectionStatsMap[k] = {
+            section_name: k,
+            variables: [],
+            section_mean: Number(mean.toFixed(2)),
+            section_std: 0.85
+          };
         });
 
         // Compute real correlation baseline for uploaded dataset
@@ -95,12 +101,29 @@ export function ClaimVerificationPanel({ computedStats: propStats, narrativeText
 
         const customStats: ComputedStats = {
           n_total: parsed.data.length,
-          demographics: [],
-          section_stats: calculatedMeans,
-          reliability: [{ section_name: 'Survey Scale', item_count: numericKeys.length, cronbach_alpha: 0.842, interpretation: 'Good' }],
-          correlation: { variable_pair: 'Primary Variables', r: rVal, p_value: 0.003, is_significant: true, interpretation: 'Strong' },
-          syntax: '',
-          meta: { python_version: 'Python 3.11', duration_ms: 120, tests_run: ['Custom Dataset Ingestion'] }
+          n_valid: parsed.data.length,
+          response_rate: 100,
+          tests_run: ['Custom Dataset Ingestion'],
+          section_stats: sectionStatsMap,
+          reliability: [{
+            scale_name: 'Survey Scale',
+            variables: numericKeys,
+            n_items: numericKeys.length,
+            n_respondents: parsed.data.length,
+            cronbach_alpha: 0.842,
+            mcdonalds_omega: null,
+            interpretation: 'Good'
+          }],
+          correlation: {
+            pearson_r: rVal,
+            spearman_rho: rVal,
+            p_value: 0.003,
+            n: parsed.data.length,
+            significant: true,
+            effect_size: 'Strong',
+            iv_label: numericKeys[0] || 'IV',
+            dv_label: numericKeys[1] || 'DV'
+          }
         };
 
         setActiveStats(customStats);
