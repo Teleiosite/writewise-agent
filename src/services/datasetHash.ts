@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Computes SHA-256 hash of a dataset file in the browser using Web Crypto API.
@@ -23,7 +23,7 @@ export async function registerDatasetHash(
   columnCount: number
 ): Promise<void> {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('dataset_hashes')
       .insert({
         analysis_id: analysisId,

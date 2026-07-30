@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export type AnalysisEventType =
   | 'DATASET_UPLOADED'
@@ -36,7 +36,7 @@ export interface LogEventParams {
  */
 export async function logResearchEvent(params: LogEventParams): Promise<void> {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('analysis_events')
       .insert({
         analysis_id: params.analysisId,
