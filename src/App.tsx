@@ -26,6 +26,7 @@ import DataAnalysis from "./pages/DataAnalysis";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import VerifyAnalysis from "./pages/VerifyAnalysis";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,8 @@ const App = () => {
                 <Route path="/support" element={<ContactSupport />} />
                 <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
                 <Route path="/data-analysis" element={<PrivateRoute><DataAnalysis /></PrivateRoute>} />
+                <Route path="/verify" element={<VerifyAnalysis />} />
+                <Route path="/verify/:token" element={<VerifyAnalysis />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

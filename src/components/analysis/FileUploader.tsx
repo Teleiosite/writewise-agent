@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
-import { Upload, FileSpreadsheet, AlertCircle } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertCircle, PlayCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface FileUploaderProps {
   onFile: (file: File) => void;
@@ -39,8 +40,46 @@ export function FileUploader({ onFile, isLoading }: FileUploaderProps) {
     if (file) handleFile(file);
   }, [handleFile]);
 
+  // Create a synthetic sample dataset CSV file for 1-click testing
+  const handleLoadSampleDataset = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const csvContent = `ID,Gender,Age,Education,Work_Experience_Years,Job_Satisfaction_1,Job_Satisfaction_2,Job_Satisfaction_3,Performance_Score
+1,Female,28,Master,4,4,5,4,82
+2,Male,34,Bachelor,8,3,3,2,68
+3,Female,45,PhD,18,5,5,5,94
+4,Male,29,Bachelor,3,2,3,2,61
+5,Female,31,Master,6,4,4,4,79
+6,Male,52,PhD,24,5,4,5,91
+7,Female,26,Bachelor,2,3,2,3,72
+8,Male,39,Master,12,4,4,3,84
+9,Female,41,Bachelor,14,3,4,4,77
+10,Male,33,Master,7,4,3,4,80
+11,Female,27,Bachelor,3,5,4,5,88
+12,Male,48,PhD,20,4,5,4,89
+13,Female,36,Master,10,3,3,3,74
+14,Male,30,Bachelor,5,2,2,3,63
+15,Female,44,PhD,17,5,5,4,93`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const sampleFile = new File([blob], 'academic_sample_survey_data.csv', { type: 'text/csv' });
+    onFile(sampleFile);
+  };
+
   return (
     <div className="space-y-4 font-sans">
+      <div className="flex justify-end">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleLoadSampleDataset}
+          disabled={isLoading}
+          className="font-mono text-xs uppercase tracking-wider rounded-none border-black dark:border-zinc-800 gap-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+        >
+          <PlayCircle className="w-3.5 h-3.5" />
+          Load Sample Academic Dataset (1-Click Demo)
+        </Button>
+      </div>
+
       <div
         onDrop={handleDrop}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -89,7 +128,7 @@ export function FileUploader({ onFile, isLoading }: FileUploaderProps) {
 
         <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-mono text-zinc-500">
           <FileSpreadsheet className="w-3.5 h-3.5" />
-          Max 50MB · Native SPSS binary files & CSV datasets supported
+          Max 50MB · Native SPSS binary files &amp; CSV datasets supported
         </div>
       </div>
 

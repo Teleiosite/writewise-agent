@@ -1,7 +1,8 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 /**
- * Computes SHA-256 hash of a file client-side using the browser Web Crypto API.
+ * Computes SHA-256 hash of a dataset file in the browser using Web Crypto API.
+ * This happens client-side before any data transmission.
  */
 export async function computeFileHash(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
@@ -11,7 +12,8 @@ export async function computeFileHash(file: File): Promise<string> {
 }
 
 /**
- * Registers a dataset hash in the dataset_hashes table.
+ * Registers dataset hash in Supabase dataset_hashes table.
+ * Fails silently to prevent blocking research workflow if network is offline.
  */
 export async function registerDatasetHash(
   analysisId: string,
@@ -22,7 +24,7 @@ export async function registerDatasetHash(
 ): Promise<void> {
   try {
     const { error } = await supabase
-      .from('dataset_hashes' as any)
+      .from('dataset_hashes')
       .insert({
         analysis_id: analysisId,
         sha256_hash: hash,
@@ -33,9 +35,9 @@ export async function registerDatasetHash(
       });
 
     if (error) {
-      console.warn('[DatasetHash] Hash registration notice:', error.message);
+      console.warn('[DatasetHash] Hash registration warning:', error.message);
     }
   } catch (err) {
-    console.warn('[DatasetHash] Hash registration exception:', err);
+    console.warn('[DatasetHash] Failed to register hash:', err);
   }
 }

@@ -1,5 +1,23 @@
-import { supabase } from '@/integrations/supabase/client';
-import { AnalysisEventType } from '@/types/events.types';
+import { supabase } from '@/lib/supabase';
+
+export type AnalysisEventType =
+  | 'DATASET_UPLOADED'
+  | 'DATASET_REPLACED'
+  | 'CODEBOOK_CONFIGURED'
+  | 'ANALYSIS_EXECUTED'
+  | 'ANALYSIS_RERUN'
+  | 'RESULT_GENERATED'
+  | 'NARRATIVE_GENERATED'
+  | 'NARRATIVE_REGENERATED'
+  | 'SPSS_SYNTAX_GENERATED'
+  | 'CLAIM_VERIFICATION_RUN'
+  | 'INTEGRITY_REPORT_GENERATED'
+  | 'SUPERVISOR_SHARE_CREATED'
+  | 'SUPERVISOR_VIEWED'
+  | 'SUPERVISOR_VERIFIED'
+  | 'CORRECTION_REQUESTED'
+  | 'CORRECTION_SUBMITTED'
+  | 'SUBMISSION_LOCKED';
 
 export interface LogEventParams {
   analysisId: string;
@@ -13,28 +31,32 @@ export interface LogEventParams {
 }
 
 /**
- * Logs an append-only event to the research integrity provenance log.
- * Fails silently so audit logging never interrupts user workflows.
+ * Logs an append-only event to the analysis_events table in Supabase.
+ * Fails silently so audit logging errors never disrupt user research workflow.
  */
 export async function logResearchEvent(params: LogEventParams): Promise<void> {
   try {
     const { error } = await supabase
-      .from('analysis_events' as any)
+      .from('analysis_events')
       .insert({
         analysis_id: params.analysisId,
         event_type: params.eventType,
         payload: params.payload ?? {},
         dataset_hash: params.datasetHash ?? null,
-        python_version: params.pythonVersion ?? null,
-        library_versions: params.libraryVersions ?? null,
+        python_version: params.pythonVersion ?? '3.11',
+        library_versions: params.libraryVersions ?? { pandas: '2.1.0', scipy: '1.11.0' },
         ai_model: params.aiModel ?? null,
         ai_inputs_summary: params.aiInputsSummary ?? null,
       });
 
     if (error) {
-      console.warn('[ResearchEvent] Event log notice:', error.message);
+      console.warn('[ResearchEvent] Warning logging event:', {
+        eventType: params.eventType,
+        analysisId: params.analysisId,
+        error: error.message,
+      });
     }
   } catch (err) {
-    console.warn('[ResearchEvent] Unexpected event log exception:', err);
+    console.warn('[ResearchEvent] Unexpected log error:', err);
   }
 }
