@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-  ShieldCheck, AlertTriangle, CheckCircle2, Search, RefreshCw, Copy, CheckCheck, FileText 
+  ShieldCheck, AlertTriangle, CheckCircle2, Search, RefreshCw, Copy, CheckCheck, FileText, Database, ChevronDown 
 } from 'lucide-react';
 import { ComputedStats } from '@/types/analysis.types';
 import { auditChapterClaims, ClaimAuditReport } from '@/services/claimAuditorService';
@@ -26,11 +26,29 @@ The primary Independent Variable (Work Experience) yielded a mean score of M = 4
 4.4 Regression and Hypothesis Testing
 Simple linear regression indicated a statistically significant positive relationship between Work Experience and Job Performance (r = 0.724, p = 0.003). Therefore, Hypothesis 1 is supported.`;
 
-export function ClaimVerificationPanel({ computedStats, narrativeText = '', analysisId }: ClaimVerificationPanelProps) {
+export function ClaimVerificationPanel({ computedStats: propStats, narrativeText = '', analysisId }: ClaimVerificationPanelProps) {
   const [inputText, setInputText] = useState(narrativeText || DEFAULT_SAMPLE_PROSE);
   const [isAuditing, setIsAuditing] = useState(false);
   const [report, setReport] = useState<ClaimAuditReport | null>(null);
   const [copiedReport, setCopiedReport] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<'active' | 'saved' | 'baseline'>('active');
+  const [activeStats, setActiveStats] = useState<ComputedStats | null>(propStats || null);
+
+  useEffect(() => {
+    if (propStats) {
+      setActiveStats(propStats);
+    } else {
+      // Load active analysis stats from localStorage if available
+      const stored = localStorage.getItem('lastComputedStats');
+      if (stored) {
+        try {
+          setActiveStats(JSON.parse(stored));
+        } catch {
+          setActiveStats(null);
+        }
+      }
+    }
+  }, [propStats]);
 
   const handleRunAudit = () => {
     if (!inputText.trim()) {
@@ -40,8 +58,8 @@ export function ClaimVerificationPanel({ computedStats, narrativeText = '', anal
     setIsAuditing(true);
 
     setTimeout(() => {
-      // Run real deterministic NLP extraction engine
-      const auditResult = auditChapterClaims(inputText, computedStats, analysisId);
+      // Run real deterministic NLP extraction engine against selected statistical matrix
+      const auditResult = auditChapterClaims(inputText, activeStats, analysisId);
       setReport(auditResult);
       setIsAuditing(false);
       toast.success(`Audit complete: ${auditResult.claims.length} claims extracted and verified.`);
@@ -81,6 +99,39 @@ ${report.claims.map(c => `[Line ${c.lineNumber}] [${c.status}] ${c.claimType}: C
         <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
           WriteWise's deterministic regex parser extracts statistical notation claims ($r$, $p$, $\alpha$, $M$) from text and cross-references each figure against Python engine outputs.
         </p>
+
+        {/* Dataset Source Selection Bar */}
+        <div className="mt-4 pt-4 border-t border-black dark:border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-black dark:text-white shrink-0" />
+            <span className="font-bold uppercase tracking-wider text-black dark:text-white">Statistical Reference Matrix:</span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedSource('active')}
+              className={cn(
+                "px-3 py-1 border text-xs font-bold uppercase tracking-wider transition-all",
+                selectedSource === 'active'
+                  ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white"
+                  : "bg-white dark:bg-black text-zinc-600 dark:text-zinc-400 border-black dark:border-zinc-800 hover:text-black dark:hover:text-white"
+              )}
+            >
+              Active Session Analysis
+            </button>
+            <button
+              onClick={() => setSelectedSource('saved')}
+              className={cn(
+                "px-3 py-1 border text-xs font-bold uppercase tracking-wider transition-all",
+                selectedSource === 'saved'
+                  ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white"
+                  : "bg-white dark:bg-black text-zinc-600 dark:text-zinc-400 border-black dark:border-zinc-800 hover:text-black dark:hover:text-white"
+              )}
+            >
+              Saved Workspace Projects
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Input Text Area */}
