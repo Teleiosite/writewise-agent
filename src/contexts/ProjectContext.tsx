@@ -132,9 +132,14 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleFeatureClick = async (feature: string) => {
-    // If user clicks AI Data Analysis or Chapter Claim Auditor, navigate straight to Data Engine!
-    if (feature === "AI Data Analysis" || feature === "Chapter Claim Auditor") {
+    // Navigate straight to dedicated features!
+    if (feature === "AI Data Analysis") {
       navigate('/data-analysis');
+      return;
+    }
+
+    if (feature === "Chapter Claim Auditor") {
+      navigate('/claim-auditor');
       return;
     }
 

@@ -31,7 +31,7 @@ export function Navigation() {
             <FlaskConical className="w-3.5 h-3.5 text-black dark:text-white" />
             Data Engine
           </Link>
-          <Link to="/data-analysis" className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5">
+          <Link to="/claim-auditor" className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5 font-bold">
             <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
             Claim Auditor
           </Link>
