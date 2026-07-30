@@ -1,9 +1,9 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { type Project } from "@/components/dashboard/ProjectCard";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { documentTemplates } from "@/components/DocumentTemplates";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectContextType {
   projects: Project[];
@@ -28,6 +28,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const [newProjectName, setNewProjectName] = useState("");
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchProjects = async () => {
     const { data: projects, error } = await supabase.from('projects').select('*');
@@ -131,6 +132,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleFeatureClick = async (feature: string) => {
+    // If user clicks AI Data Analysis or Chapter Claim Auditor, navigate straight to Data Engine!
+    if (feature === "AI Data Analysis" || feature === "Chapter Claim Auditor") {
+      navigate('/data-analysis');
+      return;
+    }
+
     const featureDemoName = `${feature} Demo`;
 
     let templateToUse;
@@ -148,7 +155,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("selected-template", JSON.stringify(templateToUse));
     localStorage.setItem("active-feature", feature);
 
-    // Check if demo project already exists in Supabase
     const existing = projects.find(p => p.name === featureDemoName);
     if (!existing) {
       const { data: { user } } = await supabase.auth.getUser();
@@ -178,7 +184,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Refetch so we have the real UUID
       await fetchProjects();
 
       toast({
@@ -204,7 +209,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         handleOpenProject,
         handleSearch,
         fetchProjects,
-        handleFeatureClick
+        handleFeatureClick,
       }}
     >
       {children}
@@ -212,10 +217,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useProjects = () => {
+export function useProjects() {
   const context = useContext(ProjectContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useProjects must be used within a ProjectProvider");
   }
   return context;
-};
+}

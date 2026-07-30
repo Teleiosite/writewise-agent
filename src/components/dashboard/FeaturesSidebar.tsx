@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BookOpen, Calendar, FileText, Users, FlaskConical } from "lucide-react";
+import { BookOpen, Calendar, FileText, Users, FlaskConical, ShieldCheck } from "lucide-react";
 
 interface FeaturesSidebarProps {
   mobileMenuOpen: boolean;
@@ -14,6 +14,12 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
       name: "AI Data Analysis",
       description: "Python-computed statistics, SPSS syntax generation, and Chapter 4/5 narrative creation.",
       icon: FlaskConical,
+      isPrimary: true
+    },
+    {
+      name: "Chapter Claim Auditor",
+      description: "Audit Chapter 4 & 5 prose to verify statistical claims against Python engine outputs.",
+      icon: ShieldCheck,
       isPrimary: true
     },
     {

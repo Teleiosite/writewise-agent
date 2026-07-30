@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/context/AuthContext";
-import { User, FlaskConical, LayoutDashboard } from "lucide-react";
+import { User, FlaskConical, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { 
   DropdownMenu,
   DropdownMenuTrigger,
@@ -27,9 +27,13 @@ export function Navigation() {
             <LayoutDashboard className="w-3.5 h-3.5" />
             Workspace
           </Link>
-          <Link to="/data-analysis" className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5">
+          <Link to="/data-analysis" className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5 font-bold">
             <FlaskConical className="w-3.5 h-3.5 text-black dark:text-white" />
             Data Engine
+          </Link>
+          <Link to="/data-analysis" className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
+            Claim Auditor
           </Link>
           <Link to="/features" className="hover:text-black dark:hover:text-white transition-colors">
             Features
