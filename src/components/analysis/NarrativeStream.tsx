@@ -10,7 +10,6 @@ interface NarrativeStreamProps {
 }
 
 // ─── Lightweight Markdown → HTML renderer ─────────────────────────────────────
-// Handles: headings, bold, italic, markdown tables, paragraph breaks — no deps.
 
 function renderMarkdown(md: string): string {
   const lines = md.split('\n');
@@ -21,7 +20,6 @@ function renderMarkdown(md: string): string {
     const line = lines[i];
 
     // ── Markdown table detection ──
-    // A table block starts with a | line, followed by a |---| separator line
     if (line.trim().startsWith('|') && lines[i + 1]?.trim().startsWith('|') && /\|[\s\-:]+\|/.test(lines[i + 1])) {
       const tableLines: string[] = [];
       while (i < lines.length && lines[i].trim().startsWith('|')) {
@@ -37,9 +35,7 @@ function renderMarkdown(md: string): string {
     const h3 = line.match(/^###\s+(.*)/);
     const h2 = line.match(/^##\s+(.*)/);
     const h1 = line.match(/^#\s+(.*)/);
-    // "CHAPTER FOUR:" style all-caps section headers
     const chapterHead = line.match(/^(CHAPTER\s+(FOUR|FIVE|FOUR:|FIVE:).*)$/i);
-    // Numbered section "4.1 Title" or "5.2 Title"
     const numbered = line.match(/^(\d+\.\d+(?:\.\d+)?)\s+(.+)/);
 
     if (chapterHead) {
@@ -53,7 +49,7 @@ function renderMarkdown(md: string): string {
     } else if (h4) {
       out.push(`<h4 class="subsubsection-heading">${inlineFormat(h4[1])}</h4>`);
     } else if (numbered && !line.startsWith('|')) {
-      const level = (numbered[1].match(/\./g) || []).length; // 1 dot = 4.x, 2 dots = 4.x.x
+      const level = (numbered[1].match(/\./g) || []).length;
       const tag = level === 1 ? 'h2' : 'h3';
       const cls = level === 1 ? 'section-heading' : 'subsection-heading';
       out.push(`<${tag} class="${cls}">${inlineFormat(line)}</${tag}>`);
@@ -76,7 +72,6 @@ function renderTable(lines: string[]): string {
     line.split('|').map(c => c.trim()).filter((_, i, arr) => i !== 0 && i !== arr.length - 1);
 
   const headers = parseRow(lines[0]);
-  // lines[1] is the separator — skip it
   const rows = lines.slice(2).map(parseRow);
 
   const headerHtml = headers.map(h => `<th>${inlineFormat(h)}</th>`).join('');
@@ -110,7 +105,6 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
   const [copied, setCopied] = useState(false);
   const [viewRaw, setViewRaw] = useState(false);
 
-  // Auto-scroll during streaming
   useEffect(() => {
     if (isStreaming && containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -123,11 +117,9 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Copy as rich text (HTML) — tables paste as real tables in Word / Google Docs
   const [copiedRich, setCopiedRich] = useState(false);
   const handleCopyRich = async () => {
     try {
-      // Build a complete self-contained HTML document for clipboard
       const html = `
         <html><body style="font-family: Times New Roman, serif; font-size: 12pt; line-height: 2;">
         <style>
@@ -136,10 +128,10 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
           h3 { font-size: 12pt; font-weight: bold; font-style: italic; }
           p  { text-align: justify; margin: 0 0 8pt; }
           table { border-collapse: collapse; width: 100%; margin: 12pt 0; font-size: 11pt; }
-          th { border-top: 2px solid #1e40af; border-bottom: 1px solid #1e40af;
-               background: #eff6ff; padding: 4pt 8pt; text-align: left; font-weight: bold; }
-          td { padding: 3pt 8pt; border-bottom: 1px solid #e2e8f0; }
-          tr:last-child td { border-bottom: 2px solid #1e40af; }
+          th { border-top: 2px solid #000; border-bottom: 1px solid #000;
+               background: #f4f4f5; padding: 4pt 8pt; text-align: left; font-weight: bold; }
+          td { padding: 3pt 8pt; border-bottom: 1px solid #e4e4e7; }
+          tr:last-child td { border-bottom: 2px solid #000; }
         </style>
         ${renderedHtml}
         </body></html>`;
@@ -149,7 +141,6 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
           new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }) }),
         ]);
       } else {
-        // Fallback: inject hidden div, select, execCommand (older browsers)
         const el = document.createElement('div');
         el.innerHTML = html;
         el.style.position = 'fixed';
@@ -165,7 +156,6 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
       setCopiedRich(true);
       setTimeout(() => setCopiedRich(false), 2500);
     } catch {
-      // Fallback to plain text
       handleCopy();
     }
   };
@@ -174,46 +164,46 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
   const renderedHtml = narrative ? renderMarkdown(narrative) : '';
 
   return (
-    <div className="flex flex-col h-full min-h-[400px]">
+    <div className="flex flex-col h-full min-h-[400px] font-sans">
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">AI Narrative</span>
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-black dark:text-white">AI Narrative Stream</span>
           {isStreaming && (
-            <span className="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-100">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-              Generating...
+            <span className="mono-badge">
+              <span className="w-1.5 h-1.5 bg-black dark:bg-white rounded-full animate-pulse" />
+              GENERATING...
             </span>
           )}
           {!isStreaming && narrative && (
-            <span className="text-xs text-gray-400">{wordCount.toLocaleString()} words</span>
+            <span className="text-xs font-mono text-zinc-500">{wordCount.toLocaleString()} WORDS</span>
           )}
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap font-mono">
           {narrative && (
             <>
               <button
                 onClick={() => setViewRaw(v => !v)}
-                className="text-xs px-2.5 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="text-xs px-2.5 py-1 rounded-none border border-black dark:border-zinc-800 text-black dark:text-white uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 {viewRaw ? 'Rendered View' : 'Raw Markdown'}
               </button>
-              <Button variant="outline" size="sm" onClick={handleCopy} className="gap-1.5 text-xs h-8">
-                {copied ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+              <Button variant="outline" size="sm" onClick={handleCopy} className="gap-1.5 text-xs h-8 rounded-none border-black dark:border-zinc-800 font-mono uppercase tracking-wider">
+                {copied ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? 'Copied!' : 'Copy Plain Text'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopyRich}
-                className="gap-1.5 text-xs h-8 border-green-200 text-green-700 dark:border-green-800 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                className="gap-1.5 text-xs h-8 rounded-none border-black dark:border-zinc-800 font-mono uppercase tracking-wider"
                 title="Copies with real table formatting — paste directly into Microsoft Word or Google Docs"
               >
-                {copiedRich ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedRich ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 {copiedRich ? 'Copied for Word! ✓' : 'Copy for Word / Docs'}
               </Button>
               {onInsertToEditor && (
-                <Button size="sm" onClick={onInsertToEditor} className="gap-1.5 text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white">
+                <Button size="sm" onClick={onInsertToEditor} className="gap-1.5 text-xs h-8 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border border-black dark:border-white font-mono uppercase tracking-wider">
                   <FileText className="w-3.5 h-3.5" />
                   Insert into Document
                 </Button>
@@ -223,28 +213,25 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
         </div>
       </div>
 
-
       {/* Content */}
       <div
         ref={containerRef}
         className={cn(
-          'flex-1 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-900',
+          'flex-1 overflow-y-auto rounded-none border border-black dark:border-zinc-800 p-6 bg-white dark:bg-black',
           'min-h-[350px] max-h-[700px]',
           !narrative && 'flex items-center justify-center'
         )}
       >
         {!narrative ? (
-          <p className="text-gray-300 dark:text-gray-600 text-center text-sm">
+          <p className="text-zinc-500 text-center text-xs font-mono uppercase tracking-wider">
             Chapter 4 &amp; 5 narrative will appear here as it streams...
           </p>
         ) : viewRaw ? (
-          // Raw markdown view
-          <pre className="text-xs text-gray-600 dark:text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
+          <pre className="text-xs text-black dark:text-white whitespace-pre-wrap font-mono leading-relaxed">
             {narrative}
-            {isStreaming && <span className="inline-block w-0.5 h-4 bg-blue-500 ml-0.5 animate-pulse align-middle" />}
+            {isStreaming && <span className="inline-block w-0.5 h-4 bg-black dark:bg-white ml-0.5 animate-pulse align-middle" />}
           </pre>
         ) : (
-          // Rendered view
           <>
             <style>{`
               .chapter-heading {
@@ -254,49 +241,48 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
                 letter-spacing: 0.02em;
                 text-align: center;
                 margin: 2rem 0 1rem;
-                color: #1e293b;
+                color: #000;
               }
-              .dark .chapter-heading { color: #f1f5f9; }
+              .dark .chapter-heading { color: #fff; }
 
               .section-heading {
                 font-size: 1rem;
                 font-weight: 700;
                 margin: 1.6rem 0 0.5rem;
-                color: #1e40af;
-                border-bottom: 1px solid #e2e8f0;
+                color: #000;
+                border-bottom: 1px solid #000;
                 padding-bottom: 0.25rem;
               }
-              .dark .section-heading { color: #93c5fd; border-color: #334155; }
+              .dark .section-heading { color: #fff; border-color: #27272a; }
 
               .subsection-heading {
                 font-size: 0.9rem;
                 font-weight: 700;
                 margin: 1.2rem 0 0.4rem;
-                color: #374151;
+                color: #18181b;
               }
-              .dark .subsection-heading { color: #d1d5db; }
+              .dark .subsection-heading { color: #e4e4e7; }
 
               .subsubsection-heading {
                 font-size: 0.85rem;
                 font-weight: 600;
                 font-style: italic;
                 margin: 1rem 0 0.3rem;
-                color: #6b7280;
+                color: #71717a;
               }
 
               .para {
                 font-size: 0.88rem;
                 line-height: 1.85;
-                color: #374151;
+                color: #18181b;
                 margin-bottom: 0.6rem;
                 font-family: 'Georgia', serif;
                 text-align: justify;
               }
-              .dark .para { color: #d1d5db; }
+              .dark .para { color: #e4e4e7; }
 
               .para-gap { height: 0.4rem; }
 
-              /* APA-style tables */
               .table-wrap {
                 margin: 1.2rem 0 1.5rem;
                 overflow-x: auto;
@@ -308,38 +294,38 @@ export function NarrativeStream({ narrative, isStreaming, onInsertToEditor }: Na
                 font-family: 'Georgia', serif;
               }
               .apa-table thead tr {
-                border-top: 2px solid #1e40af;
-                border-bottom: 1px solid #1e40af;
+                border-top: 2px solid #000;
+                border-bottom: 1px solid #000;
               }
               .dark .apa-table thead tr {
-                border-top-color: #3b82f6;
-                border-bottom-color: #3b82f6;
+                border-top-color: #fff;
+                border-bottom-color: #fff;
               }
               .apa-table th {
                 padding: 0.5rem 0.75rem;
                 text-align: left;
                 font-weight: 700;
-                color: #1e293b;
-                background: #f8fafc;
+                color: #000;
+                background: #f4f4f5;
               }
-              .dark .apa-table th { color: #f1f5f9; background: #1e293b; }
+              .dark .apa-table th { color: #fff; background: #18181b; }
               .apa-table td {
                 padding: 0.4rem 0.75rem;
-                color: #374151;
-                border-bottom: 1px solid #f1f5f9;
+                color: #18181b;
+                border-bottom: 1px solid #e4e4e7;
               }
-              .dark .apa-table td { color: #d1d5db; border-color: #1e293b; }
+              .dark .apa-table td { color: #e4e4e7; border-color: #27272a; }
               .apa-table tbody tr:last-child {
-                border-bottom: 2px solid #1e40af;
+                border-bottom: 2px solid #000;
               }
-              .dark .apa-table tbody tr:last-child { border-bottom-color: #3b82f6; }
-              .apa-table tbody tr:hover td { background: #f0f9ff; }
-              .dark .apa-table tbody tr:hover td { background: #0f172a; }
+              .dark .apa-table tbody tr:last-child { border-bottom-color: #fff; }
+              .apa-table tbody tr:hover td { background: #f4f4f5; }
+              .dark .apa-table tbody tr:hover td { background: #18181b; }
             `}</style>
             <div
               dangerouslySetInnerHTML={{ __html: renderedHtml }}
             />
-            {isStreaming && <span className="inline-block w-0.5 h-4 bg-blue-500 ml-0.5 animate-pulse align-middle" />}
+            {isStreaming && <span className="inline-block w-0.5 h-4 bg-black dark:bg-white ml-0.5 animate-pulse align-middle" />}
           </>
         )}
       </div>

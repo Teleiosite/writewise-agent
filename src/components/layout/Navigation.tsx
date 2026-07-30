@@ -28,7 +28,7 @@ export function Navigation() {
             Workspace
           </Link>
           <Link to="/data-analysis" className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1.5">
-            <FlaskConical className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <FlaskConical className="w-3.5 h-3.5 text-black dark:text-white" />
             Data Engine
           </Link>
           <Link to="/features" className="hover:text-black dark:hover:text-white transition-colors">
