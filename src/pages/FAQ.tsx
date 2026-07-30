@@ -1,81 +1,71 @@
-
-import React from "react";
-import { Navigation } from "@/components/layout/Navigation";
-import { Footer } from "@/components/layout/Footer";
+import { HomeLayout } from "@/components/layout/HomeLayout";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 
 export default function FAQ() {
   const faqs = [
     {
-      question: "What is Writewise?",
-      answer: "Writewise is an AI-powered academic writing assistant designed to help students, researchers, and academics produce high-quality written work with less effort and more confidence. Our platform offers features like AI writing suggestions, citation management, grammar checking, and more."
+      question: "How does WriteWise differ from standard AI writing assistants?",
+      answer: "Unlike general text generation tools, WriteWise features a 100% deterministic Python statistical engine (SciPy/Pandas). Statistical tests, correlation matrices, and regression outputs are calculated numerically first. The AI is only used to interpret and draft Chapter 4 & 5 narrative descriptions grounded directly in those verified mathematical results."
     },
     {
-      question: "How does the token system work?",
-      answer: "Our platform uses a token-based system to provide access to AI features. You can purchase tokens and spend them on various AI-powered features like document analysis, citation generation, and content suggestions. Different features cost different amounts of tokens, and you can view your token balance in your wallet."
+      question: "Can I generate SPSS syntax for university committee submission?",
+      answer: "Yes. Every statistical test executed in WriteWise automatically generates exact, copy-pasteable SPSS command syntax (DESCRIPTIVES, CORRELATIONS, REGRESSION, ONEWAY ANOVA). You can paste this syntax directly into IBM SPSS Statistics to prove full calculation reproducibility."
     },
     {
-      question: "Is my content secure and private?",
-      answer: "Yes, we take data privacy very seriously. Your documents and content are encrypted and stored securely. We do not share or sell your content to third parties. You can read more about our data practices in our Privacy Policy."
+      question: "What file formats can I upload for statistical analysis?",
+      answer: "WriteWise supports CSV files, Microsoft Excel spreadsheets (.xlsx), and native SPSS data files (.sav). The engine auto-detects variable names, measurement scales (Nominal, Ordinal, Scale), and identifies Independent/Dependent variables."
     },
     {
-      question: "Can I use Writewise for collaborative projects?",
-      answer: "Currently, our Team plan offers collaborative editing features that allow multiple users to work on the same document. Team members can leave comments, make suggestions, and track changes in real-time."
+      question: "How is academic data privacy and integrity handled?",
+      answer: "WriteWise computes SHA-256 cryptographic hashes for every uploaded dataset on your local browser using the Web Crypto API. An append-only audit log records analysis events without storing raw patient or participant survey records on remote AI servers."
+    },
+    {
+      question: "Do I need my own API keys?",
+      answer: "You can supply your own API key (Google Gemini, OpenAI GPT-4o, Anthropic Claude, or DeepSeek) in Settings for custom control and zero rate limits. If no API key is provided, WriteWise automatically falls back to an included free execution engine."
     },
     {
       question: "Which citation styles are supported?",
-      answer: "Writewise supports all major citation styles including APA, MLA, Chicago, Harvard, IEEE, and many more. Our citation manager can automatically format citations and bibliographies according to the style guide of your choice."
+      answer: "WriteWise supports major academic citation formats including APA 7th Edition, MLA 9th Edition, Chicago Manual of Style, Harvard, and IEEE."
     },
     {
-      question: "How accurate is the AI writing assistant?",
-      answer: "Our AI writing assistant has been trained on millions of academic papers and documents. While it provides high-quality suggestions most of the time, we always recommend reviewing and editing the AI-generated content to ensure it meets your specific requirements and academic standards."
-    },
-    {
-      question: "Can I cancel my subscription at any time?",
-      answer: "Yes, you can cancel your subscription at any time. If you cancel, you'll continue to have access to the service until the end of your current billing period. We do not offer refunds for partial subscription periods."
-    },
-    {
-      question: "Is there a limit to how many documents I can create?",
-      answer: "There are no limits on the number of documents you can create with our paid plans. However, the free plan has limitations on the number of words and documents you can process each month."
+      question: "Is there a limit on dataset row sizes?",
+      answer: "The browser-based Python execution engine handles datasets up to 100,000 rows and 500 variables seamlessly."
     }
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow container mx-auto py-8 px-4">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6 text-center">Frequently Asked Questions</h1>
-          
-          <p className="text-center text-muted-foreground mb-8">
-            Find answers to common questions about our platform, features, and services.
+    <HomeLayout showWelcomeBanner={false}>
+      <div className="max-w-3xl mx-auto py-6 font-sans space-y-8">
+        <div className="text-center border-b border-black dark:border-zinc-800 pb-6">
+          <span className="mono-badge mb-3">Academic FAQ</span>
+          <h1 className="text-3xl font-extrabold tracking-tight text-black dark:text-white mt-1">Frequently Asked Questions</h1>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-2 max-w-md mx-auto leading-relaxed">
+            Everything you need to know about Python statistical processing, SPSS syntax generation, and academic verification.
           </p>
-          
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left font-medium">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-          
-          <div className="mt-12 bg-muted p-6 rounded-lg text-center">
-            <h2 className="text-xl font-semibold mb-2">Still have questions?</h2>
-            <p className="mb-4">Our support team is here to help you with any questions or concerns.</p>
-            <a href="/support" className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors">
-              Contact Support
-            </a>
-          </div>
         </div>
-      </main>
-      
-      <Footer />
-    </div>
+        
+        <Accordion type="single" collapsible className="w-full font-mono text-xs space-y-3">
+          {faqs.map((faq, index) => (
+            <AccordionItem key={index} value={`item-${index}`} className="border border-black dark:border-zinc-800 bg-white dark:bg-black px-4">
+              <AccordionTrigger className="text-left font-bold text-black dark:text-white uppercase tracking-tight py-4 hover:no-underline">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-zinc-600 dark:text-zinc-400 font-sans text-xs leading-relaxed pb-4 pt-1 border-t border-zinc-200 dark:border-zinc-900 mt-1">
+                {faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+        
+        <div className="p-6 border border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-center font-sans">
+          <h2 className="text-sm font-mono font-bold text-black dark:text-white uppercase mb-1">Have an Unanswered Question?</h2>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-4 max-w-sm mx-auto">Contact our technical research helpdesk directly.</p>
+          <Button className="rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider px-6 border border-black dark:border-white" asChild>
+            <a href="/contact-support">Contact Support</a>
+          </Button>
+        </div>
+      </div>
+    </HomeLayout>
   );
 }

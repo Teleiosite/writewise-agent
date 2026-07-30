@@ -146,7 +146,7 @@ export function WritingTracker({ projectName }: WritingTrackerProps) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
-          <Target className="h-5 w-5 text-blue-600" />
+          <Target className="h-5 w-5 text-black dark:text-white" />
           Writing Goals &amp; Progress
         </CardTitle>
       </CardHeader>
@@ -158,7 +158,7 @@ export function WritingTracker({ projectName }: WritingTrackerProps) {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Edit className="h-5 w-5 text-blue-600" />
+                    <Edit className="h-5 w-5 text-black dark:text-white" />
                     <h3 className="font-medium">Today's Progress</h3>
                   </div>
                   <Clock className="h-4 w-4 text-muted-foreground" />
@@ -189,7 +189,7 @@ export function WritingTracker({ projectName }: WritingTrackerProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-medium flex items-center gap-2">
-              <ListTodo className="h-5 w-5 text-blue-600" />
+              <ListTodo className="h-5 w-5 text-black dark:text-white" />
               Writing Goals
             </h3>
             <Button size="sm" variant="outline" onClick={() => setShowAddForm(v => !v)}>

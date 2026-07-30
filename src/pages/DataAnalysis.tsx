@@ -21,18 +21,18 @@ import { useState } from 'react';
 import { AnalysisStage } from '@/types/analysis.types';
 
 const STAGES: { id: AnalysisStage; label: string; icon: React.ReactNode; desc: string }[] = [
-  { id: 'upload',    label: 'Upload',    icon: <Upload className="w-4 h-4" />,      desc: 'Dataset file' },
-  { id: 'codebook',  label: 'Codebook',  icon: <BookOpen className="w-4 h-4" />,    desc: 'Variable types & roles' },
-  { id: 'context',   label: 'Context',   icon: <FileText className="w-4 h-4" />,    desc: 'Research background' },
-  { id: 'configure', label: 'Configure', icon: <Settings2 className="w-4 h-4" />,   desc: 'Tests & AI model' },
-  { id: 'results',   label: 'Results',   icon: <FlaskConical className="w-4 h-4" />, desc: 'Statistics & narrative' },
+  { id: 'upload',    label: 'Upload',    icon: <Upload className="w-3.5 h-3.5" />,      desc: 'Dataset file' },
+  { id: 'codebook',  label: 'Codebook',  icon: <BookOpen className="w-3.5 h-3.5" />,    desc: 'Variable types & roles' },
+  { id: 'context',   label: 'Context',   icon: <FileText className="w-3.5 h-3.5" />,    desc: 'Research background' },
+  { id: 'configure', label: 'Configure', icon: <Settings2 className="w-3.5 h-3.5" />,   desc: 'Tests & AI model' },
+  { id: 'results',   label: 'Results',   icon: <FlaskConical className="w-3.5 h-3.5" />, desc: 'Statistics & narrative' },
 ];
 
 const STAGE_ORDER: AnalysisStage[] = ['upload', 'codebook', 'context', 'configure', 'results'];
 
 interface DataAnalysisProps {
-  embedded?: boolean;   // when true: no page-level header, lives inside editor tabs
-  onBack?: () => void;  // called by Insert into Document / back in embedded mode
+  embedded?: boolean;
+  onBack?: () => void;
 }
 
 export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisProps = {}) {
@@ -53,86 +53,107 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
   const handleInsertToEditor = () => {
     sessionStorage.setItem('pendingNarrative', analysis.narrative);
     if (embedded && onBack) {
-      onBack();       // stay in the editor tab system
+      onBack();
     } else {
-      navigate(-1);   // standalone route: go back in browser history
+      navigate(-1);
     }
   };
 
   return (
-    <div className={embedded ? 'bg-gray-50 dark:bg-gray-950 flex flex-col' : 'min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col'}>
+    <div className={embedded ? 'bg-white dark:bg-black flex flex-col font-sans' : 'min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col font-sans'}>
       {/* Header — only shown in standalone route mode */}
       {!embedded && (
-      <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full h-9 w-9 text-gray-500">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm">
-                <FlaskConical className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-gray-800 dark:text-gray-100">AI Data Analysis</p>
-                <p className="text-[10px] text-gray-400 hidden sm:block">Full-spectrum statistical engine · Chapter 4 & 5 generator</p>
+        <div className="sticky top-0 z-50 bg-white dark:bg-black border-b border-black dark:border-zinc-800">
+          <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate(-1)} 
+                className="rounded-none h-8 w-8 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white flex items-center justify-center font-mono">
+                  <FlaskConical className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <p className="text-xs font-extrabold uppercase tracking-tight text-black dark:text-white font-mono">Statistical Analysis Engine</p>
+                  <p className="text-[10px] text-zinc-500 hidden sm:block">Deterministic Python statistics · SPSS syntax · Chapter 4 & 5 drafting</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {analysis.status === 'complete' && (
-              <>
-                <Button variant="outline" size="sm" onClick={analysis.save} disabled={analysis.isSaved} className="gap-1.5 text-xs hidden sm:flex">
-                  <Save className="w-3.5 h-3.5" />
-                  {analysis.isSaved ? 'Saved' : 'Save'}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} className="gap-1.5 text-xs hidden sm:flex">
-                  <Download className="w-3.5 h-3.5" />
-                  Export DOCX
-                </Button>
-              </>
-            )}
-            <Button variant="ghost" size="sm" onClick={analysis.reset} className="gap-1.5 text-xs text-gray-400">
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset
-            </Button>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              {analysis.status === 'complete' && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={analysis.save} 
+                    disabled={analysis.isSaved} 
+                    className="gap-1.5 text-xs font-mono rounded-none border-black dark:border-zinc-800 hidden sm:flex"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {analysis.isSaved ? 'Saved' : 'Save'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} 
+                    className="gap-1.5 text-xs font-mono rounded-none border-black dark:border-zinc-800 hidden sm:flex"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Export DOCX
+                  </Button>
+                </>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={analysis.reset} 
+                className="gap-1.5 text-xs font-mono rounded-none text-zinc-500 hover:text-black dark:hover:text-white"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset
+              </Button>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
-      </div>
-      )} {/* end !embedded header */}
+      )}
 
       {/* Stage Indicator */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+      <div className="bg-zinc-50 dark:bg-zinc-950 border-b border-black dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center overflow-x-auto no-scrollbar py-2 gap-1">
+          <div className="flex items-center overflow-x-auto no-scrollbar py-2.5 gap-2">
             {STAGES.map((s, i) => {
               const isActive = analysis.stage === s.id;
               const isDone = STAGE_ORDER.indexOf(analysis.stage) > i;
-              const isClickable = isDone || (i <= stageIndex + 1 && canProceed[STAGE_ORDER[i - 1] as AnalysisStage] !== false);
+
               return (
-                <div key={s.id} className="flex items-center gap-1 shrink-0">
+                <div key={s.id} className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => isDone && analysis.setStage(s.id)}
                     disabled={!isDone && !isActive}
                     className={cn(
-                      'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                      isActive && 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300',
-                      isDone && 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 cursor-pointer',
-                      !isActive && !isDone && 'text-gray-400 cursor-not-allowed'
+                      'flex items-center gap-2 px-3 py-1.5 rounded-none border text-xs font-mono uppercase tracking-wider transition-all',
+                      isActive && 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white font-bold',
+                      isDone && 'bg-zinc-200 dark:bg-zinc-800 text-black dark:text-white border-black dark:border-zinc-700 cursor-pointer',
+                      !isActive && !isDone && 'bg-white dark:bg-black text-zinc-400 border-zinc-300 dark:border-zinc-800 cursor-not-allowed'
                     )}
                   >
                     <span className={cn(
-                      'w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold',
-                      isActive && 'bg-blue-600 text-white',
-                      isDone && 'bg-green-100 dark:bg-green-900/30 text-green-600',
-                      !isActive && !isDone && 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                      'w-4 h-4 flex items-center justify-center text-[10px] font-bold border',
+                      isActive && 'border-white dark:border-black bg-white text-black dark:bg-black dark:text-white',
+                      isDone && 'border-black dark:border-white bg-black text-white dark:bg-white dark:text-black',
+                      !isActive && !isDone && 'border-zinc-400 text-zinc-400 bg-transparent'
                     )}>
                       {isDone ? <CheckCircle className="w-3 h-3" /> : i + 1}
                     </span>
                     <span className="hidden sm:inline">{s.label}</span>
                   </button>
-                  {i < STAGES.length - 1 && <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 shrink-0" />}
+                  {i < STAGES.length - 1 && <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />}
                 </div>
               );
             })}
@@ -142,15 +163,15 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
 
       {/* Progress Bar */}
       {(analysis.status === 'computing' || analysis.status === 'generating' || analysis.status === 'parsing') && (
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 py-2">
+        <div className="bg-black text-white dark:bg-white dark:text-black border-b border-black dark:border-white px-4 py-2 font-mono">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-semibold text-blue-600">{analysis.progressLabel}</span>
-              <span className="text-xs text-gray-400">{analysis.progress}%</span>
+            <div className="flex items-center justify-between mb-1.5 text-xs">
+              <span className="uppercase tracking-wider font-bold">{analysis.progressLabel}</span>
+              <span>{analysis.progress}%</span>
             </div>
-            <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-zinc-800 dark:bg-zinc-200 border border-black dark:border-white overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500"
+                className="h-full bg-white dark:bg-black transition-all duration-300"
                 style={{ width: `${analysis.progress}%` }}
               />
             </div>
@@ -163,11 +184,11 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
 
         {/* Error State */}
         {analysis.error && (
-          <div className="mb-4 flex items-start gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
-            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="mb-6 flex items-start gap-3 bg-red-50 dark:bg-red-950/40 border border-red-600 rounded-none p-4 font-mono text-xs text-red-900 dark:text-red-200">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-red-700 dark:text-red-300">Analysis Error</p>
-              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">{analysis.error}</p>
+              <p className="font-bold uppercase">Analysis Execution Fault</p>
+              <p className="mt-1 leading-relaxed">{analysis.error}</p>
             </div>
           </div>
         )}
@@ -176,34 +197,31 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         {analysis.stage === 'upload' && (
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Upload Your Dataset</h1>
-              <p className="text-gray-400 mt-2">Upload your research data. The AI will auto-detect variable types and prepare your codebook.</p>
+              <span className="mono-badge mb-3">Step 01 / Dataset Import</span>
+              <h1 className="text-2xl font-extrabold text-black dark:text-white tracking-tight">Upload Your Research Dataset</h1>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-2 max-w-md mx-auto leading-relaxed">
+                Supports CSV, Excel (.xlsx), and SPSS (.sav). Python will parse data structures and auto-detect variable roles.
+              </p>
             </div>
             <FileUploader
               onFile={analysis.handleFileUpload}
               isLoading={analysis.status === 'parsing' || analysis.status === 'detecting'}
             />
 
-            {/* Parsing in progress — informative message */}
             {(analysis.status === 'parsing' || analysis.status === 'detecting') && (
-              <div className="mt-4 flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl px-4 py-3">
-                <svg className="w-4 h-4 text-blue-500 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                <p className="text-xs text-blue-700 dark:text-blue-300">
-                  <strong>Please wait</strong> — {analysis.progressLabel || 'Parsing your dataset...'}
-                  {' '}The page will advance automatically when ready.
+              <div className="mt-4 flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900 border border-black dark:border-zinc-700 p-4 font-mono text-xs text-black dark:text-white">
+                <div className="w-3 h-3 bg-black dark:bg-white animate-ping shrink-0" />
+                <p>
+                  <strong>Processing Data</strong> — {analysis.progressLabel || 'Parsing variables...'}
                 </p>
               </div>
             )}
 
-            {/* Ready — show Continue button only after parsing is fully done */}
             {analysis.rawData.length > 0 && analysis.status !== 'parsing' && analysis.status !== 'detecting' && (
-              <div className="mt-4 flex justify-end">
+              <div className="mt-6 flex justify-end">
                 <Button
                   onClick={() => analysis.setStage('codebook')}
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  className="gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider rounded-none px-6 border border-black dark:border-white"
                 >
                   Continue to Codebook <ChevronRight className="w-4 h-4" />
                 </Button>
@@ -212,14 +230,14 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
           </div>
         )}
 
-
         {/* ── Stage 2: Codebook ───────────────────────────────────────────── */}
         {analysis.stage === 'codebook' && (
           <div className="max-w-4xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Review Variable Codebook</h2>
-              <p className="text-sm text-gray-400 mt-1">
-                The AI has detected your variable types. Review and correct any field — especially <strong>IV/DV roles</strong> for regression and correlation.
+            <div className="mb-6 border-b border-black dark:border-zinc-800 pb-4">
+              <span className="mono-badge mb-2">Step 02 / Variable Specification</span>
+              <h2 className="text-xl font-bold text-black dark:text-white tracking-tight">Review Variable Codebook</h2>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                Verify IV (Independent), DV (Dependent), and Control roles for regression and hypothesis testing.
               </p>
             </div>
             <CodebookEditor
@@ -228,8 +246,17 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               isDetecting={analysis.status === 'detecting'}
             />
             <div className="flex justify-between mt-6">
-              <Button variant="outline" onClick={() => analysis.setStage('upload')}>← Back</Button>
-              <Button onClick={analysis.goToContext} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Button 
+                variant="outline" 
+                onClick={() => analysis.setStage('upload')}
+                className="rounded-none border-black dark:border-zinc-800 font-mono text-xs uppercase"
+              >
+                ← Back
+              </Button>
+              <Button 
+                onClick={analysis.goToContext} 
+                className="gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider rounded-none px-6 border border-black dark:border-white"
+              >
                 Continue to Context <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
@@ -239,16 +266,26 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         {/* ── Stage 3: Context ────────────────────────────────────────────── */}
         {analysis.stage === 'context' && (
           <div className="max-w-3xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Research Context</h2>
-              <p className="text-sm text-gray-400 mt-1">
-                Add your research background so the AI can write a specific, academically grounded Chapter 4 & 5. All fields are optional.
+            <div className="mb-6 border-b border-black dark:border-zinc-800 pb-4">
+              <span className="mono-badge mb-2">Step 03 / Research Framework</span>
+              <h2 className="text-xl font-bold text-black dark:text-white tracking-tight">Research Context & Hypotheses</h2>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+                Provide research questions, hypotheses, or target domain context so the narrative engine grounds its interpretation.
               </p>
             </div>
             <ContextForm context={analysis.context} onChange={analysis.updateContext} />
             <div className="flex justify-between mt-6">
-              <Button variant="outline" onClick={() => analysis.setStage('codebook')}>← Back</Button>
-              <Button onClick={analysis.goToConfigure} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Button 
+                variant="outline" 
+                onClick={() => analysis.setStage('codebook')}
+                className="rounded-none border-black dark:border-zinc-800 font-mono text-xs uppercase"
+              >
+                ← Back
+              </Button>
+              <Button 
+                onClick={analysis.goToConfigure} 
+                className="gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider rounded-none px-6 border border-black dark:border-white"
+              >
                 Configure Analysis <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
@@ -258,9 +295,10 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         {/* ── Stage 4: Configure ──────────────────────────────────────────── */}
         {analysis.stage === 'configure' && (
           <div className="max-w-2xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Configure Analysis</h2>
-              <p className="text-sm text-gray-400 mt-1">Choose which statistical tests to run and which AI model to use for narrative generation.</p>
+            <div className="mb-6 border-b border-black dark:border-zinc-800 pb-4">
+              <span className="mono-badge mb-2">Step 04 / Execution Parameters</span>
+              <h2 className="text-xl font-bold text-black dark:text-white tracking-tight">Configure Test Matrix</h2>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Select statistical operations and execution model engine.</p>
             </div>
             <div className="space-y-6">
               <AnalysisSelector
@@ -268,19 +306,25 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                 onModeChange={(mode) => analysis.updateConfig({ ...analysis.config, mode })}
                 onToggleTest={analysis.toggleTest}
               />
-              <div className="border-t border-gray-100 dark:border-gray-800 pt-6">
+              <div className="border-t border-black dark:border-zinc-800 pt-6">
                 <ModelSelector value={selectedModel} onChange={setSelectedModel} />
               </div>
             </div>
             <div className="flex justify-between mt-6">
-              <Button variant="outline" onClick={() => analysis.setStage('context')}>← Back</Button>
+              <Button 
+                variant="outline" 
+                onClick={() => analysis.setStage('context')}
+                className="rounded-none border-black dark:border-zinc-800 font-mono text-xs uppercase"
+              >
+                ← Back
+              </Button>
               <Button
                 onClick={analysis.runAnalysis}
                 disabled={analysis.status === 'computing' || analysis.status === 'generating'}
-                className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-200/50 dark:shadow-none px-8"
+                className="gap-2 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider rounded-none px-8 border border-black dark:border-white shadow-none"
               >
                 <Play className="w-4 h-4" />
-                Run Analysis
+                Run Statistical Analysis
               </Button>
             </div>
           </div>
@@ -290,20 +334,20 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         {analysis.stage === 'results' && (
           <div className="space-y-4">
             {/* Result tabs */}
-            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
+            <div className="flex gap-0 border border-black dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 p-1 w-fit font-mono">
               {[
-                { id: 'narrative' as const, label: 'Chapter 4 & 5', icon: <FileText className="w-3.5 h-3.5" /> },
-                { id: 'stats' as const, label: 'Statistics', icon: <FlaskConical className="w-3.5 h-3.5" /> },
+                { id: 'narrative' as const, label: 'Chapter 4 & 5 Narrative', icon: <FileText className="w-3.5 h-3.5" /> },
+                { id: 'stats' as const, label: 'Statistical Output', icon: <FlaskConical className="w-3.5 h-3.5" /> },
                 { id: 'syntax' as const, label: 'SPSS Syntax', icon: <Settings2 className="w-3.5 h-3.5" /> },
               ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveResultTab(tab.id)}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                    'flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider font-bold transition-all',
                     activeResultTab === tab.id
-                      ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      ? 'bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
                   )}
                 >
                   {tab.icon} {tab.label}
@@ -312,7 +356,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
             </div>
 
             {/* Tab content */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+            <div className="bg-white dark:bg-black rounded-none border border-black dark:border-zinc-800 p-6">
               {activeResultTab === 'narrative' && (
                 <NarrativeStream
                   narrative={analysis.narrative}
@@ -327,29 +371,38 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                 <SyntaxPanel syntax={analysis.syntax} />
               )}
               {activeResultTab === 'stats' && !analysis.computedStats && (
-                <p className="text-center text-gray-400 text-sm py-8">Statistics will appear here after running the analysis</p>
+                <p className="text-center text-zinc-500 font-mono text-xs py-8 uppercase">Statistical outputs will be displayed here upon execution completion.</p>
               )}
             </div>
 
             {/* Bottom actions */}
             {analysis.status === 'complete' && (
-              <div className="flex flex-wrap items-center gap-3 justify-end">
-                <Button variant="outline" size="sm" onClick={() => analysis.setStage('configure')} className="gap-1.5 text-xs">
-                  <RotateCcw className="w-3.5 h-3.5" /> Re-run
+              <div className="flex flex-wrap items-center gap-3 justify-end font-mono">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => analysis.setStage('configure')} 
+                  className="gap-1.5 text-xs uppercase rounded-none border-black dark:border-zinc-800"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Re-run Analysis
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={async () => {
                     await analysis.save();
-                    toast.info('Analysis saved! Find it in your project dashboard under the Analytics tab.');
+                    toast.info('Analysis saved to workspace!');
                   }}
                   disabled={analysis.isSaved}
-                  className="gap-1.5 text-xs"
+                  className="gap-1.5 text-xs uppercase rounded-none border-black dark:border-zinc-800"
                 >
-                  <Save className="w-3.5 h-3.5" /> {analysis.isSaved ? 'Saved ✓' : 'Save to Project'}
+                  <Save className="w-3.5 h-3.5" /> {analysis.isSaved ? 'Saved ✓' : 'Save to Workspace'}
                 </Button>
-                <Button size="sm" onClick={() => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} className="gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                <Button 
+                  size="sm" 
+                  onClick={() => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} 
+                  className="gap-1.5 text-xs uppercase bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border border-black dark:border-white px-5"
+                >
                   <Download className="w-3.5 h-3.5" /> Export DOCX
                 </Button>
               </div>

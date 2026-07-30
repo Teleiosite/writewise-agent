@@ -40,7 +40,6 @@ export default function UserProfile() {
   });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  // Load profile from Supabase on mount
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) { setIsLoading(false); return; }
@@ -148,8 +147,9 @@ export default function UserProfile() {
   if (isLoading) {
     return (
       <HomeLayout showWelcomeBanner={false}>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center h-64 font-mono text-xs text-zinc-500 uppercase">
+          <Loader2 className="h-5 w-5 animate-spin mr-2 text-black dark:text-white" />
+          Loading Profile...
         </div>
       </HomeLayout>
     );
@@ -157,103 +157,105 @@ export default function UserProfile() {
 
   return (
     <HomeLayout showWelcomeBanner={false}>
-      <div className="container mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6">User Profile</h1>
+      <div className="max-w-2xl mx-auto py-6 font-sans space-y-6">
+        <div className="border-b border-black dark:border-zinc-800 pb-4">
+          <span className="mono-badge mb-2">Researcher Credentials</span>
+          <h1 className="text-2xl font-extrabold tracking-tight text-black dark:text-white mt-1">Researcher Profile & Preferences</h1>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Manage personal academic identity, editor configuration, and authentication credentials.</p>
+        </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="w-full max-w-md mx-auto grid grid-cols-3">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
+          <TabsList className="w-full grid grid-cols-3 rounded-none border border-black dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 p-1 font-mono text-xs">
+            <TabsTrigger value="profile" className="rounded-none data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black uppercase tracking-wider font-bold">
+              <User className="h-3.5 w-3.5 mr-1.5" /> Profile
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Preferences</span>
+            <TabsTrigger value="preferences" className="rounded-none data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black uppercase tracking-wider font-bold">
+              <Settings className="h-3.5 w-3.5 mr-1.5" /> Preferences
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Security</span>
+            <TabsTrigger value="security" className="rounded-none data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black uppercase tracking-wider font-bold">
+              <Shield className="h-3.5 w-3.5 mr-1.5" /> Security
             </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
-                  Personal Information
+          <TabsContent value="profile">
+            <Card className="rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black shadow-none">
+              <CardHeader className="border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold text-black dark:text-white uppercase font-mono">
+                  <User className="h-4 w-4" /> Academic Identity
                 </CardTitle>
-                <CardDescription>Update your profile information</CardDescription>
+                <CardDescription className="text-xs text-zinc-600 dark:text-zinc-400">Update researcher name and academic bio</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="full_name" className="text-sm font-medium">Full Name</label>
+              <CardContent className="space-y-4 pt-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="full_name" className="text-xs font-mono uppercase font-bold text-black dark:text-white">Full Name</label>
                   <Input
                     id="full_name"
                     name="full_name"
                     value={profile.full_name}
                     onChange={handleProfileChange}
-                    placeholder="Your full name"
+                    placeholder="Dr. Jane Doe"
+                    className="rounded-none border-black dark:border-zinc-800 text-xs font-mono bg-white dark:bg-black"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">Email Address</label>
+                <div className="space-y-1.5">
+                  <label htmlFor="email" className="text-xs font-mono uppercase font-bold text-black dark:text-white">Email Address</label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     value={profile.email}
                     disabled
-                    className="opacity-60 cursor-not-allowed"
+                    className="rounded-none border-zinc-300 dark:border-zinc-800 text-xs font-mono bg-zinc-100 dark:bg-zinc-900 opacity-70"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Email address cannot be changed here.
-                  </p>
+                  <p className="text-[11px] text-zinc-500 font-mono">Email authentication key is tied to your login identity.</p>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="bio" className="text-sm font-medium">Bio</label>
+                <div className="space-y-1.5">
+                  <label htmlFor="bio" className="text-xs font-mono uppercase font-bold text-black dark:text-white">Research Focus / Bio</label>
                   <Textarea
                     id="bio"
                     name="bio"
                     value={profile.bio}
                     onChange={handleProfileChange}
-                    placeholder="Tell us about yourself"
-                    className="min-h-[120px]"
+                    placeholder="e.g. Quantitative Researcher in Behavioral Economics & Empirical Finance..."
+                    className="rounded-none border-black dark:border-zinc-800 text-xs font-mono min-h-[100px] bg-white dark:bg-black"
                   />
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button onClick={handleSaveProfile} className="ml-auto" disabled={isSaving}>
-                  {isSaving
-                    ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    : <Save className="h-4 w-4 mr-2" />}
-                  Save Changes
+              <CardFooter className="border-t border-black dark:border-zinc-800 pt-4 flex justify-end">
+                <Button 
+                  onClick={handleSaveProfile} 
+                  disabled={isSaving}
+                  className="rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider px-6 border border-black dark:border-white"
+                >
+                  {isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+                  Save Profile
                 </Button>
               </CardFooter>
             </Card>
           </TabsContent>
 
           {/* Preferences Tab */}
-          <TabsContent value="preferences" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-primary" />
-                  Application Preferences
+          <TabsContent value="preferences">
+            <Card className="rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black shadow-none">
+              <CardHeader className="border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold text-black dark:text-white uppercase font-mono">
+                  <Settings className="h-4 w-4" /> Canvas & Notification Options
                 </CardTitle>
-                <CardDescription>Customize your experience</CardDescription>
+                <CardDescription className="text-xs text-zinc-600 dark:text-zinc-400">Configure editor parameters and automated alerts</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Notifications</h3>
-                  <div className="flex items-center justify-between">
+              <CardContent className="space-y-6 pt-4">
+                <div className="space-y-3">
+                  <span className="mono-badge">Notifications</span>
+                  <div className="flex items-center justify-between p-3 border border-black dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>Email Notifications</span>
+                      <Mail className="h-4 w-4 text-zinc-500" />
+                      <span className="text-xs font-mono">Email Report Digest</span>
                     </div>
                     <Button
-                      variant={preferences.email_notifications ? "default" : "outline"}
+                      size="sm"
+                      variant="outline"
+                      className={`rounded-none font-mono text-xs uppercase ${preferences.email_notifications ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                       onClick={() => togglePref("email_notifications")}
                     >
                       {preferences.email_notifications ? "Enabled" : "Disabled"}
@@ -261,10 +263,10 @@ export default function UserProfile() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Editor Settings</h3>
-                  <div className="space-y-2">
-                    <span className="text-sm">Font Size ({preferences.font_size[0]}px)</span>
+                <div className="space-y-3">
+                  <span className="mono-badge">Editor Environment</span>
+                  <div className="space-y-2 p-3 border border-black dark:border-zinc-800">
+                    <span className="text-xs font-mono uppercase font-bold">Editor Font Size ({preferences.font_size[0]}px)</span>
                     <Slider
                       defaultValue={preferences.font_size}
                       max={24}
@@ -273,25 +275,29 @@ export default function UserProfile() {
                       onValueChange={v => setPreferences(p => ({ ...p, font_size: v }))}
                     />
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between p-3 border border-black dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4 text-muted-foreground" />
-                      <span>AI Writing Suggestions</span>
+                      <Bell className="h-4 w-4 text-zinc-500" />
+                      <span className="text-xs font-mono">Real-time Grammar Guidance</span>
                     </div>
                     <Button
-                      variant={preferences.ai_suggestions ? "default" : "outline"}
+                      size="sm"
+                      variant="outline"
+                      className={`rounded-none font-mono text-xs uppercase ${preferences.ai_suggestions ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                       onClick={() => togglePref("ai_suggestions")}
                     >
                       {preferences.ai_suggestions ? "Enabled" : "Disabled"}
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between p-3 border border-black dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                      <Save className="h-4 w-4 text-muted-foreground" />
-                      <span>Auto-Save Documents</span>
+                      <Save className="h-4 w-4 text-zinc-500" />
+                      <span className="text-xs font-mono">Auto-Save Document Canvas</span>
                     </div>
                     <Button
-                      variant={preferences.auto_save ? "default" : "outline"}
+                      size="sm"
+                      variant="outline"
+                      className={`rounded-none font-mono text-xs uppercase ${preferences.auto_save ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
                       onClick={() => togglePref("auto_save")}
                     >
                       {preferences.auto_save ? "Enabled" : "Disabled"}
@@ -299,11 +305,13 @@ export default function UserProfile() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button onClick={handleSavePreferences} className="ml-auto" disabled={isSaving}>
-                  {isSaving
-                    ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    : <Save className="h-4 w-4 mr-2" />}
+              <CardFooter className="border-t border-black dark:border-zinc-800 pt-4 flex justify-end">
+                <Button 
+                  onClick={handleSavePreferences} 
+                  disabled={isSaving}
+                  className="rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider px-6 border border-black dark:border-white"
+                >
+                  {isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
                   Save Preferences
                 </Button>
               </CardFooter>
@@ -311,50 +319,45 @@ export default function UserProfile() {
           </TabsContent>
 
           {/* Security Tab */}
-          <TabsContent value="security" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  Security Settings
+          <TabsContent value="security">
+            <Card className="rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black shadow-none">
+              <CardHeader className="border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                <CardTitle className="flex items-center gap-2 text-sm font-bold text-black dark:text-white uppercase font-mono">
+                  <Shield className="h-4 w-4" /> Password & Access Control
                 </CardTitle>
-                <CardDescription>Manage your account security</CardDescription>
+                <CardDescription className="text-xs text-zinc-600 dark:text-zinc-400">Update workspace authentication password</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="new-password" className="text-sm font-medium">
-                    New Password
-                  </label>
+              <CardContent className="space-y-4 pt-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="new-password" className="text-xs font-mono uppercase font-bold text-black dark:text-white">New Password</label>
                   <Input
                     id="new-password"
                     type="password"
                     value={passwordForm.newPassword}
                     onChange={e => setPasswordForm(p => ({ ...p, newPassword: e.target.value }))}
-                    placeholder="Minimum 8 characters"
+                    placeholder="Minimum 8 characters..."
+                    className="rounded-none border-black dark:border-zinc-800 text-xs font-mono bg-white dark:bg-black"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="confirm-password" className="text-sm font-medium">
-                    Confirm New Password
-                  </label>
+                <div className="space-y-1.5">
+                  <label htmlFor="confirm-password" className="text-xs font-mono uppercase font-bold text-black dark:text-white">Confirm New Password</label>
                   <Input
                     id="confirm-password"
                     type="password"
                     value={passwordForm.confirmPassword}
                     onChange={e => setPasswordForm(p => ({ ...p, confirmPassword: e.target.value }))}
-                    placeholder="Repeat your new password"
+                    placeholder="Re-enter new password..."
+                    className="rounded-none border-black dark:border-zinc-800 text-xs font-mono bg-white dark:bg-black"
                   />
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="border-t border-black dark:border-zinc-800 pt-4 flex justify-end">
                 <Button
                   onClick={handleChangePassword}
                   disabled={isChangingPassword}
-                  className="ml-auto"
+                  className="rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider px-6 border border-black dark:border-white"
                 >
-                  {isChangingPassword
-                    ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    : <KeyRound className="h-4 w-4 mr-2" />}
+                  {isChangingPassword ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <KeyRound className="h-3.5 w-3.5 mr-1.5" />}
                   {isChangingPassword ? "Updating..." : "Update Password"}
                 </Button>
               </CardFooter>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PenTool } from "lucide-react";
+import { PenTool, X } from "lucide-react";
 import { AnalysisTabs } from "./analysis/AnalysisTabs";
 import { WritingSuggestions } from "./analysis/WritingSuggestions";
 import { GrammarAnalysis } from "./analysis/GrammarAnalysis";
@@ -10,7 +10,7 @@ import { ContentGenerator } from "./analysis/ContentGenerator";
 import { useEditor } from "@/contexts/editor";
 
 export function TextAnalysis() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const { 
     getCurrentSectionContent, 
     addContentToActiveSection,
@@ -21,24 +21,23 @@ export function TextAnalysis() {
   const content = getCurrentSectionContent();
 
   return (
-    <Card className="p-4 relative overflow-hidden group/analysis">
-      {/* Absolute Close Button moved to left corner based on user feedback */}
+    <Card className="p-4 relative rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black font-sans shadow-none">
       <Button 
         variant="ghost" 
         size="icon" 
-        className="absolute top-2 left-2 h-7 w-7 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 z-10 opacity-60 hover:opacity-100 transition-all active:scale-90"
+        className="absolute top-3 left-3 h-7 w-7 rounded-none text-zinc-500 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 z-10"
         onClick={() => toggleAnalysisPanel()}
-        title="Close Analysis Panel"
+        title="Close Panel"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        <X className="h-4 w-4" />
       </Button>
 
-      <div className="flex items-center justify-between mb-4 pb-2 border-b pl-7">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-black dark:border-zinc-800 pl-8 font-mono">
         <div className="flex items-center space-x-2">
-          <PenTool className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold">AI Analysis</h3>
+          <PenTool className="h-4 w-4 text-black dark:text-white" />
+          <h3 className="font-bold text-xs uppercase tracking-wider text-black dark:text-white">AI Analysis & Guidance</h3>
         </div>
-        <div className="flex items-center mr-6">
+        <div className="flex items-center">
           <AnalysisTabs 
             activeTab={analysisTab} 
             onTabChange={toggleAnalysisPanel} 
@@ -47,7 +46,7 @@ export function TextAnalysis() {
         </div>
       </div>
 
-      <ScrollArea className="h-[600px] pr-3">
+      <ScrollArea className="h-[600px] pr-2">
         <div className="pb-8">
           {analysisTab === "writing" && (
             <WritingSuggestions 

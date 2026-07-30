@@ -2,7 +2,6 @@ import * as React from "react";
 import { HomeLayout } from "@/components/layout/HomeLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Select, SelectContent, SelectItem,
@@ -11,11 +10,9 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { CheckCircle2, Key, Cpu, ExternalLink, Trash2 } from "lucide-react";
 
-// ─── Provider / Model catalogue ─────────────────────────────────────────────
-
 interface ProviderMeta {
   label: string;
-  color: string;
+  code: string;
   docsUrl: string;
   models: { value: string; label: string }[];
 }
@@ -23,18 +20,18 @@ interface ProviderMeta {
 const PROVIDERS: Record<string, ProviderMeta> = {
   OpenAI: {
     label: "OpenAI",
-    color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    code: "GPT",
     docsUrl: "https://platform.openai.com/api-keys",
     models: [
-      { value: "gpt-4o-mini",   label: "GPT-4o Mini  (fast · recommended)" },
-      { value: "gpt-4o",        label: "GPT-4o  (most capable)" },
+      { value: "gpt-4o-mini",   label: "GPT-4o Mini (fast · recommended)" },
+      { value: "gpt-4o",        label: "GPT-4o (most capable)" },
       { value: "gpt-4-turbo",   label: "GPT-4 Turbo" },
-      { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo  (legacy)" },
+      { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo (legacy)" },
     ],
   },
   Gemini: {
     label: "Google Gemini",
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    code: "GEM",
     docsUrl: "https://aistudio.google.com/apikey",
     models: [
       { value: "gemini-3.1-flash-preview",      label: "Gemini 3.1 Flash (Preview) · Recommended" },
@@ -46,35 +43,33 @@ const PROVIDERS: Record<string, ProviderMeta> = {
   },
   Claude: {
     label: "Anthropic Claude",
-    color: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+    code: "ANT",
     docsUrl: "https://console.anthropic.com/settings/keys",
     models: [
-      { value: "claude-3-5-haiku-20241022",  label: "Claude 3.5 Haiku  (fast · recommended)" },
-      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet  (most capable)" },
-      { value: "claude-3-haiku-20240307",    label: "Claude 3 Haiku  (legacy)" },
+      { value: "claude-3-5-haiku-20241022",  label: "Claude 3.5 Haiku (fast · recommended)" },
+      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet (most capable)" },
+      { value: "claude-3-haiku-20240307",    label: "Claude 3 Haiku (legacy)" },
     ],
   },
   Grok: {
     label: "xAI Grok",
-    color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    code: "GROK",
     docsUrl: "https://console.x.ai",
     models: [
-      { value: "grok-2-latest", label: "Grok 2  (recommended)" },
-      { value: "grok-beta",     label: "Grok Beta  (legacy)" },
+      { value: "grok-2-latest", label: "Grok 2 (recommended)" },
+      { value: "grok-beta",     label: "Grok Beta (legacy)" },
     ],
   },
   DeepSeek: {
     label: "DeepSeek",
-    color: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+    code: "DS",
     docsUrl: "https://platform.deepseek.com/api_keys",
     models: [
-      { value: "deepseek-chat",     label: "DeepSeek Chat  (recommended)" },
-      { value: "deepseek-reasoner", label: "DeepSeek Reasoner  (CoT)" },
+      { value: "deepseek-chat",     label: "DeepSeek Chat (recommended)" },
+      { value: "deepseek-reasoner", label: "DeepSeek Reasoner (CoT)" },
     ],
   },
 };
-
-// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Settings() {
   const { toast } = useToast();
@@ -89,10 +84,8 @@ export default function Settings() {
     message?: string;
   }>({ status: "idle" });
 
-  // Help detect suspicious key formats
   const isGeminiKeyFormatValid = apiProvider === "Gemini" ? apiKey.trim().startsWith("AIza") : true;
 
-  // Load saved settings on mount
   React.useEffect(() => {
     const savedProvider = localStorage.getItem("apiProvider") ?? "";
     const savedModel    = localStorage.getItem("apiModel")    ?? "";
@@ -102,7 +95,6 @@ export default function Settings() {
     setApiKey(savedKey);
   }, []);
 
-  // When provider changes, reset model to the first option for that provider
   const handleProviderChange = (value: string) => {
     setApiProvider(value);
     setApiModel(PROVIDERS[value]?.models[0]?.value ?? "");
@@ -137,7 +129,7 @@ export default function Settings() {
       
       let displayMessage = result.message;
       if (!result.success && result.message.includes("limit: 0") && apiModel.includes("2.0")) {
-        displayMessage += "\n\n💡 TIP: Your region or account may have a '0' limit for Gemini 2.0. Try switching to 'Gemini 1.5 Flash' in the dropdown above.";
+        displayMessage += "\n\n💡 TIP: Your account may have a '0' rate limit for Gemini 2.0. Switch to 'Gemini 1.5 Flash' above.";
       }
 
       setTestStatus({
@@ -178,7 +170,7 @@ export default function Settings() {
     localStorage.setItem("apiProvider", apiProvider.trim());
     localStorage.setItem("apiModel",    apiModel.trim());
     localStorage.setItem("apiKey",      apiKey.trim());
-    setApiKey(apiKey.trim()); // update display
+    setApiKey(apiKey.trim());
     setIsSubmitting(false);
 
     toast({
@@ -192,30 +184,30 @@ export default function Settings() {
 
   return (
     <HomeLayout showWelcomeBanner={false}>
-      <div className="max-w-2xl mx-auto py-4 space-y-8">
+      <div className="max-w-2xl mx-auto py-6 space-y-8 font-sans">
 
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold mb-1">AI Settings</h1>
-          <p className="text-muted-foreground text-sm">
-            Configure which AI provider and model powers your writing assistant, AI Detector, Text Humanizer, and all other AI features.
-            {" "}No key? The app uses a free fallback automatically.
+        <div className="border-b border-black dark:border-zinc-800 pb-4">
+          <span className="mono-badge mb-2">Workspace Configuration</span>
+          <h1 className="text-2xl font-extrabold tracking-tight text-black dark:text-white mt-1">AI Engine Settings</h1>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
+            Configure the LLM engine for Python narrative generation, literature synthesis, and statistical explanations.
           </p>
         </div>
 
         {/* Current status badge */}
         {isConfigured && (
-          <div className="flex items-center gap-2 p-3 rounded-lg border bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
-            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-            <span className="text-sm text-green-800 dark:text-green-300">
-              Active: <strong>{PROVIDERS[localStorage.getItem("apiProvider")!]?.label ?? localStorage.getItem("apiProvider")}</strong>
+          <div className="flex items-center gap-3 p-4 border border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-mono text-xs">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <span className="uppercase tracking-wider font-bold">
+              Active Engine: {PROVIDERS[localStorage.getItem("apiProvider")!]?.label ?? localStorage.getItem("apiProvider")}
               {" · "}
-              <code className="text-xs">{localStorage.getItem("apiModel")}</code>
+              <code className="text-zinc-300 dark:text-zinc-700">{localStorage.getItem("apiModel")}</code>
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto text-green-700 hover:text-red-600 h-7 px-2"
+              className="ml-auto text-zinc-400 hover:text-white dark:hover:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 rounded-none h-7 px-2 font-mono text-xs uppercase"
               onClick={handleClearSettings}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
@@ -225,46 +217,50 @@ export default function Settings() {
         )}
 
         {/* Config form */}
-        <form onSubmit={handleSubmit} className="space-y-6 p-6 border rounded-xl bg-card shadow-sm">
+        <form onSubmit={handleSubmit} className="space-y-6 p-6 border border-black dark:border-zinc-800 bg-white dark:bg-black">
 
           {/* Provider selector */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium flex items-center gap-1.5">
+          <div className="space-y-2">
+            <label className="text-xs font-mono uppercase tracking-wider font-bold flex items-center gap-1.5 text-black dark:text-white">
               <Cpu className="h-4 w-4" />
-              AI Provider
+              1. Select AI Provider
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono">
               {Object.entries(PROVIDERS).map(([key, meta]) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => handleProviderChange(key)}
-                  className={`flex items-center gap-2 p-3 rounded-lg border text-left transition-all
-                    ${apiProvider === key
-                      ? "border-primary ring-1 ring-primary bg-primary/5"
-                      : "border-border hover:border-primary/50 hover:bg-muted/40"}`}
+                  className={`flex items-center gap-2.5 p-3 border text-left transition-all ${
+                    apiProvider === key
+                      ? "border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold"
+                      : "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-black text-black dark:text-white hover:border-black dark:hover:border-white"
+                  }`}
                 >
-                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${meta.color}`}>
-                    {key === "OpenAI" ? "GPT" : key === "DeepSeek" ? "DS" : key.slice(0, 2)}
+                  <span className={`text-[10px] px-1.5 py-0.5 border ${
+                    apiProvider === key
+                      ? "border-white dark:border-black bg-white text-black dark:bg-black dark:text-white"
+                      : "border-black dark:border-white bg-black text-white dark:bg-white dark:text-black"
+                  }`}>
+                    {meta.code}
                   </span>
-                  <span className="text-sm font-medium truncate">{meta.label}</span>
-                  {apiProvider === key && (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary ml-auto shrink-0" />
-                  )}
+                  <span className="text-xs truncate">{meta.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Model selector — only shown once provider is picked */}
+          {/* Model selector */}
           {selectedProvider && (
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Model</label>
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-wider font-bold text-black dark:text-white">
+                2. Model Engine Architecture
+              </label>
               <Select value={apiModel} onValueChange={setApiModel}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-none border-black dark:border-zinc-800 font-mono text-xs">
                   <SelectValue placeholder="Select a model" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-none border-black dark:border-zinc-800 font-mono text-xs">
                   {selectedProvider.models.map((m) => (
                     <SelectItem key={m.value} value={m.value}>
                       {m.label}
@@ -276,20 +272,20 @@ export default function Settings() {
           )}
 
           {/* API Key */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium flex items-center gap-1.5">
+              <label className="text-xs font-mono uppercase tracking-wider font-bold flex items-center gap-1.5 text-black dark:text-white">
                 <Key className="h-4 w-4" />
-                API Key
+                3. API Credentials
               </label>
               {selectedProvider && (
                 <a
                   href={selectedProvider.docsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-primary flex items-center gap-1 hover:underline"
+                  className="text-xs font-mono text-zinc-600 dark:text-zinc-400 flex items-center gap-1 hover:underline uppercase"
                 >
-                  Get API key
+                  Get API Key
                   <ExternalLink className="h-3 w-3" />
                 </a>
               )}
@@ -297,75 +293,68 @@ export default function Settings() {
             <Input
               id="apiKey"
               type="password"
-              placeholder={selectedProvider ? `Paste your ${selectedProvider.label} key here` : "Select a provider first"}
+              placeholder={selectedProvider ? `Paste ${selectedProvider.label} API Key...` : "Select a provider first"}
               value={apiKey}
               onChange={(e) => {
                 setApiKey(e.target.value);
-                setTestStatus({ status: "idle" }); // reset test status on change
+                setTestStatus({ status: "idle" });
               }}
               disabled={!apiProvider}
-              className={!isGeminiKeyFormatValid ? "border-orange-500 focus-visible:ring-orange-500" : ""}
+              className="rounded-none border-black dark:border-zinc-800 font-mono text-xs focus:ring-1 focus:ring-black dark:focus:ring-white bg-white dark:bg-black"
             />
             {!isGeminiKeyFormatValid && (
-              <p className="text-xs text-orange-600 font-medium">
-                Note: Gemini keys usually start with "AIza". Please double check your key.
+              <p className="text-xs text-orange-600 font-mono">
+                Note: Google Gemini API keys typically begin with "AIza".
               </p>
             )}
             {testStatus.status === "error" && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 mt-2">
-                <p className="text-xs text-red-600 dark:text-red-400 font-mono whitespace-pre-wrap">
-                  Error: {testStatus.message}
-                </p>
+              <div className="p-3 border border-red-600 bg-red-50 dark:bg-red-950/40 text-xs text-red-900 dark:text-red-200 font-mono">
+                <p className="font-bold uppercase">Connection Failure:</p>
+                <p className="mt-1 whitespace-pre-wrap">{testStatus.message}</p>
               </div>
             )}
-            <p className="text-xs text-muted-foreground">
-              Your key is stored only in your browser's localStorage and is sent server-side through our secure proxy — never exposed in the browser.
+            <p className="text-[11px] text-zinc-500 font-mono">
+              Your API keys are stored strictly in client browser memory (localStorage) and never transmitted to third-party databases.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 font-mono">
             <Button
               type="button"
               variant="outline"
               disabled={testStatus.status === "testing" || !apiProvider || !apiKey}
               onClick={handleTestConnection}
-              className="flex-1"
+              className="flex-1 rounded-none border-black dark:border-zinc-800 text-xs uppercase tracking-wider"
             >
               {testStatus.status === "testing" ? "Testing..." : 
-               testStatus.status === "success" ? "Connection Verified!" : 
+               testStatus.status === "success" ? "Verified ✓" : 
                "Test Connection"}
             </Button>
             
             <Button
               type="submit"
               disabled={isSubmitting || !apiProvider || !apiKey || !apiModel}
-              className="flex-1"
+              className="flex-1 rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-xs uppercase tracking-wider border border-black dark:border-white"
             >
               {isSubmitting ? "Saving..." : "Save Settings"}
             </Button>
           </div>
         </form>
 
-        {/* Free fallback info */}
-        <div className="p-4 rounded-xl border border-dashed bg-muted/30 text-sm text-muted-foreground space-y-1">
-          <p className="font-medium text-foreground">No API key? No problem.</p>
-          <p>
-            WriteWise automatically falls back to a free AI service (Pollinations.ai) when no key is configured.
-            It's slower and less capable, but requires zero setup.
-          </p>
-        </div>
-
         {/* Auth section */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">Authentication</h2>
-          <div className="p-6 border rounded-xl bg-card">
-            <p className="mb-4 text-sm text-muted-foreground">
-              You are currently logged in. Click below to sign out.
-            </p>
-            <Button onClick={logout} variant="destructive">
-              Logout
-            </Button>
-          </div>
+        <div className="border border-black dark:border-zinc-800 p-6 bg-white dark:bg-black font-sans">
+          <span className="mono-badge mb-2">Account Management</span>
+          <h2 className="text-lg font-bold text-black dark:text-white mt-1">Session & Authentication</h2>
+          <p className="my-2 text-xs text-zinc-600 dark:text-zinc-400">
+            You are currently authenticated in WriteWise Workspace.
+          </p>
+          <Button 
+            onClick={logout} 
+            variant="outline" 
+            className="rounded-none border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 font-mono text-xs uppercase tracking-wider"
+          >
+            Log Out Account
+          </Button>
         </div>
       </div>
     </HomeLayout>

@@ -36,36 +36,35 @@ function SigCell({ p }: { p: number | null | undefined }) {
 
 function Badge({ label }: { label: string }) {
   const map: Record<string, string> = {
-    excellent: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-    good: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    acceptable: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-    questionable: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    poor: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    unacceptable: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    large: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-    medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    moderate: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    small: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
-    negligible: 'bg-gray-100 text-gray-500',
-    strong: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
-    weak: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
+    excellent: 'bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white',
+    good: 'bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white',
+    acceptable: 'bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white border border-black dark:border-zinc-700',
+    questionable: 'bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white border border-black dark:border-zinc-700',
+    poor: 'bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white border border-black dark:border-zinc-700',
+    unacceptable: 'bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white border border-black dark:border-zinc-700',
+    large: 'bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white',
+    medium: 'bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white',
+    moderate: 'bg-zinc-200 text-black dark:bg-zinc-800 dark:text-white border border-black dark:border-zinc-700',
+    small: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800',
+    negligible: 'bg-zinc-100 text-zinc-500 border border-zinc-300 dark:border-zinc-800',
+    strong: 'bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white',
+    weak: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800',
   };
   const key = (label ?? '').toLowerCase();
   return (
-    <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', map[key] ?? 'bg-gray-100 text-gray-500')}>
+    <span className={cn('text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-none', map[key] ?? 'bg-zinc-100 text-zinc-600 border border-zinc-300')}>
       {label}
     </span>
   );
 }
 
 function MiniBar({ pct }: { pct: number }) {
-  const color = pct > 50 ? 'bg-blue-500' : pct > 25 ? 'bg-blue-400' : 'bg-blue-300';
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden min-w-[50px]">
-        <div className={cn('h-full rounded-full', color)} style={{ width: `${Math.min(100, pct)}%` }} />
+    <div className="flex items-center gap-1.5 font-mono">
+      <div className="flex-1 h-1.5 rounded-none bg-zinc-200 dark:bg-zinc-800 overflow-hidden min-w-[50px] border border-black dark:border-zinc-700">
+        <div className="h-full bg-black dark:bg-white" style={{ width: `${Math.min(100, pct)}%` }} />
       </div>
-      <span className="text-[10px] tabular-nums text-gray-400 w-9 text-right">{pct.toFixed(1)}%</span>
+      <span className="text-[10px] tabular-nums text-zinc-500 w-9 text-right">{pct.toFixed(1)}%</span>
     </div>
   );
 }

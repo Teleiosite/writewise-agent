@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Loader2, Sparkles } from "lucide-react";
@@ -25,23 +24,22 @@ export function WritingSuggestions({ content, onSuggestionClick }: WritingSugges
     try {
       const result = await getWritingSuggestions(content);
       
-      // Parse bulleted list from AI (lines starting with - or numbered)
       const parsed = result.content
         .split('\n')
         .map(line => line.replace(/^[\s\-\*•\d\.\)]+/, '').trim())
-        .filter(line => line.length > 10); // ignore short lines or empty ones
+        .filter(line => line.length > 10);
 
       setSuggestions(parsed.length > 0 ? parsed : [result.content]);
       
       toast({
         title: "Analysis Complete",
-        description: `Writing suggestions completed successfully.`,
+        description: `Writing suggestions generated.`,
       });
     } catch (error) {
       console.error('Error analyzing text:', error);
       toast({
         title: "Analysis Failed",
-        description: "An error occurred while analyzing the text.",
+        description: "An error occurred while analyzing text.",
         variant: "destructive",
       });
     } finally {
@@ -51,28 +49,28 @@ export function WritingSuggestions({ content, onSuggestionClick }: WritingSugges
 
   if (sections.length === 0) {
     return (
-      <div className="p-6 text-center border-2 border-dashed rounded-lg bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800">
-        <p className="text-sm text-muted-foreground mb-2 font-medium font-serif">No sections available.</p>
-        <p className="text-xs text-muted-foreground">Please create a section in the editor sidebar first to start using AI analysis.</p>
+      <div className="p-6 text-center border border-dashed border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-xs">
+        <p className="font-bold text-black dark:text-white uppercase mb-1">No manuscript sections detected.</p>
+        <p className="text-zinc-600 dark:text-zinc-400">Create a manuscript section in the sidebar to activate AI style guidance.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/20 p-3 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
+    <div className="space-y-4 font-sans">
+      <div className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 p-3 border border-black dark:border-zinc-800 font-mono text-xs">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
-          <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-tight">Ready to verify</p>
+          <Sparkles className="w-3.5 h-3.5 text-black dark:text-white" />
+          <p className="font-bold uppercase tracking-wider text-black dark:text-white">Academic Refinements</p>
         </div>
         <Button 
           size="sm" 
           onClick={analyzeSuggestions} 
           disabled={isLoading || !content.trim()}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 h-8 text-xs font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:scale-105 active:scale-95"
+          className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none px-4 h-7 font-mono text-xs uppercase tracking-wider border border-black dark:border-white"
         >
           {isLoading ? (
-            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+            <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
           ) : (
             "Analyze Style"
           )}
@@ -80,47 +78,42 @@ export function WritingSuggestions({ content, onSuggestionClick }: WritingSugges
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-2xl bg-white/50 dark:bg-black/20">
-          <div className="relative mb-4">
-            <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-2 h-2 bg-indigo-400 rounded-full animate-ping" />
-            </div>
-          </div>
-          <span className="font-bold text-gray-800 dark:text-gray-100">Reviewing Manuscript...</span>
-          <span className="text-[10px] text-muted-foreground mt-2 text-center px-4 max-w-[200px]">Optimizing your rhetorical flow and structural clarity.</span>
+        <div className="flex flex-col items-center justify-center p-8 border border-black dark:border-zinc-800 bg-white dark:bg-black font-mono text-xs">
+          <Loader2 className="h-6 w-6 animate-spin text-black dark:text-white mb-2" />
+          <span className="font-bold uppercase text-black dark:text-white">Reviewing Rhetorical Structure...</span>
+          <span className="text-zinc-500 text-[10px] mt-1 text-center">Optimizing academic flow, tone, and conciseness.</span>
         </div>
       ) : (
         <>
           {suggestions.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3 font-mono">
               <div className="flex items-center justify-between px-1">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">AI Recommendations</h4>
-                <Button variant="ghost" size="sm" onClick={() => setSuggestions([])} className="text-[9px] h-5 opacity-40 hover:opacity-100">Dismiss All</Button>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">AI Stylistic Recommendations</h4>
+                <Button variant="ghost" size="sm" onClick={() => setSuggestions([])} className="text-[10px] h-5 uppercase text-zinc-500 hover:text-black dark:hover:text-white rounded-none">Dismiss All</Button>
               </div>
               {suggestions.map((suggestion: string, index: number) => (
                 <Card
                   key={index}
-                  className="p-4 border-none bg-white dark:bg-gray-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 cursor-pointer transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-none group relative ring-1 ring-gray-100 dark:ring-gray-800 hover:ring-indigo-200 dark:hover:ring-indigo-900 rounded-2xl"
+                  className="p-4 rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black hover:border-black dark:hover:border-white cursor-pointer transition-all shadow-none group font-sans"
                   onClick={() => onSuggestionClick(suggestion)}
                 >
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-serif">{suggestion}</p>
-                  <div className="mt-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold">
+                  <p className="text-xs text-black dark:text-white leading-relaxed">{suggestion}</p>
+                  <div className="mt-2.5 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity font-mono text-[10px] uppercase font-bold text-black dark:text-white">
                     <Sparkles className="w-3 h-3" />
-                    Apply Changes
+                    Apply Suggestion to Canvas
                   </div>
                 </Card>
               ))}
             </div>
           ) : content.length > 0 ? (
-            <div className="p-10 text-center border-2 border-dotted rounded-3xl bg-gray-50/30 dark:bg-gray-900/10">
-              <p className="text-xs font-bold text-gray-500 dark:text-gray-400">Section Analysis Available</p>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 italic px-4 leading-relaxed">Click analyze to generate sophisticated writing refinements for your current drafting.</p>
+            <div className="p-8 text-center border border-dashed border-black dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50 font-mono text-xs">
+              <p className="font-bold uppercase text-black dark:text-white">Manuscript Guidance Ready</p>
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-1">Click Analyze Style above to generate academic refinements for your draft.</p>
             </div>
           ) : (
-            <div className="p-10 text-center border-2 border-dotted rounded-3xl opacity-50">
-              <p className="text-xs font-bold text-muted-foreground">Draft is Empty</p>
-              <p className="text-[10px] text-muted-foreground mt-2 px-6 leading-relaxed">Input your research or arguments to unlock AI-powered stylistic enhancements.</p>
+            <div className="p-8 text-center border border-dashed border-black dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50 font-mono text-xs">
+              <p className="font-bold uppercase text-zinc-400">Canvas Is Empty</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Add text to your canvas to receive style and grammar recommendations.</p>
             </div>
           )}
         </>

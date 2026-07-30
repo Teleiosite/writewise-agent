@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { 
   PenTool, 
   BookOpen, 
-  FileText, 
   MoreHorizontal, 
   ChevronDown,
   Sparkles,
@@ -35,54 +34,54 @@ export function AnalysisTabs({ activeTab, onTabChange, isLoading }: AnalysisTabs
     switch(activeTab) {
       case "writing": return <PenTool className="w-3.5 h-3.5 mr-2" />;
       case "grammar": return <BookOpen className="w-3.5 h-3.5 mr-2" />;
-      case "generate": return <Sparkles className="w-3.5 h-3.5 mr-2 text-blue-500" />;
+      case "generate": return <Sparkles className="w-3.5 h-3.5 mr-2 text-black dark:text-white" />;
       default: return <Zap className="w-3.5 h-3.5 mr-2" />;
     }
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center font-sans">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-8 flex items-center gap-1 border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-black/20 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all active:scale-95 px-2.5 rounded-xl shadow-sm"
+            className="h-8 flex items-center gap-1 border border-black dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-100 dark:hover:bg-zinc-900 px-3 rounded-none shadow-none font-mono text-xs"
             disabled={isLoading}
           >
-            <div className="flex items-center text-xs font-bold text-gray-700 dark:text-gray-300">
+            <div className="flex items-center text-xs font-bold text-black dark:text-white">
               {getActiveIcon()}
-              <span className="mr-1">{getActiveLabel()}</span>
+              <span className="mr-1 uppercase tracking-wider">{getActiveLabel()}</span>
             </div>
-            <MoreHorizontal className="w-3.5 h-3.5 text-gray-400" />
-            <ChevronDown className="w-2.5 h-2.5 text-gray-400 opacity-50" />
+            <MoreHorizontal className="w-3.5 h-3.5 text-zinc-400" />
+            <ChevronDown className="w-2.5 h-2.5 text-zinc-400" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 shadow-xl border-gray-100 dark:border-gray-800 rounded-xl p-1 animate-in fade-in zoom-in-95 duration-100">
-          <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Select AI Mode</div>
+        <DropdownMenuContent align="end" className="w-52 border border-black dark:border-zinc-800 bg-white dark:bg-black rounded-none p-1 font-mono text-xs shadow-none">
+          <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Select AI Mode</div>
           
           <DropdownMenuItem 
             onClick={() => onTabChange("writing")}
-            className={`flex items-center py-2.5 cursor-pointer rounded-lg ${activeTab === "writing" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : ""}`}
+            className={`flex items-center py-2 cursor-pointer rounded-none ${activeTab === "writing" ? "bg-black text-white dark:bg-white dark:text-black font-bold" : "text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"}`}
           >
-            <PenTool className="w-4 h-4 mr-2.5 opacity-70" />
-            <span className="text-sm">Writing Suggestions</span>
+            <PenTool className="w-3.5 h-3.5 mr-2" />
+            <span className="text-xs uppercase tracking-wider">Writing Guidance</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem 
             onClick={() => onTabChange("grammar")}
-            className={`flex items-center py-2.5 cursor-pointer rounded-lg ${activeTab === "grammar" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : ""}`}
+            className={`flex items-center py-2 cursor-pointer rounded-none ${activeTab === "grammar" ? "bg-black text-white dark:bg-white dark:text-black font-bold" : "text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"}`}
           >
-            <Zap className="w-4 h-4 mr-2.5 opacity-70 text-orange-500" />
-            <span className="text-sm">Grammar Analysis</span>
+            <Zap className="w-3.5 h-3.5 mr-2" />
+            <span className="text-xs uppercase tracking-wider">Academic Syntax</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem 
             onClick={() => onTabChange("generate")}
-            className={`flex items-center py-2.5 cursor-pointer rounded-lg ${activeTab === "generate" ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold" : ""}`}
+            className={`flex items-center py-2 cursor-pointer rounded-none ${activeTab === "generate" ? "bg-black text-white dark:bg-white dark:text-black font-bold" : "text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"}`}
           >
-            <Sparkles className="w-4 h-4 mr-2.5 opacity-70 text-blue-500" />
-            <span className="text-sm">Generate Sections</span>
+            <Sparkles className="w-3.5 h-3.5 mr-2" />
+            <span className="text-xs uppercase tracking-wider">Generate Sections</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

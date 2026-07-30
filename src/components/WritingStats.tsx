@@ -28,7 +28,7 @@ export function WritingStats({ projectName }: WritingStatsProps) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-blue-600" />
+          <TrendingUp className="h-5 w-5 text-black dark:text-white" />
           Writing Analytics
         </CardTitle>
       </CardHeader>
@@ -38,28 +38,28 @@ export function WritingStats({ projectName }: WritingStatsProps) {
             title="Total Words" 
             value={wordCount} 
             icon={<Bookmark className="h-8 w-8" />} 
-            colorClass="text-blue-600" 
+            colorClass="text-black dark:text-white" 
           />
           
           <StatsCard 
             title="Writing Sessions" 
             value={sessions} 
             icon={<Clock className="h-8 w-8" />} 
-            colorClass="text-green-600" 
+            colorClass="text-black dark:text-white" 
           />
           
           <StatsCard 
             title="Day Streak" 
             value={streakDays} 
             icon={<CalendarDays className="h-8 w-8" />} 
-            colorClass="text-orange-600" 
+            colorClass="text-black dark:text-white" 
           />
           
           <StatsCard 
             title="Hours Writing" 
             value={totalHours.toFixed(1)} 
             icon={<PenTool className="h-8 w-8" />} 
-            colorClass="text-purple-600" 
+            colorClass="text-black dark:text-white" 
           />
         </div>
         

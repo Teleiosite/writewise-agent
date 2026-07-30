@@ -1,88 +1,88 @@
-
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/components/ui/use-toast";
-import { Send, Bot, User, Sparkles, Loader2 } from "lucide-react";
+import { Bot, Send, User, Sparkles, Loader2 } from "lucide-react";
 import { getChatbotResponse } from "@/services/ai-services";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
-  content: string;
   role: "user" | "assistant";
+  content: string;
   timestamp: Date;
 }
 
 export function ChatAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: "welcome",
-      content: "Hello! I'm your writing assistant. How can I help with your writing project today?",
+      id: "1",
       role: "assistant",
+      content: "Hello! I am your WriteWise Research Assistant. I can help refine statistical narratives, structure literature reviews, or check APA citation formats.",
       timestamp: new Date(),
     },
   ]);
-  const [inputValue, setInputValue] = useState("");
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!inputValue.trim()) return;
-    
-    // Add user message
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue,
       role: "user",
+      content: input,
       timestamp: new Date(),
     };
-    
+
     setMessages((prev) => [...prev, userMessage]);
-    setInputValue("");
+    setInput("");
     setIsLoading(true);
-    
+
     try {
-      // Get AI response
-      const response = await getChatbotResponse(inputValue);
-      
+      const response = await getChatbotResponse(input);
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: response.content,
         role: "assistant",
+        content: response.content,
         timestamp: new Date(),
       };
-      
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Error getting response:", error);
-      const errMsg = error instanceof Error ? error.message : "Unknown error";
+      console.error("Error asking AI assistant:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get a response from the AI assistant.",
+        variant: "destructive",
+      });
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `⚠️ ${errMsg}\n\nTip: Go to Settings and check your AI provider and API key.`,
         role: "assistant",
+        content: "I encountered an error processing your request. Please check your API key settings or try again.",
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Card className="flex flex-col h-[600px] dark:neo-blur">
-      <div className="flex items-center justify-between p-4 border-b dark:border-slate-700/50">
+    <Card className="flex flex-col h-[600px] rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black font-sans shadow-none">
+      <div className="flex items-center justify-between p-4 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          <h3 className="font-semibold dark:text-white">Writing Assistant</h3>
+          <Bot className="h-4 w-4 text-black dark:text-white" />
+          <h3 className="font-bold text-xs uppercase tracking-wider text-black dark:text-white">Research Assistant</h3>
         </div>
-        <Button variant="ghost" size="sm">
-          <Sparkles className="h-4 w-4 mr-2" />
-          New Chat
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="rounded-none border-black dark:border-zinc-800 font-mono text-[11px] uppercase tracking-wider h-7"
+          onClick={() => setMessages([messages[0]])}
+        >
+          <Sparkles className="h-3 w-3 mr-1.5" />
+          New Thread
         </Button>
       </div>
       
@@ -96,36 +96,36 @@ export function ChatAssistant() {
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-3 ${
+                className={`max-w-[85%] rounded-none p-3.5 border ${
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted dark:bg-slate-800/60"
-                } transition-all duration-300 animate-scale-in`}
+                    ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white font-sans"
+                    : "bg-zinc-50 dark:bg-zinc-950 text-black dark:text-white border-black dark:border-zinc-800 font-sans"
+                }`}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1.5 font-mono text-[10px] uppercase opacity-70">
                   {message.role === "user" ? (
-                    <User className="h-4 w-4" />
+                    <User className="h-3 w-3" />
                   ) : (
-                    <Bot className="h-4 w-4" />
+                    <Bot className="h-3 w-3" />
                   )}
-                  <span className="text-xs opacity-70">
+                  <span>
                     {message.timestamp.toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap dark:text-gray-200">{message.content}</p>
+                <p className="text-xs leading-relaxed whitespace-pre-wrap">{message.content}</p>
               </div>
             </div>
           ))}
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-lg p-3 bg-muted dark:bg-slate-800/60">
+              <div className="max-w-[85%] rounded-none p-3.5 border border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-xs text-black dark:text-white">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm dark:text-gray-300">Generating response...</span>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="uppercase tracking-wider">Synthesizing Response...</span>
                 </div>
               </div>
             </div>
@@ -133,24 +133,31 @@ export function ChatAssistant() {
         </div>
       </ScrollArea>
       
-      <form onSubmit={handleSubmit} className="p-4 border-t dark:border-slate-700/50">
-        <div className="flex gap-2">
+      <div className="p-4 border-t border-black dark:border-zinc-800 bg-white dark:bg-black">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSend();
+          }}
+          className="flex gap-2 font-mono"
+        >
           <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask a question about your writing..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask research, methodology, or formatting questions..."
             disabled={isLoading}
-            className="flex-grow dark:bg-slate-800/40 dark:border-slate-700"
+            className="flex-grow rounded-none border-black dark:border-zinc-800 text-xs font-mono bg-white dark:bg-black focus:ring-1 focus:ring-black dark:focus:ring-white"
           />
-          <Button type="submit" disabled={isLoading || !inputValue.trim()}>
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+          <Button 
+            type="submit" 
+            disabled={isLoading || !input.trim()}
+            className="rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider px-5 border border-black dark:border-white shrink-0"
+          >
+            <Send className="h-3.5 w-3.5 mr-1.5" />
+            Send
           </Button>
-        </div>
-      </form>
+        </form>
+      </div>
     </Card>
   );
 }
