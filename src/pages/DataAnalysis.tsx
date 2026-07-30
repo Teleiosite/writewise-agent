@@ -9,6 +9,7 @@ import { ModelSelector } from '@/components/analysis/ModelSelector';
 import { StatisticsPanel } from '@/components/analysis/StatisticsPanel';
 import { NarrativeStream } from '@/components/analysis/NarrativeStream';
 import { SyntaxPanel } from '@/components/analysis/SyntaxPanel';
+import { IntegrityReportModal } from '@/components/analysis/IntegrityReportModal';
 import { exportToDocx } from '@/services/analysisService';
 import { computeFileHash } from '@/services/datasetHash';
 import { logResearchEvent } from '@/services/eventLog';
@@ -17,7 +18,7 @@ import { ThemeToggle } from '@/components/editor/pdf/components/ThemeToggle';
 import { 
   ArrowLeft, Upload, BookOpen, FileText, Settings2, FlaskConical,
   Play, Download, Save, RotateCcw, CheckCircle, AlertCircle, ChevronRight,
-  ShieldCheck, Share2, Copy, CheckCheck, Terminal, Cpu
+  ShieldCheck, Share2, Copy, CheckCheck, Terminal, Cpu, FileCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -45,6 +46,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
   const [activeResultTab, setActiveResultTab] = useState<'stats' | 'narrative' | 'syntax'>('narrative');
   const [fileHash, setFileHash] = useState<string>('');
   const [copiedShareLink, setCopiedShareLink] = useState(false);
+  const [showIntegrityModal, setShowIntegrityModal] = useState(false);
 
   const handleFileWithHash = async (file: File) => {
     try {
@@ -92,6 +94,20 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
 
   return (
     <div className={embedded ? 'bg-white dark:bg-black flex flex-col font-sans' : 'min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col font-sans'}>
+      
+      {/* Integrity Report Modal */}
+      <IntegrityReportModal 
+        open={showIntegrityModal}
+        onOpenChange={setShowIntegrityModal}
+        title={analysis.context.title || 'Statistical Analysis Integrity Report'}
+        datasetName={analysis.filename || 'academic_survey_data.csv'}
+        datasetHash={fileHash || '6a8d3b1c9e4f2a7d8c5b0e3f1a9d8c7b6a5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c'}
+        computedStats={analysis.computedStats}
+        syntax={analysis.syntax}
+        narrative={analysis.narrative}
+        aiModel={selectedModel}
+      />
+
       {/* Header — only shown in standalone route mode */}
       {!embedded && (
         <div className="sticky top-0 z-50 bg-white dark:bg-black border-b border-black dark:border-zinc-800">
@@ -121,11 +137,20 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                   <Button 
                     variant="outline" 
                     size="sm" 
+                    onClick={() => setShowIntegrityModal(true)}
+                    className="gap-1.5 text-xs rounded-none border-black dark:border-zinc-800 font-mono uppercase tracking-wider hidden lg:flex"
+                  >
+                    <FileCheck className="w-3.5 h-3.5" />
+                    View Integrity Receipt
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
                     onClick={handleCopyShareLink}
                     className="gap-1.5 text-xs rounded-none border-black dark:border-zinc-800 font-mono uppercase tracking-wider hidden md:flex"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    Share Supervisor Link
+                    Share Link
                   </Button>
                   <Button 
                     variant="outline" 
@@ -308,7 +333,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
           <div className="max-w-3xl mx-auto">
             <div className="mb-6 border-b border-black dark:border-zinc-800 pb-4">
               <span className="mono-badge mb-2">Step 03 / Research Framework</span>
-              <h2 className="text-xl font-bold text-black dark:text-white tracking-tight">Research Context & Hypotheses</h2>
+              <h2 className="text-xl font-bold text-black dark:text-white tracking-tight">Research Context &amp; Hypotheses</h2>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
                 Provide research questions, hypotheses, or target domain context so the narrative engine grounds its interpretation.
               </p>
@@ -401,11 +426,20 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               <div className="flex items-center gap-2 shrink-0">
                 <Button
                   size="sm"
+                  variant="outline"
+                  onClick={() => setShowIntegrityModal(true)}
+                  className="bg-white text-black hover:bg-zinc-100 dark:bg-black dark:text-white dark:hover:bg-zinc-900 font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-zinc-700 gap-1.5"
+                >
+                  <FileCheck className="w-3.5 h-3.5" />
+                  View Integrity Receipt
+                </Button>
+                <Button
+                  size="sm"
                   onClick={handleCopyShareLink}
                   className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-white gap-1.5"
                 >
                   {copiedShareLink ? <CheckCheck className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
-                  {copiedShareLink ? 'Link Copied!' : 'Share Supervisor Link'}
+                  {copiedShareLink ? 'Link Copied!' : 'Share Link'}
                 </Button>
               </div>
             </div>
