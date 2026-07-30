@@ -10,6 +10,7 @@ import { StatisticsPanel } from '@/components/analysis/StatisticsPanel';
 import { NarrativeStream } from '@/components/analysis/NarrativeStream';
 import { SyntaxPanel } from '@/components/analysis/SyntaxPanel';
 import { IntegrityReportModal } from '@/components/analysis/IntegrityReportModal';
+import { ClaimVerificationPanel } from '@/components/analysis/ClaimVerificationPanel';
 import { exportToDocx } from '@/services/analysisService';
 import { computeFileHash } from '@/services/datasetHash';
 import { logResearchEvent } from '@/services/eventLog';
@@ -18,7 +19,7 @@ import { ThemeToggle } from '@/components/editor/pdf/components/ThemeToggle';
 import { 
   ArrowLeft, Upload, BookOpen, FileText, Settings2, FlaskConical,
   Play, Download, Save, RotateCcw, CheckCircle, AlertCircle, ChevronRight,
-  ShieldCheck, Share2, Copy, CheckCheck, Terminal, Cpu, FileCheck
+  ShieldCheck, Share2, Copy, CheckCheck, Terminal, Cpu, FileCheck, Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -43,7 +44,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
   const navigate = useNavigate();
   const analysis = useAnalysis();
   const [selectedModel, setSelectedModel] = useState(localStorage.getItem('apiProvider') || 'Gemini');
-  const [activeResultTab, setActiveResultTab] = useState<'stats' | 'narrative' | 'syntax'>('narrative');
+  const [activeResultTab, setActiveResultTab] = useState<'stats' | 'narrative' | 'syntax' | 'audit'>('narrative');
   const [fileHash, setFileHash] = useState<string>('');
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [showIntegrityModal, setShowIntegrityModal] = useState(false);
@@ -127,7 +128,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                 </div>
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-tight text-black dark:text-white font-mono">Statistical Analysis Engine</p>
-                  <p className="text-[10px] text-zinc-500 hidden sm:block">Deterministic Python statistics · SPSS syntax · Chapter 4 & 5 drafting</p>
+                  <p className="text-[10px] text-zinc-500 hidden sm:block">Deterministic Python statistics · SPSS syntax · Chapter 4 &amp; 5 drafting</p>
                 </div>
               </div>
             </div>
@@ -445,17 +446,18 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
             </div>
 
             {/* Result tabs */}
-            <div className="flex gap-0 border border-black dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 p-1 w-fit font-mono">
+            <div className="flex gap-0 border border-black dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 p-1 w-fit font-mono overflow-x-auto max-w-full">
               {[
                 { id: 'narrative' as const, label: 'Chapter 4 & 5 Narrative', icon: <FileText className="w-3.5 h-3.5" /> },
                 { id: 'stats' as const, label: 'Statistical Output', icon: <FlaskConical className="w-3.5 h-3.5" /> },
                 { id: 'syntax' as const, label: 'SPSS Syntax', icon: <Settings2 className="w-3.5 h-3.5" /> },
+                { id: 'audit' as const, label: 'Claim Auditor', icon: <Search className="w-3.5 h-3.5" /> },
               ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveResultTab(tab.id)}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider font-bold transition-all',
+                    'flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider font-bold transition-all shrink-0',
                     activeResultTab === tab.id
                       ? 'bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white'
                       : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
@@ -480,6 +482,12 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               )}
               {activeResultTab === 'syntax' && analysis.syntax && (
                 <SyntaxPanel syntax={analysis.syntax} />
+              )}
+              {activeResultTab === 'audit' && (
+                <ClaimVerificationPanel 
+                  computedStats={analysis.computedStats}
+                  narrativeText={analysis.narrative}
+                />
               )}
               {activeResultTab === 'stats' && !analysis.computedStats && (
                 <p className="text-center text-zinc-500 font-mono text-xs py-8 uppercase">Statistical outputs will be displayed here upon execution completion.</p>
