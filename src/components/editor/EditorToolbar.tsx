@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/contexts/editor";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -15,11 +14,9 @@ import {
   AlignLeft, 
   AlignCenter, 
   AlignRight, 
-  Eraser,
   Type
 } from "lucide-react";
 import { useState } from "react";
-import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ToolbarButtonProps {
@@ -37,13 +34,13 @@ function ToolbarButton({ onClick, icon, title, className }: ToolbarButtonProps) 
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 ${className}`} 
+            className={`h-7 w-7 p-0 rounded-none hover:bg-zinc-100 dark:hover:bg-zinc-900 ${className}`} 
             onClick={onClick}
           >
             {icon}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="text-[10px] py-1 px-2">
+        <TooltipContent side="bottom" className="text-[10px] font-mono py-1 px-2 rounded-none border border-black dark:border-zinc-800 bg-white dark:bg-black text-black dark:text-white">
           {title}
         </TooltipContent>
       </Tooltip>
@@ -57,11 +54,10 @@ export function EditorToolbar() {
     exportDocument,
     lastSaved,
     wordCount,
-    readingTime,
     isAutoSaving,
   } = useEditor();
   
-  const [isExporting, setIsExporting] = useState(false);
+  const [, setIsExporting] = useState(false);
   const isOnline = useOnlineStatus();
   
   const handleExport = async (format: string) => {
@@ -78,81 +74,80 @@ export function EditorToolbar() {
   };
   
   return (
-    <div className="flex flex-col gap-2 p-3 bg-white dark:bg-gray-900 border-b sticky top-0 z-10 shadow-sm print:hidden">
+    <div className="flex flex-col gap-2 p-3 bg-white dark:bg-black border-b border-black dark:border-zinc-800 sticky top-0 z-10 font-sans print:hidden">
       {/* Top Row: Meta Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="sm"
             onClick={() => saveProject()}
             disabled={isAutoSaving}
-            className="text-blue-600 dark:text-blue-400 font-semibold h-8"
+            className="text-black dark:text-white font-mono text-xs uppercase tracking-wider h-7 rounded-none border-black dark:border-zinc-800"
           >
-            <Save className="w-4 h-4 mr-1.5" />
+            <Save className="w-3.5 h-3.5 mr-1.5" />
             {isAutoSaving ? "Saving..." : "Save"}
           </Button>
           
-          <Separator orientation="vertical" className="h-6" />
+          <div className="w-px h-5 bg-black dark:bg-zinc-800 mx-1" />
           
-          <div className="flex items-center gap-1">
-            <ToolbarButton 
+          <div className="flex items-center gap-1 font-mono">
+            <Button 
+              variant="outline" 
+              size="sm" 
               onClick={() => handleExport("docx")} 
-              icon={<Download className="w-4 h-4 text-blue-500" />} 
-              title="Export as DOCX" 
-            />
-            <ToolbarButton 
+              className="h-7 text-xs font-mono uppercase tracking-wider rounded-none border-black dark:border-zinc-800 gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              DOCX
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
               onClick={() => handleExport("pdf")} 
-              icon={<Download className="w-4 h-4 text-red-500" />} 
-              title="Export as PDF" 
-            />
+              className="h-7 text-xs font-mono uppercase tracking-wider rounded-none border-black dark:border-zinc-800 gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" />
+              PDF
+            </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-          <div className="flex items-center bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-full">
-            {isOnline ? <Wifi className="w-3 h-3 text-green-500 mr-1.5" /> : <WifiOff className="w-3 h-3 text-red-500 mr-1.5" />}
-            <span>{isOnline ? "Cloud Sync Active" : "Offline"}</span>
+        <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-wider font-bold">
+          <div className="flex items-center border border-black dark:border-zinc-800 px-2 py-0.5 rounded-none bg-zinc-50 dark:bg-zinc-950 text-black dark:text-white">
+            {isOnline ? <Wifi className="w-3 h-3 mr-1.5 text-black dark:text-white" /> : <WifiOff className="w-3 h-3 mr-1.5 text-zinc-400" />}
+            <span>{isOnline ? "CLOUD SYNC ACTIVE" : "OFFLINE"}</span>
           </div>
-          {lastSaved && <span className="hidden md:inline">Sync: {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-          <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-gray-600 dark:text-gray-400">{wordCount} words</span>
+          {lastSaved && <span className="hidden md:inline text-zinc-500">SYNC: {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+          <span className="border border-black dark:border-zinc-800 px-2 py-0.5 rounded-none bg-black text-white dark:bg-white dark:text-black">{wordCount} WORDS</span>
         </div>
       </div>
 
-      <Separator className="opacity-50" />
+      <div className="h-px bg-black dark:bg-zinc-800 w-full my-0.5" />
 
       {/* Bottom Row: Rich Text Formatting */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
-        <div className="flex items-center bg-gray-50/50 dark:bg-gray-800/30 p-0.5 rounded-lg border border-gray-100 dark:border-gray-800">
-          <ToolbarButton onClick={() => execCommand('bold')} icon={<Bold className="w-4 h-4" />} title="Bold" />
-          <ToolbarButton onClick={() => execCommand('italic')} icon={<Italic className="w-4 h-4" />} title="Italic" />
-          <ToolbarButton onClick={() => execCommand('underline')} icon={<Underline className="w-4 h-4" />} title="Underline" />
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+        <div className="flex items-center bg-zinc-50 dark:bg-zinc-950 p-0.5 border border-black dark:border-zinc-800">
+          <ToolbarButton onClick={() => execCommand('bold')} icon={<Bold className="w-3.5 h-3.5" />} title="Bold" />
+          <ToolbarButton onClick={() => execCommand('italic')} icon={<Italic className="w-3.5 h-3.5" />} title="Italic" />
+          <ToolbarButton onClick={() => execCommand('underline')} icon={<Underline className="w-3.5 h-3.5" />} title="Underline" />
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1 opacity-50" />
+        <div className="w-px h-5 bg-black dark:bg-zinc-800 mx-0.5" />
 
-        <div className="flex items-center bg-gray-50/50 dark:bg-gray-800/30 p-0.5 rounded-lg border border-gray-100 dark:border-gray-800">
-          <ToolbarButton onClick={() => execCommand('formatBlock', '<h1>')} icon={<Type className="w-4 h-4" />} title="Heading" />
-          <ToolbarButton onClick={() => execCommand('justifyLeft')} icon={<AlignLeft className="w-4 h-4" />} title="Align Left" />
-          <ToolbarButton onClick={() => execCommand('justifyCenter')} icon={<AlignCenter className="w-4 h-4" />} title="Align Center" />
-          <ToolbarButton onClick={() => execCommand('justifyRight')} icon={<AlignRight className="w-4 h-4" />} title="Align Right" />
+        <div className="flex items-center bg-zinc-50 dark:bg-zinc-950 p-0.5 border border-black dark:border-zinc-800">
+          <ToolbarButton onClick={() => execCommand('formatBlock', '<h1>')} icon={<Type className="w-3.5 h-3.5" />} title="Heading" />
+          <ToolbarButton onClick={() => execCommand('justifyLeft')} icon={<AlignLeft className="w-3.5 h-3.5" />} title="Align Left" />
+          <ToolbarButton onClick={() => execCommand('justifyCenter')} icon={<AlignCenter className="w-3.5 h-3.5" />} title="Align Center" />
+          <ToolbarButton onClick={() => execCommand('justifyRight')} icon={<AlignRight className="w-3.5 h-3.5" />} title="Align Right" />
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1 opacity-50" />
+        <div className="w-px h-5 bg-black dark:bg-zinc-800 mx-0.5" />
 
-        <div className="flex items-center bg-gray-50/50 dark:bg-gray-800/30 p-0.5 rounded-lg border border-gray-100 dark:border-gray-800">
-          <ToolbarButton onClick={() => execCommand('insertUnorderedList')} icon={<List className="w-4 h-4" />} title="Bullet List" />
-          <ToolbarButton onClick={() => execCommand('insertOrderedList')} icon={<ListOrdered className="w-4 h-4" />} title="Numbered List" />
+        <div className="flex items-center bg-zinc-50 dark:bg-zinc-950 p-0.5 border border-black dark:border-zinc-800">
+          <ToolbarButton onClick={() => execCommand('insertUnorderedList')} icon={<List className="w-3.5 h-3.5" />} title="Bullet List" />
+          <ToolbarButton onClick={() => execCommand('insertOrderedList')} icon={<ListOrdered className="w-3.5 h-3.5" />} title="Numbered List" />
         </div>
-
-        <Separator orientation="vertical" className="h-6 mx-1 opacity-50" />
-
-        <ToolbarButton 
-          onClick={() => execCommand('removeFormat')} 
-          icon={<Eraser className="w-4 h-4" />} 
-          title="Clear Formatting" 
-          className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20"
-        />
       </div>
     </div>
   );

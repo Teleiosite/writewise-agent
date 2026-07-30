@@ -1,5 +1,3 @@
-
-import React from "react";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +17,9 @@ export function Logo({
   withText = true 
 }: LogoProps) {
   const sizeClasses = {
-    sm: "h-6 w-6",
-    md: "h-8 w-8",
-    lg: "h-10 w-10",
+    sm: "h-5 w-5",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
   };
 
   const textSizeClasses = {
@@ -31,22 +29,21 @@ export function Logo({
   };
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-2 font-sans", className)}>
       <Sparkles 
         className={cn(
           sizeClasses[size],
-          "text-blue-600 dark:text-blue-400 animate-pulse",
+          "text-black dark:text-white",
           iconClassName
         )} 
       />
       {withText && (
         <span className={cn(
-          "font-bold tracking-tight",
+          "font-black tracking-tight text-black dark:text-white uppercase font-mono",
           textSizeClasses[size],
-          "bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent",
           textClassName
         )}>
-          Writewise
+          WriteWise
         </span>
       )}
     </div>

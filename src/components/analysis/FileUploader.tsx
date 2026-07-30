@@ -17,11 +17,11 @@ export function FileUploader({ onFile, isLoading }: FileUploaderProps) {
   const validate = (file: File) => {
     const ext = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!ACCEPTED.includes(ext)) {
-      setError(`Unsupported file type. Please upload ${ACCEPTED.join(', ')}`);
+      setError(`Unsupported format. Upload ${ACCEPTED.join(', ')}`);
       return false;
     }
     if (file.size > 50 * 1024 * 1024) {
-      setError('File must be under 50MB');
+      setError('Dataset file must be under 50MB');
       return false;
     }
     setError('');
@@ -40,17 +40,17 @@ export function FileUploader({ onFile, isLoading }: FileUploaderProps) {
   }, [handleFile]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       <div
         onDrop={handleDrop}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onClick={() => inputRef.current?.click()}
         className={cn(
-          'relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 group',
+          'relative border border-dashed rounded-none p-12 text-center cursor-pointer transition-all duration-200 group bg-white dark:bg-black font-sans',
           dragging
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.01]'
-            : 'border-gray-200 dark:border-gray-700 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50',
+            ? 'border-black dark:border-white bg-zinc-100 dark:bg-zinc-900'
+            : 'border-black dark:border-zinc-800 hover:border-black dark:hover:border-white hover:bg-zinc-50 dark:hover:bg-zinc-950',
           isLoading && 'pointer-events-none opacity-60'
         )}
       >
@@ -63,43 +63,40 @@ export function FileUploader({ onFile, isLoading }: FileUploaderProps) {
         />
 
         <div className={cn(
-          'inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 transition-all duration-200',
-          dragging ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
+          'inline-flex items-center justify-center w-14 h-14 border rounded-none mb-4 transition-all duration-200 font-mono',
+          dragging 
+            ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white' 
+            : 'bg-zinc-100 dark:bg-zinc-900 border-black dark:border-zinc-800 text-black dark:text-white group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black'
         )}>
           {isLoading
-            ? <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            : <Upload className={cn('w-7 h-7 transition-colors', dragging ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500')} />
+            ? <div className="w-5 h-5 border-2 border-current border-t-transparent animate-spin" />
+            : <Upload className="w-6 h-6" />
           }
         </div>
 
-        <p className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-1">
-          {isLoading ? 'Parsing your dataset...' : dragging ? 'Drop to upload' : 'Drop your dataset here'}
+        <p className="text-sm font-mono font-bold uppercase tracking-wider text-black dark:text-white mb-1">
+          {isLoading ? 'Parsing Research Dataset...' : dragging ? 'Drop File to Ingest' : 'Drag & Drop Research Dataset'}
         </p>
-        <p className="text-sm text-gray-400">or click to browse</p>
+        <p className="text-xs text-zinc-500 font-mono">or click to browse local filesystem</p>
 
-        <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-          {[
-            { ext: 'XLSX', color: 'bg-green-50 text-green-700 border-green-200' },
-            { ext: 'CSV', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-            { ext: 'XLS', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-            { ext: 'SAV (SPSS)', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-          ].map(({ ext, color }) => (
-            <span key={ext} className={cn('text-[11px] font-bold px-2 py-0.5 rounded-md border', color)}>
+        <div className="flex items-center justify-center gap-2 mt-5 flex-wrap font-mono">
+          {['XLSX', 'CSV', 'XLS', 'SAV (SPSS)'].map((ext) => (
+            <span key={ext} className="mono-badge">
               {ext}
             </span>
           ))}
         </div>
 
-        <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-gray-400">
+        <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-mono text-zinc-500">
           <FileSpreadsheet className="w-3.5 h-3.5" />
-          Max 50MB · SPSS files parsed server-side for accuracy
+          Max 50MB · Native SPSS binary files & CSV datasets supported
         </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 px-4 py-3 rounded-xl border border-red-100 dark:border-red-800">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          {error}
+        <div className="flex items-center gap-2 text-xs font-mono text-red-900 dark:text-red-200 bg-red-50 dark:bg-red-950/40 p-4 border border-red-600 rounded-none">
+          <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
     </div>
