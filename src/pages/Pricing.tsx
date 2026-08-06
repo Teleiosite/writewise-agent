@@ -39,7 +39,7 @@ export default function Pricing() {
     },
     {
       name: "Department License",
-      price: "$149",
+      price: "$499",
       period: "per month",
       description: "For university faculties & research groups",
       features: [

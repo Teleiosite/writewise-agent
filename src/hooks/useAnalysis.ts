@@ -205,8 +205,17 @@ export function useAnalysis() {
     }, 2200); // advance every 2.2 seconds
 
     try {
+      // Cold-start detector: if the Python engine takes >5s, show a helpful message.
+      // Railway free tier can take 30–60s to warm up from cold.
+      const coldStartTimer = setTimeout(() => {
+        update({
+          progressLabel: '☕ Statistics engine is warming up — this takes 20–30 seconds on first use. Your analysis is running...',
+        });
+      }, 5000);
+
       // Step 1: Python computes statistics (this is the long wait)
       const stats = await computeStatistics(state.rawData, state.codebook, state.context, state.config);
+      clearTimeout(coldStartTimer);
       clearInterval(ticker);
 
       update({

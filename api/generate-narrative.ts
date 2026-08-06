@@ -9,13 +9,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { stats_json, context, codebook, provider, apiKey, model } = req.body;
+    const { stats, stats_json, context, codebook, provider, apiKey, model } = req.body;
 
-    if (!stats_json) return res.status(400).json({ error: 'stats_json is required' });
+    // Accept either `stats` (new) or `stats_json` (legacy) to maintain backwards compatibility
+    const statsPayload = stats ?? stats_json;
+
+    if (!statsPayload) return res.status(400).json({ error: 'stats or stats_json is required' });
     if (!provider || !apiKey) return res.status(400).json({ error: 'provider and apiKey are required' });
 
     const systemPrompt = buildSystemPrompt(context, codebook);
-    const userPrompt = buildUserPrompt(stats_json);
+    const userPrompt = buildUserPrompt(statsPayload);
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');

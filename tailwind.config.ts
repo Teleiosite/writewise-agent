@@ -11,8 +11,42 @@ export default {
     './src/**/*.{ts,tsx}',
   ],
   safelist: [
-    { pattern: /bg-(blue|green|purple|amber|red|indigo|orange|emerald|cyan|violet)-(100|800|900)/ },
-    { pattern: /text-(blue|green|purple|amber|red|indigo|orange|emerald|cyan|violet)-(300|800)/ },
+    // These classes appear in colorMap objects (AnalysisSelector, StatisticsPanel)
+    // accessed as dynamic lookups: colorMap[color]. Tailwind can't statically detect these.
+    // blue
+    'border-blue-200', 'bg-blue-50', 'text-blue-700', 'text-blue-400',
+    // purple
+    'border-purple-200', 'bg-purple-50', 'text-purple-700', 'text-purple-400',
+    // green
+    'border-green-200', 'bg-green-50', 'text-green-700', 'text-green-400',
+    // orange
+    'border-orange-200', 'bg-orange-50', 'text-orange-700', 'text-orange-400',
+    // red
+    'border-red-200', 'bg-red-50', 'text-red-700', 'text-red-400',
+    // indigo
+    'border-indigo-200', 'bg-indigo-50', 'text-indigo-700', 'text-indigo-400',
+    // pink
+    'border-pink-200', 'bg-pink-50', 'text-pink-700', 'text-pink-400',
+    // amber (used in reliability badges + significance legends)
+    'border-amber-200', 'bg-amber-50', 'text-amber-700', 'text-amber-400',
+    // emerald (used in VERIFIED badges, significance)
+    'border-emerald-200', 'bg-emerald-50', 'text-emerald-700', 'text-emerald-400',
+    // cyan (used in some stat section badges)
+    'border-cyan-200', 'bg-cyan-50', 'text-cyan-700',
+    // violet
+    'border-violet-200', 'bg-violet-50', 'text-violet-700',
+    // rose
+    'border-rose-200', 'bg-rose-50', 'text-rose-700',
+    // Dark mode variants for the above (accessed via dark: in colorMap)
+    'dark:bg-blue-900/10', 'dark:bg-purple-900/10', 'dark:bg-green-900/10',
+    'dark:bg-orange-900/10', 'dark:bg-red-900/10', 'dark:bg-indigo-900/10',
+    'dark:bg-pink-900/10', 'dark:bg-amber-900/10', 'dark:bg-emerald-900/10',
+    'dark:bg-cyan-900/10', 'dark:bg-violet-900/10', 'dark:bg-rose-900/10',
+    // fill- classes used in chart/heatmap components
+    'fill-blue-200', 'fill-green-200', 'fill-purple-200', 'fill-amber-200',
+    'fill-red-200', 'fill-emerald-200',
+    // Other conditionally-constructed classes
+    'font-serif-italic',
   ],
   prefix: "",
   theme: {

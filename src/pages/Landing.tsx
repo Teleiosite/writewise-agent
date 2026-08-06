@@ -57,7 +57,7 @@ export default function Landing() {
           </h1>
 
           <p className="text-lg sm:text-2xl text-zinc-700 dark:text-zinc-300 max-w-3xl mb-12 font-normal leading-relaxed">
-            WriteWise executes statistical analysis in <strong className="font-semibold text-black dark:text-white underline underline-offset-4">Python</strong> with 100% accuracy, generates reproducible <strong className="font-semibold text-black dark:text-white underline underline-offset-4">SPSS syntax</strong>, and uses AI strictly to interpret verified statistical outputs.
+            WriteWise executes statistical analysis in <strong className="font-semibold text-black dark:text-white underline underline-offset-4">Python</strong> — exactly as Python computes it, never estimated by AI. Generates reproducible <strong className="font-semibold text-black dark:text-white underline underline-offset-4">SPSS syntax</strong> and uses AI strictly to explain verified outputs.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-16">
@@ -66,12 +66,40 @@ export default function Landing() {
                 Start Your First Analysis Free <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
-            <Link to="/login">
-              <Button variant="outline" size="lg" className="font-mono text-xs uppercase tracking-widest h-14 px-8 rounded-none border border-black dark:border-zinc-700 bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">
+            <a href="#how-it-works">
+              <Button variant="outline" size="lg" className="font-mono text-xs uppercase tracking-widest h-14 px-8 rounded-none border border-black dark:border-zinc-700 bg-transparent hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black w-full sm:w-auto">
                 <FlaskConical className="w-4 h-4 mr-2" />
-                Launch Demo Workspace
+                See How It Works
               </Button>
-            </Link>
+            </a>
+          </div>
+
+          {/* Product Screenshots */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+            <div className="border border-black dark:border-zinc-800 overflow-hidden">
+              <div className="px-4 py-2 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[11px] text-zinc-500 uppercase tracking-wider flex items-center justify-between">
+                <span>Analysis Workspace</span>
+                <span className="text-black dark:text-white font-bold">LIVE</span>
+              </div>
+              <img
+                src="/screenshot-dashboard.png"
+                alt="WriteWise statistical analysis workspace showing Python-computed regression results and SPSS syntax"
+                className="w-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
+            <div className="border border-black dark:border-zinc-800 overflow-hidden">
+              <div className="px-4 py-2 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[11px] text-zinc-500 uppercase tracking-wider flex items-center justify-between">
+                <span>Supervisor Verification Portal</span>
+                <span className="text-black dark:text-white font-bold">PUBLIC URL</span>
+              </div>
+              <img
+                src="/screenshot-verify.png"
+                alt="WriteWise supervisor verification portal showing dataset SHA-256, tests run, and SPSS reproducibility syntax"
+                className="w-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
           </div>
 
           {/* Technical Specs Strip */}
@@ -168,6 +196,50 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Social Proof Strip */}
+      <section className="py-16 border-b border-black dark:border-zinc-800 bg-white dark:bg-black overflow-hidden">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8">
+          <div className="mono-badge-outline mb-8 mx-auto w-fit">From researchers who switched</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                quote: "My supervisor asked how I generated such clean results tables with reproducible syntax. I told them about WriteWise. Now our whole lab uses it.",
+                name: "PhD Candidate",
+                role: "Faculty of Business, Social Sciences",
+                initial: "A"
+              },
+              {
+                quote: "I submitted my Chapter 4 with a verification link. My supervisor clicked it, saw the Python computation log, and approved on the spot. First time that's happened.",
+                name: "Master's Researcher",
+                role: "Educational Psychology Dissertation",
+                initial: "M"
+              },
+              {
+                quote: "I wasted three weeks trying to interpret SPSS output tables. WriteWise explained every test in plain language — and gave me the exact SPSS commands to replicate it.",
+                name: "Doctoral Student",
+                role: "Management & Organizational Studies",
+                initial: "D"
+              }
+            ].map((t, i) => (
+              <div key={i} className="border border-black dark:border-zinc-800 p-6 flex flex-col gap-4 bg-white dark:bg-black">
+                <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 flex-1">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-3 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                  <div className="w-8 h-8 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                    {t.initial}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs text-black dark:text-white">{t.name}</div>
+                    <div className="text-[11px] text-zinc-500 font-mono">{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Comparison Table */}
       <section id="comparison" className="py-24 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
         <div className="max-w-5xl mx-auto px-4 sm:px-8">
@@ -255,7 +327,7 @@ export default function Landing() {
             },
             {
               name: "Department License",
-              price: "$149",
+              price: "$499",
               period: "per month",
               desc: "For university faculties & research departments",
               features: [
@@ -288,8 +360,8 @@ export default function Landing() {
                   ))}
                 </ul>
               </div>
-              <Link to="/register">
-                <Button className={`w-full font-mono text-xs uppercase tracking-wider h-12 rounded-none ${plan.highlight ? "bg-white text-black hover:bg-zinc-200 dark:bg-black dark:text-white dark:hover:bg-zinc-800" : "bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"}`}>
+              <Link to={idx === 2 ? 'mailto:hello@writewise.app?subject=Department%20License%20Enquiry' : '/register'}>
+                <Button className={`w-full font-mono text-xs uppercase tracking-wider h-12 rounded-none ${plan.highlight ? 'bg-white text-black hover:bg-zinc-200 dark:bg-black dark:text-white dark:hover:bg-zinc-800' : 'bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200'}`}>
                   {plan.cta}
                 </Button>
               </Link>

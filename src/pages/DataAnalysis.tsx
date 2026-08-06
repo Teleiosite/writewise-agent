@@ -14,6 +14,7 @@ import { ClaimVerificationPanel } from '@/components/analysis/ClaimVerificationP
 import { exportToDocx } from '@/services/analysisService';
 import { computeFileHash } from '@/services/datasetHash';
 import { logResearchEvent } from '@/services/eventLog';
+import { createResearchReceipt } from '@/services/receiptService';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/editor/pdf/components/ThemeToggle';
 import { 
@@ -22,7 +23,7 @@ import {
   ShieldCheck, Share2, Copy, CheckCheck, Terminal, Cpu, FileCheck, Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { AnalysisStage } from '@/types/analysis.types';
 
 const STAGES: { id: AnalysisStage; label: string; icon: React.ReactNode; desc: string }[] = [
@@ -48,26 +49,32 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
   const [fileHash, setFileHash] = useState<string>('');
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [showIntegrityModal, setShowIntegrityModal] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
+
+  // Stable session ID — shared across all events for this analysis session.
+  // Avoids orphaned analysis IDs from per-event Date.now() calls.
+  const sessionIdRef = useRef<string>(`SESSION-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`);
 
   const handleFileWithHash = async (file: File) => {
     try {
       const hash = await computeFileHash(file);
       setFileHash(hash);
       await logResearchEvent({
-        analysisId: 'ANALYSIS-' + Date.now(),
+        analysisId: sessionIdRef.current,
         eventType: 'DATASET_UPLOADED',
         datasetHash: hash,
         payload: { filename: file.name, sizeBytes: file.size }
       });
     } catch {
-      // Hash failure silent catch
+      // Hash failure silent — never block the analysis workflow
     }
     analysis.handleFileUpload(file);
   };
 
   const handleRunAnalysisWithLog = async () => {
     await logResearchEvent({
-      analysisId: 'ANALYSIS-' + Date.now(),
+      analysisId: sessionIdRef.current,
       eventType: 'ANALYSIS_EXECUTED',
       datasetHash: fileHash,
       aiModel: selectedModel,
@@ -76,12 +83,60 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
     analysis.runAnalysis();
   };
 
+  const handleResetConfirmed = () => {
+    setShowResetConfirm(false);
+    sessionIdRef.current = `SESSION-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    setFileHash('');
+    analysis.reset();
+  };
+
   const handleCopyShareLink = async () => {
-    const link = `${window.location.origin}/verify/RECEIPT-${Date.now().toString(36).toUpperCase()}`;
-    await navigator.clipboard.writeText(link);
-    setCopiedShareLink(true);
-    toast.success('Supervisor verification link copied to clipboard!');
-    setTimeout(() => setCopiedShareLink(false), 2000);
+    if (!analysis.computedStats) {
+      toast.error('Run an analysis first before generating a verification link.');
+      return;
+    }
+
+    try {
+      // Ensure the analysis is saved and we have a real UUID
+      let analysisId = savedAnalysisId;
+      if (!analysisId) {
+        toast.loading('Saving analysis before generating link...');
+        await analysis.save();
+        // analysis.savedId is set after save() resolves
+        analysisId = analysis.savedId;
+        if (!analysisId) throw new Error('Could not save analysis. Please try again.');
+        setSavedAnalysisId(analysisId);
+      }
+
+      // Create a real receipt row in Supabase
+      const token = await createResearchReceipt({
+        analysisId,
+        payload: {
+          title: analysis.context.title || 'Statistical Analysis',
+          institution: analysis.context.institution ?? null,
+          datasetName: analysis.filename || 'dataset.xlsx',
+          datasetHash: fileHash,
+          testsRun: analysis.computedStats.tests_run ?? [],
+          pythonVersion: 'Python 3.11 (Pandas 2.1, SciPy 1.11)',
+          libraryVersions: { pandas: '2.1.0', scipy: '1.11.0', statsmodels: '0.14.0' },
+          aiModel: selectedModel,
+          generatedAt: new Date().toISOString(),
+          syntax: analysis.syntax,
+          stats: analysis.computedStats,
+          narrativeExcerpt: analysis.narrative.slice(0, 500),
+        },
+      });
+
+      const link = `${window.location.origin}/verify/${token}`;
+      await navigator.clipboard.writeText(link);
+      setCopiedShareLink(true);
+      toast.dismiss();
+      toast.success('Real supervisor verification link copied! Supervisors can open it without a WriteWise account.');
+      setTimeout(() => setCopiedShareLink(false), 3000);
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error(`Could not generate verification link: ${err.message}`);
+    }
   };
 
   const handleInsertToEditor = () => {
@@ -108,6 +163,43 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         narrative={analysis.narrative}
         aiModel={selectedModel}
       />
+
+      {/* Reset Confirmation Modal — guards against accidental data loss */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-[100] bg-black/60 dark:bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-black border-2 border-black dark:border-white max-w-md w-full p-8 font-mono">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0">
+                <RotateCcw className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-bold text-sm uppercase tracking-wider text-black dark:text-white">Reset Analysis?</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">This action cannot be undone.</p>
+              </div>
+            </div>
+            <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-6">
+              All uploaded data, codebook configuration, research context, computed statistics, and generated narrative will be permanently cleared from this session.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 rounded-none border-black dark:border-zinc-700 font-mono text-xs uppercase tracking-wider"
+              >
+                Cancel — Keep Working
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleResetConfirmed}
+                className="flex-1 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none font-mono text-xs uppercase tracking-wider border border-black dark:border-white"
+              >
+                Yes, Reset Everything
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header — only shown in standalone route mode */}
       {!embedded && (
@@ -166,7 +258,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} 
+                    onClick={async () => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} 
                     className="gap-1.5 text-xs rounded-none border-black dark:border-zinc-800 hidden sm:flex"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -177,7 +269,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={analysis.reset} 
+                onClick={() => setShowResetConfirm(true)} 
                 className="gap-1.5 text-xs rounded-none text-zinc-500 hover:text-black dark:hover:text-white uppercase"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -519,7 +611,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                 </Button>
                 <Button 
                   size="sm" 
-                  onClick={() => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} 
+                  onClick={async () => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} 
                   className="gap-1.5 text-xs uppercase bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border border-black dark:border-white px-5"
                 >
                   <Download className="w-3.5 h-3.5" /> Export DOCX

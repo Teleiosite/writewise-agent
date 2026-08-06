@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Logo } from "@/components/Logo";
-import { ShieldCheck, Cpu, Code2, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Cpu, Code2, CheckCircle2, Key } from "lucide-react";
 
 const RegisterPage: React.FC = () => {
   const { register } = useAuth();
@@ -64,6 +64,10 @@ const RegisterPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <Code2 className="w-4 h-4 text-white shrink-0" />
               <span>Chapter 1–5 academic drafting workspace</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Key className="w-4 h-4 text-white shrink-0" />
+              <span>Bring your own AI API key — your data, your provider</span>
             </div>
           </div>
         </div>
@@ -137,6 +141,17 @@ const RegisterPage: React.FC = () => {
               {isSubmitting ? 'Creating Account...' : 'Create Free Account'}
             </Button>
           </form>
+
+          {/* BYOK Notice — set expectation before first use */}
+          <div className="p-4 border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 font-mono text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <div className="flex items-start gap-2">
+              <Key className="w-3.5 h-3.5 shrink-0 mt-0.5 text-black dark:text-white" />
+              <div>
+                <span className="font-bold text-black dark:text-white uppercase tracking-wider">You'll need an AI API key</span> to generate Chapter 4 & 5 narrative. The Python statistics engine is free with no key. Get a free{' '}
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-black dark:text-white hover:no-underline">Google Gemini key</a>{' '}in 60 seconds — no credit card required.
+              </div>
+            </div>
+          </div>
 
           <div className="text-center text-xs font-mono text-zinc-500 pt-4 border-t border-black dark:border-zinc-800">
             Already have an account?{" "}
