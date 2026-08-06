@@ -471,20 +471,55 @@ export async function generateSpssSyntax(
 
 export const generateSyntax = generateSpssSyntax;
 
-// ─── Save Data Analysis to Supabase ────────────────────────────────────────────
+// ─── Save Data Analysis ────────────────────────────────────────────────────────
 
 export async function saveDataAnalysis(analysis: Partial<DataAnalysis>): Promise<DataAnalysis> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Must be logged in to save analysis');
+  let user = null;
+  try {
+    const res = await supabase.auth.getUser();
+    user = res.data?.user;
+  } catch {
+    // ignore
+  }
 
-  const { data, error } = await supabase
-    .from('data_analyses')
-    .insert([{ ...analysis, user_id: user.id }])
-    .select()
-    .single();
+  const isDemo = localStorage.getItem('writewise_demo_mode') === 'true' || !user;
 
-  if (error) throw new Error(error.message);
-  return data as DataAnalysis;
+  if (user && !isDemo) {
+    try {
+      const { data, error } = await supabase
+        .from('data_analyses')
+        .insert([{ ...analysis, user_id: user.id }])
+        .select()
+        .single();
+
+      if (!error && data) return data as DataAnalysis;
+    } catch (e) {
+      console.warn('Supabase save failed, storing locally:', e);
+    }
+  }
+
+  // Local Storage Fallback (Demo Mode / Offline)
+  const id = analysis.id || crypto.randomUUID();
+  const savedObj: DataAnalysis = {
+    id,
+    user_id: user?.id || 'demo-user-id',
+    title: analysis.title || 'Untitled Analysis',
+    filename: analysis.filename || 'dataset.xlsx',
+    dataset_hash: analysis.dataset_hash || '',
+    codebook: analysis.codebook || [],
+    context: analysis.context || ({} as any),
+    config: analysis.config || ({} as any),
+    computed_stats: analysis.computed_stats || null,
+    narrative: analysis.narrative || '',
+    syntax: analysis.syntax || '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const existing = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
+  const updated = [savedObj, ...existing.filter((item: any) => item.id !== id)];
+  localStorage.setItem('writewise_local_analyses', JSON.stringify(updated));
+  return savedObj;
 }
 
 export const saveAnalysis = saveDataAnalysis;
@@ -492,12 +527,23 @@ export const saveAnalysis = saveDataAnalysis;
 // ─── Load Data Analysis by ID ──────────────────────────────────────────────────
 
 export async function getDataAnalysis(id: string): Promise<DataAnalysis> {
-  const { data, error } = await supabase
-    .from('data_analyses')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('data_analyses')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-  if (error) throw new Error(error.message);
-  return data as DataAnalysis;
+    if (!error && data) return data as DataAnalysis;
+  } catch {
+    // ignore
+  }
+
+  // Fallback to Local Storage
+  const existing = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
+  const found = existing.find((item: any) => item.id === id);
+  if (found) return found as DataAnalysis;
+
+  throw new Error('Analysis not found');
 }
+

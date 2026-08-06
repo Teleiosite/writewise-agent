@@ -38,34 +38,63 @@ export async function createResearchReceipt(params: {
   analysisId: string;
   payload: ReceiptPayload;
 }): Promise<string> {
-  const { data, error } = await (supabase as any)
-    .from('research_receipts')
-    .insert({
-      analysis_id: params.analysisId,
-      payload: params.payload,
-      receipt_version: '1.0',
-    })
-    .select('share_token')
-    .single();
+  try {
+    const { data, error } = await (supabase as any)
+      .from('research_receipts')
+      .insert({
+        analysis_id: params.analysisId,
+        payload: params.payload,
+        receipt_version: '1.0',
+      })
+      .select('share_token')
+      .single();
 
-  if (error) throw new Error(`Failed to create receipt: ${error.message}`);
-  return data.share_token as string;
+    if (!error && data?.share_token) {
+      return data.share_token as string;
+    }
+  } catch (err) {
+    console.warn('[ReceiptService] Supabase receipt save failed, using local storage fallback:', err);
+  }
+
+  // Local Storage Fallback
+  const fallbackToken = 'RECEIPT-' + Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+
+  const receiptObj: ResearchReceipt = {
+    id: crypto.randomUUID(),
+    analysis_id: params.analysisId,
+    share_token: fallbackToken,
+    generated_at: new Date().toISOString(),
+    payload: params.payload,
+  };
+
+  localStorage.setItem(`writewise_receipt_${fallbackToken}`, JSON.stringify(receiptObj));
+  return fallbackToken;
 }
 
-/**
- * Fetches a research_receipt by its share_token.
- * This is a PUBLIC read — no authentication required.
- * The research_receipts table must have a policy:
- *   FOR SELECT USING (true) — or using (share_token = $1)
- * so that supervisors can access it without a WriteWise account.
- */
 export async function fetchReceiptByToken(token: string): Promise<ResearchReceipt | null> {
-  const { data, error } = await (supabase as any)
-    .from('research_receipts')
-    .select('id, analysis_id, share_token, generated_at, payload')
-    .eq('share_token', token)
-    .single();
+  try {
+    const { data, error } = await (supabase as any)
+      .from('research_receipts')
+      .select('id, analysis_id, share_token, generated_at, payload')
+      .eq('share_token', token)
+      .single();
 
-  if (error || !data) return null;
-  return data as ResearchReceipt;
+    if (!error && data) return data as ResearchReceipt;
+  } catch {
+    // ignore
+  }
+
+  // Fallback to local storage
+  const local = localStorage.getItem(`writewise_receipt_${token}`);
+  if (local) {
+    try {
+      return JSON.parse(local) as ResearchReceipt;
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
 }
+

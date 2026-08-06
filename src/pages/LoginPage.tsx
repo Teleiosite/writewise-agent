@@ -9,7 +9,7 @@ import { Logo } from "@/components/Logo";
 import { ShieldCheck, Cpu, Code2, CheckCircle2 } from "lucide-react";
 
 const LoginPage = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, loginAsDemo } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,19 +18,31 @@ const LoginPage = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
+      if (error) {
+        const isFetchError = error.message?.includes('Failed to fetch') || error.message?.includes('fetch');
+        toast({
+          title: isFetchError ? "Authentication Server Connection Failed" : "Login Failed",
+          description: isFetchError
+            ? "Could not reach the Supabase backend. Click 'Continue as Demo Researcher' below to access the workspace immediately."
+            : error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
       toast({
-        title: "Login Failed",
-        description: error.message,
+        title: "Connection Error",
+        description: "Network connection failed. Click 'Continue as Demo Researcher' to test the workspace.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   if (loading) {
@@ -93,7 +105,7 @@ const LoginPage = () => {
 
       {/* Right Column: Form */}
       <div className="flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-8 border border-black dark:border-zinc-800 p-8 rounded-none bg-white dark:bg-black">
+        <div className="w-full max-w-md space-y-6 border border-black dark:border-zinc-800 p-8 rounded-none bg-white dark:bg-black">
           <div>
             <div className="lg:hidden flex justify-center mb-6">
               <Logo size="md" />
@@ -144,7 +156,20 @@ const LoginPage = () => {
             </Button>
           </form>
 
-          <div className="text-center text-xs font-mono text-zinc-500 pt-4 border-t border-black dark:border-zinc-800">
+          {/* Demo Mode Action */}
+          <div className="pt-4 border-t border-black dark:border-zinc-800 text-center space-y-3">
+            <p className="text-[11px] text-zinc-500 font-mono">Exploring or network backend unavailable?</p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={loginAsDemo}
+              className="w-full h-11 font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+            >
+              Continue as Demo Researcher →
+            </Button>
+          </div>
+
+          <div className="text-center text-xs font-mono text-zinc-500 pt-3 border-t border-zinc-200 dark:border-zinc-900">
             Don't have an account?{" "}
             <Link to="/register" className="text-black dark:text-white font-bold hover:underline">
               Create Account

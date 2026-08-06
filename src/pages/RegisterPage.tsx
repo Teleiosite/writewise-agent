@@ -8,7 +8,7 @@ import { Logo } from "@/components/Logo";
 import { ShieldCheck, Cpu, Code2, CheckCircle2, Key } from "lucide-react";
 
 const RegisterPage: React.FC = () => {
-  const { register } = useAuth();
+  const { register, loginAsDemo } = useAuth();
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -153,7 +153,20 @@ const RegisterPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="text-center text-xs font-mono text-zinc-500 pt-4 border-t border-black dark:border-zinc-800">
+          {/* Demo Mode Action */}
+          <div className="pt-2 text-center space-y-3">
+            <p className="text-[11px] text-zinc-500 font-mono">Want to explore without registering?</p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={loginAsDemo}
+              className="w-full h-11 font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+            >
+              Continue as Demo Researcher →
+            </Button>
+          </div>
+
+          <div className="text-center text-xs font-mono text-zinc-500 pt-3 border-t border-black dark:border-zinc-800">
             Already have an account?{" "}
             <Link to="/login" className="text-black dark:text-white font-bold hover:underline">
               Sign In
