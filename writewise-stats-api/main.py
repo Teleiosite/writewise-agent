@@ -61,7 +61,7 @@ app = FastAPI(title="WriteWise Statistics Engine", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://writewise-app.vercel.app", "http://localhost:5173", "http://localhost:3000", "*"],
+    allow_origins=["*"],   # Nginx acts as reverse proxy — all traffic arrives from localhost
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )

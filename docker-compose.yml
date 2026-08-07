@@ -1,0 +1,110 @@
+version: '3.9'
+
+# ─── WriteWise — Full Stack (Oracle Cloud Deployment) ─────────────────────────
+# Services:
+#   nginx          → Port 80 (HTTP). Add Certbot for HTTPS.
+#   writewise-api  → Node.js Express API (wraps the 4 AI handler routes)
+#   writewise-stats → Python FastAPI statistics engine
+#
+# Usage:
+#   cp .env.example .env          # fill in your credentials
+#   docker compose up -d --build  # first launch (builds images)
+#   docker compose logs -f        # tail logs
+#   docker compose pull && docker compose up -d  # update
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── 1. Nginx — public-facing reverse proxy + static file server ────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: writewise-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - static-files:/var/www/writewise:ro
+      - certbot-www:/var/www/certbot:ro
+      - certbot-certs:/etc/letsencrypt:ro
+    depends_on:
+      - writewise-api
+      - writewise-stats
+    networks:
+      - writewise-net
+
+  # ── 2. Node.js API server ──────────────────────────────────────────────────
+  writewise-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_STATS_API_URL: ${VITE_STATS_API_URL:-/stats}
+    container_name: writewise-api
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - API_PORT=3001
+    volumes:
+      - static-files:/var/www/writewise
+    expose:
+      - "3001"
+    networks:
+      - writewise-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── 3. Python statistics engine ────────────────────────────────────────────
+  writewise-stats:
+    build:
+      context: ./writewise-stats-api
+      dockerfile: Dockerfile
+    container_name: writewise-stats
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+    expose:
+      - "8000"
+    networks:
+      - writewise-net
+    # Resource limits (stay within 12GB RAM / 2 OCPU Oracle Free Tier)
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 1g
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── 4. Certbot (optional — for HTTPS / Let's Encrypt) ─────────────────────
+  certbot:
+    image: certbot/certbot:latest
+    container_name: writewise-certbot
+    profiles:
+      - ssl
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-certs:/etc/letsencrypt
+    # Run manually: docker compose run certbot certonly --webroot ...
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+
+# ─── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  static-files:    # React SPA dist/ files shared between build and nginx
+  certbot-www:     # ACME challenge webroot
+  certbot-certs:   # Let's Encrypt certificates
+
+# ─── Network ──────────────────────────────────────────────────────────────────
+networks:
+  writewise-net:
+    driver: bridge
