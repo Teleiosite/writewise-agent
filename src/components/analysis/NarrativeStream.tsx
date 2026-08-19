@@ -23,7 +23,7 @@ function cleanNarrativeText(raw: string): string {
   if (text.includes('{"text":')) {
     const parts: string[] = [];
     // Match {"text":"<content>"} where content may have JSON escape sequences
-    const re = /\{"text":"((?:[^"\\]|\\[\s\S])*)"}/g;
+    const re = /\{"text":"((?:[^"\\]|\\[\s\S])*)"\}/g;
     let m: RegExpExecArray | null;
     let lastIndex = 0;
     while ((m = re.exec(text)) !== null) {
