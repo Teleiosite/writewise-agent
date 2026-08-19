@@ -197,21 +197,39 @@ export async function generateNarrative(
 
   const decoder = new TextDecoder();
   let done = false;
+  let buffer = '';
 
   while (!done) {
     const { value, done: streamDone } = await reader.read();
     done = streamDone;
     if (value) {
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n\n');
+      buffer += decoder.decode(value, { stream: !done });
+      const lines = buffer.split('\n');
+      buffer = done ? '' : (lines.pop() ?? '');
+
       for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const text = line.replace(/^data: /, '');
-          if (text === '[DONE]') {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ')) {
+          const payload = trimmed.slice(6);
+          if (payload === '[DONE]') {
             onDone?.();
             return;
           }
-          onChunk(text);
+          if (payload.startsWith('[ERROR]')) {
+            throw new Error(payload.slice(7).trim());
+          }
+          try {
+            const parsed = JSON.parse(payload);
+            if (typeof parsed === 'string') {
+              onChunk(parsed);
+            } else if (parsed && typeof parsed.text === 'string') {
+              onChunk(parsed.text);
+            } else {
+              onChunk(payload);
+            }
+          } catch {
+            onChunk(payload);
+          }
         }
       }
     }
