@@ -7,8 +7,8 @@ export interface Project {
   name: string;
   description: string;
   lastEdited: Date;
-  wordCount: number;
-  collaborators: number;
+  wordCount?: number;
+  collaborators?: number;
 }
 
 interface ProjectCardProps {

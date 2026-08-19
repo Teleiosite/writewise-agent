@@ -246,7 +246,7 @@ export async function exportToDocx(title: string, content: string, syntax?: stri
     Table, TableRow, TableCell, WidthType, BorderStyle,
   } = await import('docx');
 
-  const children: (Paragraph | Table)[] = [];
+  const children: any[] = [];
 
   // ── Title page header ─────────────────────────────────────────────────
   children.push(

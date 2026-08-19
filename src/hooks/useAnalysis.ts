@@ -282,7 +282,7 @@ export function useAnalysis() {
         async () => {
           // Step 3: Generate SPSS syntax
           update({ progress: 97, progressLabel: '🖥️ Generating SPSS syntax for all tests...' });
-          const syntax = await generateSyntax(state.codebook, stats);
+          const syntax = await generateSyntax(state.codebook, state.config);
           update({ syntax, progress: 100, progressLabel: '🎉 Analysis complete!', status: 'complete' });
           toast.success('Analysis complete! Chapter 4 & 5 generated.');
         }
