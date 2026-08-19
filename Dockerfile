@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy source
 COPY . .
@@ -26,7 +26,7 @@ FROM node:20-alpine AS api-server
 WORKDIR /api
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy only the API handlers + tsconfig
 COPY api/ ./api/
