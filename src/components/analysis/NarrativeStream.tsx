@@ -15,51 +15,67 @@ function cleanNarrativeText(raw: string): string {
   if (!raw) return '';
   let text = raw;
 
+  // ── Step 0 (PRIMARY FIX): Decode {"text":"..."} JSON object chunks ────────
+  // New backend sends each streamed token as: data: {"text":"content"}
+  // Old frontend (pre-fix) accumulated these raw, producing:
+  //   {"text":"CHAPTER FOUR\nDATA..."}{"text":" A total of..."}
+  // Extract and decode all {"text":"..."} objects.
+  if (text.includes('{"text":')) {
+    const parts: string[] = [];
+    // Match {"text":"<content>"} where content may have JSON escape sequences
+    const re = /\{"text":"((?:[^"\\]|\\[\s\S])*)"}/ g;
+    let m: RegExpExecArray | null;
+    let lastIndex = 0;
+    while ((m = re.exec(text)) !== null) {
+      try {
+        // JSON.parse the escaped string content to get the real characters
+        parts.push(JSON.parse('"' + m[1] + '"'));
+      } catch {
+        parts.push(m[1]);
+      }
+      lastIndex = re.lastIndex;
+    }
+    // Only replace if we found at least one match (avoid clobbering other formats)
+    if (parts.length > 0) {
+      // Append any trailing text after the last match that wasn't part of a chunk
+      const tail = text.slice(lastIndex).replace(/^[\s,;{}]*/, '');
+      if (tail && !tail.includes('{"text":')) parts.push(tail);
+      text = parts.join('');
+    }
+  }
+
   // ── Step 1: If the whole text looks like a JSON string, parse it ──────────
-  // Old SSE format sent data like: "CHAPTER FOUR...\n\n4.1..." (a JSON string literal)
-  // Try to JSON.parse only if it starts+ends with "
   const trimmed = text.trim();
   if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
     try {
       const parsed = JSON.parse(trimmed);
       if (typeof parsed === 'string') text = parsed;
-    } catch {
-      /* not a valid JSON string – continue cleaning below */
-    }
+    } catch { /* continue */ }
   }
 
-  // ── Step 2: Convert literal escape sequences left by JSON string fragments ─
-  // Old frontend accumulated chunks as raw JSON string literals: "chunk1""chunk2"
-  // so \n appears as TWO characters: backslash + n
+  // ── Step 2: Convert literal \n escape sequences → real newlines ───────────
   text = text.replace(/\\n/g, '\n');
   text = text.replace(/\\t/g, '\t');
   text = text.replace(/\\"/g, '"');
   text = text.replace(/\\\\/g, '\\');
 
-  // ── Step 3: Remove chunk-boundary quote artifacts (""" and "") ────────────
-  text = text.replace(/"""+/g, ' ');   // triple+ quotes → space
-  text = text.replace(/""/g, '');       // double quotes → nothing
+  // ── Step 3: Remove chunk-boundary quote artifacts ─────────────────────────
+  text = text.replace(/"""+/g, ' ');
+  text = text.replace(/""/g, '');
 
-  // ── Step 4: Strip lone quote chars at the very start / end ────────────────
+  // ── Step 4: Strip leading/trailing lone quotes ────────────────────────────
   text = text.replace(/^"+/, '').replace(/"+$/, '');
 
   // ── Step 5: Per-line quote-prefix cleanup ─────────────────────────────────
-  // Chunks often add a lone " at the start of a line (boundary artifact).
-  // Strip a leading " only when it's clearly not part of real content
-  // (i.e., the rest of the line is NOT a sentence with another closing quote).
   text = text
     .split('\n')
     .map(line => {
-      // If line is ONLY quotes, blank it
       if (/^"+$/.test(line.trim())) return '';
-      // Strip lone leading quote that is clearly an artifact
-      // (line starts with " and the next char is not a space that would indicate
-      // it's real quoted speech)
       return line.replace(/^"([^"])/, '$1');
     })
     .join('\n');
 
-  // ── Step 6: Collapse 3+ consecutive blank lines into 2 ───────────────────
+  // ── Step 6: Collapse 3+ blank lines into 2 ───────────────────────────────
   text = text.replace(/\n{3,}/g, '\n\n');
 
   return text.trim();
