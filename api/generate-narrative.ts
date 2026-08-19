@@ -72,21 +72,26 @@ async function streamGemini(apiKey: string, model: string, system: string, user:
 
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
+  let buffer = '';
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    const chunk = decoder.decode(value);
-    const lines = chunk.split('\n');
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
     for (const line of lines) {
       if (line.startsWith('data: ')) {
         try {
           const parsed = JSON.parse(line.slice(6));
           const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) res.write(`data: ${JSON.stringify(text)}\n\n`);
-        } catch { /* skip malformed chunks */ }
+          if (text) res.write(`data: ${JSON.stringify({ text })}\n\n`);
+        } catch { /* skip incomplete */ }
       }
     }
   }
+  res.write('data: [DONE]\n\n');
   res.end();
 }
 
@@ -110,21 +115,26 @@ async function streamOpenAICompatible(baseUrl: string, apiKey: string, model: st
 
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
+  let buffer = '';
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    const chunk = decoder.decode(value);
-    const lines = chunk.split('\n');
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
     for (const line of lines) {
       if (line.startsWith('data: ') && line !== 'data: [DONE]') {
         try {
           const parsed = JSON.parse(line.slice(6));
           const text = parsed.choices?.[0]?.delta?.content;
-          if (text) res.write(`data: ${JSON.stringify(text)}\n\n`);
+          if (text) res.write(`data: ${JSON.stringify({ text })}\n\n`);
         } catch { /* skip */ }
       }
     }
   }
+  res.write('data: [DONE]\n\n');
   res.end();
 }
 
@@ -152,23 +162,28 @@ async function streamClaude(apiKey: string, model: string, system: string, user:
 
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
+  let buffer = '';
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    const chunk = decoder.decode(value);
-    const lines = chunk.split('\n');
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
     for (const line of lines) {
       if (line.startsWith('data: ')) {
         try {
           const parsed = JSON.parse(line.slice(6));
           if (parsed.type === 'content_block_delta') {
             const text = parsed.delta?.text;
-            if (text) res.write(`data: ${JSON.stringify(text)}\n\n`);
+            if (text) res.write(`data: ${JSON.stringify({ text })}\n\n`);
           }
         } catch { /* skip */ }
       }
     }
   }
+  res.write('data: [DONE]\n\n');
   res.end();
 }
 
