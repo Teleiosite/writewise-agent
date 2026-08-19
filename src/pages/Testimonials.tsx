@@ -56,7 +56,7 @@ export default function Testimonials() {
       name: "Thomas Brown",
       role: "Master's Student",
       institution: "University of Chicago",
-      quote: "Writewise helped me meet tight deadlines for my thesis. The progress tracking feature kept me accountable, and the writing suggestions improved my work significantly."
+      quote: "Writewise helped me meet tight deadlines for my thesis. The statistical analysis engine and SPSS reproducibility features saved me weeks of manual work."
     },
   ];
 

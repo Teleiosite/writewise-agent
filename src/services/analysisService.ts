@@ -500,47 +500,102 @@ export async function saveDataAnalysis(analysis: Partial<DataAnalysis>): Promise
     // ignore
   }
 
-  const isDemo = localStorage.getItem('writewise_demo_mode') === 'true' || !user;
+  const id = analysis.id || crypto.randomUUID();
+  const savedObj: DataAnalysis = {
+    id,
+    project_id: (analysis as any).project_id || '',
+    user_id: user?.id || 'guest-user',
+    title: analysis.title || analysis.raw_filename || 'Untitled Research Analysis',
+    status: analysis.status || 'complete',
+    raw_filename: analysis.raw_filename || (analysis as any).filename || 'dataset.xlsx',
+    codebook: analysis.codebook || [],
+    research_context: analysis.research_context || (analysis as any).context || ({} as any),
+    analysis_config: analysis.analysis_config || (analysis as any).config || ({} as any),
+    computed_stats: analysis.computed_stats || null,
+    generated_narrative: analysis.generated_narrative || (analysis as any).narrative || '',
+    generated_syntax: analysis.generated_syntax || (analysis as any).syntax || '',
+    ai_model_used: (analysis as any).ai_model_used || localStorage.getItem('apiModel') || 'Gemini 2.5 Flash',
+    n_respondents: analysis.n_respondents || analysis.computed_stats?.n_total || 0,
+    n_variables: analysis.n_variables || analysis.codebook?.length || 0,
+    tests_run: analysis.tests_run || analysis.computed_stats?.tests_run || [],
+    created_at: (analysis as any).created_at || new Date().toISOString(),
+  };
 
-  if (user && !isDemo) {
+  // 1. Save to Supabase if user is logged in
+  if (user) {
     try {
       const { data, error } = await supabase
         .from('data_analyses')
-        .insert([{ ...analysis, user_id: user.id }])
+        .upsert([{
+          id: savedObj.id,
+          user_id: user.id,
+          title: savedObj.title,
+          status: savedObj.status,
+          raw_filename: savedObj.raw_filename,
+          codebook: savedObj.codebook,
+          research_context: savedObj.research_context,
+          analysis_config: savedObj.analysis_config,
+          computed_stats: savedObj.computed_stats,
+          generated_narrative: savedObj.generated_narrative,
+          generated_syntax: savedObj.generated_syntax,
+          n_respondents: savedObj.n_respondents,
+          n_variables: savedObj.n_variables,
+        }])
         .select()
         .single();
 
-      if (!error && data) return data as DataAnalysis;
+      if (!error && data) {
+        // sync to local cache
+        updateLocalAnalyses(savedObj);
+        return savedObj;
+      }
     } catch (e) {
       console.warn('Supabase save failed, storing locally:', e);
     }
   }
 
-  // Local Storage Fallback (Demo Mode / Offline)
-  const id = analysis.id || crypto.randomUUID();
-  const savedObj: DataAnalysis = {
-    id,
-    user_id: user?.id || 'demo-user-id',
-    title: analysis.title || 'Untitled Analysis',
-    filename: analysis.filename || 'dataset.xlsx',
-    dataset_hash: analysis.dataset_hash || '',
-    codebook: analysis.codebook || [],
-    context: analysis.context || ({} as any),
-    config: analysis.config || ({} as any),
-    computed_stats: analysis.computed_stats || null,
-    narrative: analysis.narrative || '',
-    syntax: analysis.syntax || '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
-  const existing = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
-  const updated = [savedObj, ...existing.filter((item: any) => item.id !== id)];
-  localStorage.setItem('writewise_local_analyses', JSON.stringify(updated));
+  // 2. Always persist to Local Storage
+  updateLocalAnalyses(savedObj);
   return savedObj;
 }
 
+function updateLocalAnalyses(savedObj: DataAnalysis) {
+  const existing: DataAnalysis[] = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
+  const updated = [savedObj, ...existing.filter((item) => item.id !== savedObj.id)];
+  localStorage.setItem('writewise_local_analyses', JSON.stringify(updated));
+}
+
 export const saveAnalysis = saveDataAnalysis;
+
+// ─── List Data Analyses ────────────────────────────────────────────────────────
+
+export async function listDataAnalyses(): Promise<DataAnalysis[]> {
+  const localList: DataAnalysis[] = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data, error } = await supabase
+        .from('data_analyses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        // Merge Supabase and local list (deduplicating by ID)
+        const map = new Map<string, DataAnalysis>();
+        (data as DataAnalysis[]).forEach(d => map.set(d.id, d));
+        localList.forEach(l => {
+          if (!map.has(l.id)) map.set(l.id, l);
+        });
+        return Array.from(map.values());
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return localList;
+}
 
 // ─── Load Data Analysis by ID ──────────────────────────────────────────────────
 
@@ -558,10 +613,24 @@ export async function getDataAnalysis(id: string): Promise<DataAnalysis> {
   }
 
   // Fallback to Local Storage
-  const existing = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
-  const found = existing.find((item: any) => item.id === id);
-  if (found) return found as DataAnalysis;
+  const existing: DataAnalysis[] = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
+  const found = existing.find((item) => item.id === id);
+  if (found) return found;
 
   throw new Error('Analysis not found');
+}
+
+// ─── Delete Data Analysis ──────────────────────────────────────────────────────
+
+export async function deleteDataAnalysis(id: string): Promise<void> {
+  try {
+    await supabase.from('data_analyses').delete().eq('id', id);
+  } catch {
+    // ignore
+  }
+
+  const existing: DataAnalysis[] = JSON.parse(localStorage.getItem('writewise_local_analyses') || '[]');
+  const filtered = existing.filter(item => item.id !== id);
+  localStorage.setItem('writewise_local_analyses', JSON.stringify(filtered));
 }
 

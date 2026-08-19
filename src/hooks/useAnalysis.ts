@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { 
   CodebookVariable, ResearchContext, AnalysisConfig, 
-  ComputedStats, AnalysisStage, AnalysisStatus, StatTest 
+  ComputedStats, AnalysisStage, AnalysisStatus, StatTest, DataAnalysis 
 } from '../types/analysis.types';
 import {
   computeStatistics, detectCodebook, generateNarrative,
@@ -42,34 +42,68 @@ const DEFAULT_CONTEXT: ResearchContext = {
   writing_sample: null,
 };
 
-
 const DEFAULT_CONFIG: AnalysisConfig = {
   mode: 'auto',
   selected_tests: [],
 };
 
-export function useAnalysis() {
-  const [state, setState] = useState<AnalysisState>({
-    stage: 'upload',
-    status: 'idle',
-    progress: 0,
-    progressLabel: '',
-    rawData: [],
-    headers: [],
-    filename: '',
-    codebook: [],
-    context: DEFAULT_CONTEXT,
-    config: DEFAULT_CONFIG,
-    computedStats: null,
-    narrative: '',
-    syntax: '',
-    isSaved: false,
-    savedId: null,
-    error: null,
-  });
+const INITIAL_STATE: AnalysisState = {
+  stage: 'upload',
+  status: 'idle',
+  progress: 0,
+  progressLabel: '',
+  rawData: [],
+  headers: [],
+  filename: '',
+  codebook: [],
+  context: DEFAULT_CONTEXT,
+  config: DEFAULT_CONFIG,
+  computedStats: null,
+  narrative: '',
+  syntax: '',
+  isSaved: false,
+  savedId: null,
+  error: null,
+};
 
-  const narrativeRef = useRef('');
+const ACTIVE_ANALYSIS_STORAGE_KEY = 'writewise_active_analysis';
+
+function loadInitialState(): AnalysisState {
+  try {
+    const cached = localStorage.getItem(ACTIVE_ANALYSIS_STORAGE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && (parsed.computedStats || parsed.rawData?.length || parsed.stage !== 'upload')) {
+        return { ...INITIAL_STATE, ...parsed, status: parsed.status === 'computing' || parsed.status === 'generating' ? 'idle' : parsed.status };
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return INITIAL_STATE;
+}
+
+export function useAnalysis() {
+  const [state, setState] = useState<AnalysisState>(loadInitialState);
+
+  const narrativeRef = useRef(state.narrative || '');
   const abortRef = useRef(false);
+
+  // Sync narrativeRef when state changes
+  useEffect(() => {
+    narrativeRef.current = state.narrative || '';
+  }, [state.narrative]);
+
+  // Auto-persist active analysis state to localStorage on changes
+  useEffect(() => {
+    if (state.stage !== 'upload' || state.computedStats || state.narrative || state.rawData.length > 0) {
+      try {
+        localStorage.setItem(ACTIVE_ANALYSIS_STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.warn('Failed to auto-save active analysis:', err);
+      }
+    }
+  }, [state]);
 
   const update = useCallback((patch: Partial<AnalysisState>) => {
     setState(prev => ({ ...prev, ...patch }));
@@ -121,52 +155,56 @@ export function useAnalysis() {
     }
   }, [update]);
 
-  // ─── Stage 2: Update Codebook ────────────────────────────────────────────
+  // ─── Stage 2: Codebook Review ────────────────────────────────────────────
   const updateCodebook = useCallback((codebook: CodebookVariable[]) => {
     update({ codebook });
   }, [update]);
 
   const goToContext = useCallback(() => {
+    if (!state.codebook.length) {
+      toast.error('Codebook cannot be empty');
+      return;
+    }
     update({ stage: 'context' });
-  }, [update]);
+  }, [state.codebook, update]);
 
-  // ─── Stage 3: Update Context ─────────────────────────────────────────────
+  // ─── Stage 3: Research Context ───────────────────────────────────────────
   const updateContext = useCallback((context: ResearchContext) => {
     update({ context });
   }, [update]);
 
   const goToConfigure = useCallback(() => {
+    if (!state.context.title.trim()) {
+      toast.error('Please enter a research title');
+      return;
+    }
     update({ stage: 'configure' });
-  }, [update]);
+  }, [state.context.title, update]);
 
-  // ─── Stage 4: Update Config ──────────────────────────────────────────────
+  // ─── Stage 4: Analysis Configuration ─────────────────────────────────────
   const updateConfig = useCallback((config: AnalysisConfig) => {
     update({ config });
   }, [update]);
 
-  // ─── Stage 4 → 5: Run Full Analysis ─────────────────────────────────────
+  // ─── Stage 5: Run Full Analysis Pipeline ─────────────────────────────────
   const runAnalysis = useCallback(async () => {
-    abortRef.current = false;
     narrativeRef.current = '';
+    abortRef.current = false;
 
-    // Build a step-by-step message queue based on selected tests
-    const tests = state.config.selected_tests.length
-      ? state.config.selected_tests
-      : ['descriptive', 'normality', 'reliability', 'correlation', 'regression'];
+    // Build the list of step messages to cycle through based on tests
+    const tests = state.config.mode === 'auto'
+      ? ['descriptive', 'normality', 'reliability', 'correlation', 'regression']
+      : state.config.selected_tests;
 
     const stepMessages: { label: string; progress: number }[] = [
-      { label: '🔗 Connecting to statistics engine...', progress: 5 },
-      { label: '📥 Uploading dataset for processing...', progress: 10 },
+      { label: '📊 Loading dataset and verifying variables...', progress: 5 },
+      { label: '📐 Computing descriptive statistics for all items...', progress: 12 },
+      { label: '🔍 Testing normality (Shapiro-Wilk & Kolmogorov-Smirnov)...', progress: 20 },
+      { label: '🛡️ Computing scale reliability (Cronbach\'s Alpha)...', progress: 25 },
+      { label: '🔗 Building Pearson & Spearman correlation matrices...', progress: 30 },
     ];
 
-    // Dynamically build steps from selected tests
     const testStepMap: Record<string, { label: string; progress: number }> = {
-      descriptive:        { label: '📊 Running descriptive statistics (Mean, SD, frequencies)...', progress: 18 },
-      normality:          { label: '📐 Testing normality (Shapiro-Wilk, Kolmogorov-Smirnov)...', progress: 22 },
-      reliability:        { label: "🔁 Checking reliability — computing Cronbach's α & McDonald's ω...", progress: 26 },
-      section_stats:      { label: '📋 Summarising section averages for Likert scales...', progress: 28 },
-      correlation:        { label: '🔗 Computing Pearson & Spearman correlations...', progress: 30 },
-      correlation_matrix: { label: '🗂️ Building full correlation matrix...', progress: 33 },
       ttest:              { label: '⚖️ Running Independent Samples t-test & Mann-Whitney U...', progress: 35 },
       anova:              { label: '📈 Running One-Way ANOVA & Kruskal-Wallis H...', progress: 37 },
       chi_square:         { label: '🔢 Running Chi-Square test of independence...', progress: 39 },
@@ -202,18 +240,16 @@ export function useAnalysis() {
         progress: stepMessages[stepIndex].progress,
         progressLabel: stepMessages[stepIndex].label,
       });
-    }, 2200); // advance every 2.2 seconds
+    }, 2200);
 
     try {
-      // Cold-start detector: if the Python engine takes >5s, show a helpful message.
-      // Railway free tier can take 30–60s to warm up from cold.
       const coldStartTimer = setTimeout(() => {
         update({
           progressLabel: '☕ Statistics engine is warming up — this takes 20–30 seconds on first use. Your analysis is running...',
         });
       }, 5000);
 
-      // Step 1: Python computes statistics (this is the long wait)
+      // Step 1: Python computes statistics
       const stats = await computeStatistics(state.rawData, state.codebook, state.context, state.config);
       clearTimeout(coldStartTimer);
       clearInterval(ticker);
@@ -258,12 +294,12 @@ export function useAnalysis() {
     }
   }, [state, update]);
 
-
-  // ─── Save to Supabase ────────────────────────────────────────────────────
+  // ─── Save to Supabase & LocalStorage ─────────────────────────────────────
   const save = useCallback(async () => {
     if (!state.computedStats) return;
     try {
-      const id = await saveAnalysis({
+      const saved = await saveAnalysis({
+        id: state.savedId || undefined,
         title: state.context.title || state.filename,
         status: 'complete',
         raw_filename: state.filename,
@@ -276,34 +312,57 @@ export function useAnalysis() {
         n_respondents: state.computedStats.n_total,
         n_variables: state.codebook.length,
       });
-      update({ isSaved: true, savedId: id });
-      toast.success('Analysis saved to your project');
+      update({ isSaved: true, savedId: saved.id });
+      toast.success('Analysis saved! You can access it anytime from Active Workspaces.');
     } catch (err: any) {
       toast.error(err.message);
     }
   }, [state, update]);
 
+  // ─── Load Saved Analysis ──────────────────────────────────────────────────
+  const loadSavedAnalysis = useCallback((analysis: DataAnalysis) => {
+    const rawContext = analysis.research_context || (analysis as any).context || DEFAULT_CONTEXT;
+    const rawConfig = analysis.analysis_config || (analysis as any).config || DEFAULT_CONFIG;
+    const rawStats = analysis.computed_stats || null;
+    const rawNarrative = analysis.generated_narrative || (analysis as any).narrative || '';
+    const rawSyntax = analysis.generated_syntax || (analysis as any).syntax || '';
+
+    narrativeRef.current = rawNarrative;
+
+    const loadedState: AnalysisState = {
+      stage: 'results',
+      status: 'complete',
+      progress: 100,
+      progressLabel: 'Analysis loaded',
+      rawData: [],
+      headers: (analysis.codebook || []).map(c => c.column),
+      filename: analysis.raw_filename || 'dataset.xlsx',
+      codebook: analysis.codebook || [],
+      context: rawContext,
+      config: rawConfig,
+      computedStats: rawStats,
+      narrative: rawNarrative,
+      syntax: rawSyntax,
+      isSaved: true,
+      savedId: analysis.id,
+      error: null,
+    };
+
+    setState(loadedState);
+    try {
+      localStorage.setItem(ACTIVE_ANALYSIS_STORAGE_KEY, JSON.stringify(loadedState));
+    } catch {
+      // ignore
+    }
+    toast.success(`Loaded analysis: "${analysis.title}"`);
+  }, []);
+
   // ─── Reset / Start Over ───────────────────────────────────────────────────
   const reset = useCallback(() => {
     narrativeRef.current = '';
-    setState({
-      stage: 'upload',
-      status: 'idle',
-      progress: 0,
-      progressLabel: '',
-      rawData: [],
-      headers: [],
-      filename: '',
-      codebook: [],
-      context: DEFAULT_CONTEXT,
-      config: DEFAULT_CONFIG,
-      computedStats: null,
-      narrative: '',
-      syntax: '',
-      isSaved: false,
-      savedId: null,
-      error: null,
-    });
+    localStorage.removeItem(ACTIVE_ANALYSIS_STORAGE_KEY);
+    setState(INITIAL_STATE);
+    toast.info('Started a new analysis workspace.');
   }, []);
 
   // ─── Toggle Manual Test Selection ────────────────────────────────────────
@@ -329,6 +388,7 @@ export function useAnalysis() {
     updateConfig,
     runAnalysis,
     save,
+    loadSavedAnalysis,
     reset,
     toggleTest,
     setStage: (stage: AnalysisStage) => update({ stage }),

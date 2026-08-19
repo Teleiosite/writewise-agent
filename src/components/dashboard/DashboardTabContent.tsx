@@ -4,7 +4,6 @@ import { WritingEditor } from "@/components/WritingEditor";
 import { ChatAssistant } from "@/components/ChatAssistant";
 import { WritingStats } from "@/components/WritingStats";
 import DataAnalysis from "@/pages/DataAnalysis";
-import { WritingTracker } from "@/components/WritingTracker";
 
 interface DashboardTabContentProps {
   activeFeature: string | null;
@@ -31,7 +30,7 @@ export function DashboardTabContent({
           projectName={projectName} 
           template={template} 
           showCitations={activeFeature === "Citation Manager"}
-          showPdfReader={activeFeature === "Read PDF"}
+          showPdfReader={activeFeature === "Read PDF" || activeFeature === "Read PDF & Chat"}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
@@ -75,10 +74,6 @@ export function DashboardTabContent({
       
       <TabsContent value="stats">
         <WritingStats projectName={projectName} />
-      </TabsContent>
-
-      <TabsContent value="goals">
-        <WritingTracker projectName={projectName} />
       </TabsContent>
 
       {/* Embedded Data Analysis Engine */}

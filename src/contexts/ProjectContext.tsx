@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 import { type Project } from "@/components/dashboard/ProjectCard";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,87 +30,124 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const fetchProjects = async () => {
-    const { data: projects, error } = await supabase.from('projects').select('*');
-    if (error) {
-      toast({
-        title: "Error fetching projects",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      const projectsWithDates = projects.map((project: any) => ({
-        ...project,
-        lastEdited: new Date(project.last_edited)
-      }));
-      setProjects(projectsWithDates);
-      setFilteredProjects(projectsWithDates);
+  const fetchProjects = useCallback(async () => {
+    try {
+      const { data: dbProjects, error } = await supabase.from('projects').select('*').order('last_edited', { ascending: false });
+      
+      const localProjects: Project[] = JSON.parse(localStorage.getItem('writewise_local_projects') || '[]');
+
+      if (!error && dbProjects) {
+        // Filter out any legacy demo projects
+        const cleanDbProjects = dbProjects.filter(p => !p.name.includes('Demo') && !p.name.includes('Progress Tracking'));
+        const projectsWithDates = cleanDbProjects.map((project: any) => ({
+          ...project,
+          lastEdited: new Date(project.last_edited || project.created_at || Date.now())
+        }));
+        
+        // Merge with local projects
+        const map = new Map<string, Project>();
+        projectsWithDates.forEach(p => map.set(p.id, p));
+        localProjects.forEach(p => {
+          if (!map.has(p.id)) map.set(p.id, { ...p, lastEdited: new Date(p.lastEdited || Date.now()) });
+        });
+
+        const merged = Array.from(map.values());
+        setProjects(merged);
+        setFilteredProjects(merged);
+      } else {
+        setProjects(localProjects);
+        setFilteredProjects(localProjects);
+      }
+    } catch {
+      const localProjects: Project[] = JSON.parse(localStorage.getItem('writewise_local_projects') || '[]');
+      setProjects(localProjects);
+      setFilteredProjects(localProjects);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]);
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) {
       toast({
-        title: "Project name required",
-        description: "Please enter a name for your new project.",
+        title: "Workspace Title Required",
+        description: "Please enter a title for your research workspace.",
         variant: "destructive",
       });
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        toast({
-            title: "Authentication Error",
-            description: "You must be logged in to create a project.",
-            variant: "destructive",
-        });
-        return;
+    let user = null;
+    try {
+      const res = await supabase.auth.getUser();
+      user = res.data?.user;
+    } catch {
+      // ignore
     }
 
-    const { data, error } = await supabase
-      .from('projects')
-      .insert([
-        { name: newProjectName, description: 'A new writing project', user_id: user.id },
-      ])
-      .select();
+    const newProj: Project = {
+      id: crypto.randomUUID(),
+      name: newProjectName.trim(),
+      description: "Research Manuscript & Statistical Workspace",
+      lastEdited: new Date(),
+    };
 
-    if (error) {
-      toast({
-        title: "Error creating project",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      fetchProjects();
-      setNewProjectName("");
-      toast({
-        title: "Project created",
-        description: `"${newProjectName}" has been created successfully.`,
-      });
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('projects')
+          .insert([
+            { id: newProj.id, name: newProj.name, description: newProj.description, user_id: user.id },
+          ]);
+
+        if (!error) {
+          await fetchProjects();
+          setNewProjectName("");
+          toast({
+            title: "Workspace Created",
+            description: `"${newProj.name}" has been created successfully.`,
+          });
+          setActiveProject(newProj.name);
+          return;
+        }
+      } catch (err: any) {
+        console.warn("Supabase project insert failed, saving locally:", err);
+      }
     }
+
+    // Local Storage Fallback
+    const localProjects: Project[] = JSON.parse(localStorage.getItem('writewise_local_projects') || '[]');
+    const updated = [newProj, ...localProjects];
+    localStorage.setItem('writewise_local_projects', JSON.stringify(updated));
+    setProjects(updated);
+    setFilteredProjects(updated);
+    setNewProjectName("");
+    toast({
+      title: "Workspace Created",
+      description: `"${newProj.name}" has been created successfully.`,
+    });
+    setActiveProject(newProj.name);
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    const { error } = await supabase.from('projects').delete().eq('id', projectId);
-
-    if (error) {
-      toast({
-        title: "Error deleting project",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      fetchProjects();
-      toast({
-        title: "Project deleted",
-        description: "The project has been deleted successfully.",
-      });
+    try {
+      await supabase.from('projects').delete().eq('id', projectId);
+    } catch {
+      // ignore
     }
+
+    const localProjects: Project[] = JSON.parse(localStorage.getItem('writewise_local_projects') || '[]');
+    const filtered = localProjects.filter(p => p.id !== projectId);
+    localStorage.setItem('writewise_local_projects', JSON.stringify(filtered));
+
+    setProjects(prev => prev.filter(p => p.id !== projectId));
+    setFilteredProjects(prev => prev.filter(p => p.id !== projectId));
+    toast({
+      title: "Workspace Deleted",
+      description: "The research workspace has been removed.",
+    });
   };
 
   const handleOpenProject = (projectName: string) => {
@@ -131,8 +168,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleFeatureClick = async (feature: string) => {
-    // Navigate straight to dedicated features!
+  const handleFeatureClick = (feature: string) => {
     if (feature === "AI Data Analysis") {
       navigate('/data-analysis');
       return;
@@ -143,61 +179,37 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const featureDemoName = `${feature} Demo`;
-
-    let templateToUse;
-    switch (feature) {
-      case "Citation Manager":
-        templateToUse = documentTemplates[1];
-        break;
-      case "Research Assistant":
-        templateToUse = documentTemplates[2];
-        break;
-      default:
-        templateToUse = documentTemplates[0];
+    if (feature === "AI-Powered Editor") {
+      const projName = projects[0]?.name || "Research Manuscript";
+      localStorage.setItem("active-feature", "AI-Powered Editor");
+      setActiveProject(projName);
+      return;
     }
 
-    localStorage.setItem("selected-template", JSON.stringify(templateToUse));
-    localStorage.setItem("active-feature", feature);
-
-    const existing = projects.find(p => p.name === featureDemoName);
-    if (!existing) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Authentication Error",
-          description: "You must be logged in to open a feature demo.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase
-        .from("projects")
-        .insert([{
-          name: featureDemoName,
-          description: `A demo project for the ${feature} feature`,
-          user_id: user.id,
-        }]);
-
-      if (error) {
-        toast({
-          title: "Error creating demo project",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      await fetchProjects();
-
-      toast({
-        title: "Demo project created",
-        description: `"${featureDemoName}" is ready to showcase the ${feature} feature.`,
-      });
+    if (feature === "Citation Manager") {
+      const projName = projects[0]?.name || "Research Manuscript";
+      localStorage.setItem("selected-template", JSON.stringify(documentTemplates[1]));
+      localStorage.setItem("active-feature", "Citation Manager");
+      localStorage.setItem("show-citation-manager", "true");
+      setActiveProject(projName);
+      return;
     }
 
-    setActiveProject(featureDemoName);
+    if (feature === "Research Assistant") {
+      const projName = projects[0]?.name || "Research Manuscript";
+      localStorage.setItem("selected-template", JSON.stringify(documentTemplates[2]));
+      localStorage.setItem("active-feature", "Research Assistant");
+      setActiveProject(projName);
+      return;
+    }
+
+    if (feature === "Read PDF & Chat") {
+      const projName = projects[0]?.name || "Research Manuscript";
+      localStorage.setItem("active-feature", "Read PDF & Chat");
+      localStorage.setItem("show-pdf-reader", "true");
+      setActiveProject(projName);
+      return;
+    }
   };
 
   return (

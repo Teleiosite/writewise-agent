@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { FileUploader } from '@/components/analysis/FileUploader';
@@ -11,7 +11,7 @@ import { NarrativeStream } from '@/components/analysis/NarrativeStream';
 import { SyntaxPanel } from '@/components/analysis/SyntaxPanel';
 import { IntegrityReportModal } from '@/components/analysis/IntegrityReportModal';
 import { ClaimVerificationPanel } from '@/components/analysis/ClaimVerificationPanel';
-import { exportToDocx } from '@/services/analysisService';
+import { exportToDocx, listDataAnalyses, getDataAnalysis, deleteDataAnalysis } from '@/services/analysisService';
 import { computeFileHash } from '@/services/datasetHash';
 import { logResearchEvent } from '@/services/eventLog';
 import { createResearchReceipt } from '@/services/receiptService';
@@ -20,11 +20,11 @@ import { ThemeToggle } from '@/components/editor/pdf/components/ThemeToggle';
 import { 
   ArrowLeft, Upload, BookOpen, FileText, Settings2, FlaskConical,
   Play, Download, Save, RotateCcw, CheckCircle, AlertCircle, ChevronRight,
-  ShieldCheck, Share2, Copy, CheckCheck, Terminal, Cpu, FileCheck, Search
+  ShieldCheck, Share2, Copy, CheckCheck, FolderArchive, Trash2, Calendar, Users, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState, useRef } from 'react';
-import { AnalysisStage } from '@/types/analysis.types';
+import { useState, useRef, useEffect } from 'react';
+import { AnalysisStage, DataAnalysis as IDataAnalysis } from '@/types/analysis.types';
 
 const STAGES: { id: AnalysisStage; label: string; icon: React.ReactNode; desc: string }[] = [
   { id: 'upload',    label: 'Upload',    icon: <Upload className="w-3.5 h-3.5" />,      desc: 'Dataset file' },
@@ -43,6 +43,7 @@ interface DataAnalysisProps {
 
 export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisProps = {}) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const analysis = useAnalysis();
   const [selectedModel, setSelectedModel] = useState(localStorage.getItem('apiProvider') || 'Gemini');
   const [activeResultTab, setActiveResultTab] = useState<'stats' | 'narrative' | 'syntax' | 'audit'>('narrative');
@@ -50,10 +51,34 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [showIntegrityModal, setShowIntegrityModal] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
+  const [showSavedModal, setShowSavedModal] = useState(false);
+  const [savedList, setSavedList] = useState<IDataAnalysis[]>([]);
+  const [savedCount, setSavedCount] = useState<number>(0);
 
-  // Stable session ID — shared across all events for this analysis session.
-  // Avoids orphaned analysis IDs from per-event Date.now() calls.
+  // Auto-load by ?id=... URL query parameter
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if (id) {
+      getDataAnalysis(id).then(data => {
+        analysis.loadSavedAnalysis(data);
+      }).catch(err => {
+        toast.error(`Could not load analysis: ${err.message}`);
+      });
+    }
+  }, [searchParams]);
+
+  // Load saved analyses count and list
+  const refreshSavedList = () => {
+    listDataAnalyses().then(list => {
+      setSavedList(list);
+      setSavedCount(list.length);
+    });
+  };
+
+  useEffect(() => {
+    refreshSavedList();
+  }, [analysis.isSaved]);
+
   const sessionIdRef = useRef<string>(`SESSION-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`);
 
   const handleFileWithHash = async (file: File) => {
@@ -67,7 +92,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         payload: { filename: file.name, sizeBytes: file.size }
       });
     } catch {
-      // Hash failure silent — never block the analysis workflow
+      // ignore
     }
     analysis.handleFileUpload(file);
   };
@@ -97,20 +122,10 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
     }
 
     try {
-      // Ensure the analysis is saved and we have a real UUID
-      let analysisId = savedAnalysisId;
-      if (!analysisId) {
-        toast.loading('Saving analysis before generating link...');
-        await analysis.save();
-        // analysis.savedId is set after save() resolves
-        analysisId = analysis.savedId;
-        if (!analysisId) throw new Error('Could not save analysis. Please try again.');
-        setSavedAnalysisId(analysisId);
-      }
-
-      // Create a real receipt row in Supabase
+      toast.loading('Generating supervisor verification link...');
+      
       const token = await createResearchReceipt({
-        analysisId,
+        analysisId: analysis.savedId || undefined,
         payload: {
           title: analysis.context.title || 'Statistical Analysis',
           institution: analysis.context.institution ?? null,
@@ -131,7 +146,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
       await navigator.clipboard.writeText(link);
       setCopiedShareLink(true);
       toast.dismiss();
-      toast.success('Real supervisor verification link copied! Supervisors can open it without a WriteWise account.');
+      toast.success('Supervisor verification link copied! Works in any browser without login.');
       setTimeout(() => setCopiedShareLink(false), 3000);
     } catch (err: any) {
       toast.dismiss();
@@ -144,8 +159,20 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
     if (embedded && onBack) {
       onBack();
     } else {
-      navigate(-1);
+      navigate('/app');
     }
+  };
+
+  const handleOpenSavedItem = (item: IDataAnalysis) => {
+    analysis.loadSavedAnalysis(item);
+    setShowSavedModal(false);
+  };
+
+  const handleDeleteSavedItem = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    await deleteDataAnalysis(id);
+    refreshSavedList();
+    toast.success('Saved analysis deleted');
   };
 
   return (
@@ -164,7 +191,67 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         aiModel={selectedModel}
       />
 
-      {/* Reset Confirmation Modal — guards against accidental data loss */}
+      {/* Saved Analyses Modal */}
+      {showSavedModal && (
+        <div className="fixed inset-0 z-[100] bg-black/60 dark:bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-black border-2 border-black dark:border-white max-w-2xl w-full p-6 font-sans">
+            <div className="flex items-center justify-between border-b border-black dark:border-zinc-800 pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <FolderArchive className="w-5 h-5 text-black dark:text-white" />
+                <h3 className="font-bold text-base font-mono uppercase tracking-tight text-black dark:text-white">
+                  Saved Research Analyses ({savedList.length})
+                </h3>
+              </div>
+              <Button size="icon" variant="ghost" onClick={() => setShowSavedModal(false)} className="rounded-none h-7 w-7">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {savedList.length === 0 ? (
+              <div className="text-center py-12 border border-dashed border-zinc-300 dark:border-zinc-800 font-mono text-xs text-zinc-500">
+                No saved analyses found. Click "Save" when your analysis completes to keep it here.
+              </div>
+            ) : (
+              <div className="max-h-[400px] overflow-y-auto space-y-2 pr-1">
+                {savedList.map(item => {
+                  const testsCount = item.tests_run?.length || item.computed_stats?.tests_run?.length || 0;
+                  const dateStr = new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => handleOpenSavedItem(item)}
+                      className="border border-black dark:border-zinc-800 p-3 bg-white dark:bg-black hover:bg-zinc-50 dark:hover:bg-zinc-950 transition-colors cursor-pointer flex items-center justify-between gap-3 group"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-7 h-7 bg-black text-white dark:bg-white dark:text-black flex items-center justify-center font-mono text-xs shrink-0 mt-0.5">
+                          <FlaskConical className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-xs text-black dark:text-white group-hover:underline">{item.title}</p>
+                          <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                            {item.raw_filename} · {dateStr} · {testsCount} tests
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button size="sm" className="h-7 text-xs font-mono uppercase bg-black text-white dark:bg-white dark:text-black rounded-none">
+                          Load
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={(e) => handleDeleteSavedItem(e, item.id)} className="h-7 w-7 rounded-none text-zinc-400 hover:text-red-600">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Modal */}
       {showResetConfirm && (
         <div className="fixed inset-0 z-[100] bg-black/60 dark:bg-black/80 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-black border-2 border-black dark:border-white max-w-md w-full p-8 font-mono">
@@ -173,35 +260,26 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                 <RotateCcw className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-bold text-sm uppercase tracking-wider text-black dark:text-white">Reset Analysis?</p>
-                <p className="text-[11px] text-zinc-500 mt-0.5">This action cannot be undone.</p>
+                <p className="font-bold text-sm uppercase tracking-wider text-black dark:text-white">Start New Analysis?</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">Clears current workspace to upload a new dataset.</p>
               </div>
             </div>
             <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-6">
-              All uploaded data, codebook configuration, research context, computed statistics, and generated narrative will be permanently cleared from this session.
+              Saved analyses in your library will remain intact.
             </p>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowResetConfirm(false)}
-                className="flex-1 rounded-none border-black dark:border-zinc-700 font-mono text-xs uppercase tracking-wider"
-              >
-                Cancel — Keep Working
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" size="sm" onClick={() => setShowResetConfirm(false)} className="rounded-none border-black dark:border-white text-xs uppercase">
+                Cancel
               </Button>
-              <Button
-                size="sm"
-                onClick={handleResetConfirmed}
-                className="flex-1 bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none font-mono text-xs uppercase tracking-wider border border-black dark:border-white"
-              >
-                Yes, Reset Everything
+              <Button size="sm" onClick={handleResetConfirmed} className="bg-black text-white dark:bg-white dark:text-black rounded-none text-xs uppercase">
+                Start New
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Header — only shown in standalone route mode */}
+      {/* Header — standalone mode */}
       {!embedded && (
         <div className="sticky top-0 z-50 bg-white dark:bg-black border-b border-black dark:border-zinc-800">
           <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -209,7 +287,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => navigate(-1)} 
+                onClick={() => navigate('/app')} 
                 className="rounded-none h-8 w-8 text-black dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -225,7 +303,16 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               </div>
             </div>
             <div className="flex items-center gap-2 font-mono">
-              {analysis.status === 'complete' && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowSavedModal(true)}
+                className="gap-1.5 text-xs rounded-none border-black dark:border-zinc-800 font-mono uppercase tracking-wider"
+              >
+                <FolderArchive className="w-3.5 h-3.5" />
+                Saved ({savedCount})
+              </Button>
+              {analysis.stage === 'results' && analysis.computedStats && (
                 <>
                   <Button 
                     variant="outline" 
@@ -233,8 +320,8 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                     onClick={() => setShowIntegrityModal(true)}
                     className="gap-1.5 text-xs rounded-none border-black dark:border-zinc-800 font-mono uppercase tracking-wider hidden lg:flex"
                   >
-                    <FileCheck className="w-3.5 h-3.5" />
-                    View Integrity Receipt
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Receipt
                   </Button>
                   <Button 
                     variant="outline" 
@@ -242,8 +329,8 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                     onClick={handleCopyShareLink}
                     className="gap-1.5 text-xs rounded-none border-black dark:border-zinc-800 font-mono uppercase tracking-wider hidden md:flex"
                   >
-                    <Share2 className="w-3.5 h-3.5" />
-                    Share Link
+                    {copiedShareLink ? <CheckCheck className="w-3.5 h-3.5 text-green-600" /> : <Share2 className="w-3.5 h-3.5" />}
+                    {copiedShareLink ? 'Link Copied' : 'Share Link'}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -253,7 +340,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                     className="gap-1.5 text-xs rounded-none border-black dark:border-zinc-800 hidden sm:flex"
                   >
                     <Save className="w-3.5 h-3.5" />
-                    {analysis.isSaved ? 'Saved' : 'Save'}
+                    {analysis.isSaved ? 'Saved ✓' : 'Save'}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -492,7 +579,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
         {analysis.stage === 'results' && (
           <div className="space-y-6">
             
-            {/* Verified by WriteWise Status Header */}
+            {/* Verified Header */}
             <div className="border border-black dark:border-white p-5 bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 font-mono text-xs">
               <div className="flex items-start gap-3">
                 <div className="p-2.5 bg-black text-white dark:bg-white dark:text-black border border-black dark:border-white">
@@ -519,20 +606,28 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               <div className="flex items-center gap-2 shrink-0">
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() => setShowIntegrityModal(true)}
-                  className="bg-white text-black hover:bg-zinc-100 dark:bg-black dark:text-white dark:hover:bg-zinc-900 font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-zinc-700 gap-1.5"
+                  className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-white"
                 >
-                  <FileCheck className="w-3.5 h-3.5" />
-                  View Integrity Receipt
+                  <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
+                  View Receipt
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleCopyShareLink}
-                  className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-white gap-1.5"
+                  className="bg-white text-black hover:bg-zinc-100 dark:bg-zinc-900 dark:text-white font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-zinc-700"
                 >
-                  {copiedShareLink ? <CheckCheck className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
-                  {copiedShareLink ? 'Link Copied!' : 'Share Link'}
+                  {copiedShareLink ? <CheckCheck className="w-3.5 h-3.5 mr-1.5 text-green-600" /> : <Share2 className="w-3.5 h-3.5 mr-1.5" />}
+                  {copiedShareLink ? 'Copied' : 'Share'}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={analysis.save}
+                  disabled={analysis.isSaved}
+                  className="bg-white text-black hover:bg-zinc-100 dark:bg-zinc-900 dark:text-white font-mono text-xs uppercase tracking-wider rounded-none border border-black dark:border-zinc-700"
+                >
+                  <Save className="w-3.5 h-3.5 mr-1.5" />
+                  {analysis.isSaved ? 'Saved ✓' : 'Save'}
                 </Button>
               </div>
             </div>
@@ -543,7 +638,7 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
                 { id: 'narrative' as const, label: 'Chapter 4 & 5 Narrative', icon: <FileText className="w-3.5 h-3.5" /> },
                 { id: 'stats' as const, label: 'Statistical Output', icon: <FlaskConical className="w-3.5 h-3.5" /> },
                 { id: 'syntax' as const, label: 'SPSS Syntax', icon: <Settings2 className="w-3.5 h-3.5" /> },
-                { id: 'audit' as const, label: 'Claim Auditor', icon: <Search className="w-3.5 h-3.5" /> },
+                { id: 'audit' as const, label: 'Claim Auditor', icon: <ShieldCheck className="w-3.5 h-3.5" /> },
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -586,40 +681,9 @@ export default function DataAnalysis({ embedded = false, onBack }: DataAnalysisP
               )}
             </div>
 
-            {/* Bottom actions */}
-            {analysis.status === 'complete' && (
-              <div className="flex flex-wrap items-center gap-3 justify-end font-mono">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => analysis.setStage('configure')} 
-                  className="gap-1.5 text-xs uppercase rounded-none border-black dark:border-zinc-800"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" /> Re-run Analysis
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    await analysis.save();
-                    toast.info('Analysis saved to workspace!');
-                  }}
-                  disabled={analysis.isSaved}
-                  className="gap-1.5 text-xs uppercase rounded-none border-black dark:border-zinc-800"
-                >
-                  <Save className="w-3.5 h-3.5" /> {analysis.isSaved ? 'Saved ✓' : 'Save to Workspace'}
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={async () => exportToDocx(analysis.context.title || 'Analysis', analysis.narrative, analysis.syntax)} 
-                  className="gap-1.5 text-xs uppercase bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 rounded-none border border-black dark:border-white px-5"
-                >
-                  <Download className="w-3.5 h-3.5" /> Export DOCX
-                </Button>
-              </div>
-            )}
           </div>
         )}
+
       </div>
     </div>
   );

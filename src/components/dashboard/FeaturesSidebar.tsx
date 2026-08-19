@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BookOpen, Calendar, FileText, Users, FlaskConical, ShieldCheck } from "lucide-react";
+import { BookOpen, FileText, Users, FlaskConical, ShieldCheck, MessageSquareText } from "lucide-react";
 
 interface FeaturesSidebarProps {
   mobileMenuOpen: boolean;
@@ -36,20 +36,14 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
     },
     {
       name: "Research Assistant",
-      description: "Extract insights, verify literature, and analyze scientific papers.",
-      icon: BookOpen,
+      description: "Extract insights, verify literature, and analyze scientific papers with AI.",
+      icon: MessageSquareText,
       isPrimary: false
     },
     {
       name: "Read PDF & Chat",
       description: "Import PDFs and interact with your literature directly alongside your canvas.",
-      icon: FileText,
-      isPrimary: false
-    },
-    {
-      name: "Progress Tracking",
-      description: "Track writing velocity, milestones, and daily research streak goals.",
-      icon: Calendar,
+      icon: BookOpen,
       isPrimary: false
     }
   ];
@@ -64,7 +58,7 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
         <div className="p-4 flex items-center justify-between border-b border-black dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-black dark:text-white" />
-            <h2 className="font-bold text-sm tracking-tight uppercase font-mono text-black dark:text-white">Features & Tools</h2>
+            <h2 className="font-bold text-sm tracking-tight uppercase font-mono text-black dark:text-white">Features &amp; Tools</h2>
           </div>
           <Button 
             variant="ghost" 
@@ -100,7 +94,11 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
                     <h3 className={`font-bold text-xs mb-1 ${feature.isPrimary ? "text-white dark:text-black" : "text-black dark:text-white"}`}>
                       {feature.name}
                     </h3>
-                    <p className={`text-[11px] line-clamp-2 leading-relaxed ${feature.isPrimary ? "text-zinc-300 dark:text-zinc-700" : "text-zinc-600 dark:text-zinc-400"}`}>
+                    <p className={`text-[11px] leading-relaxed ${
+                      feature.isPrimary 
+                        ? "text-zinc-300 dark:text-zinc-700" 
+                        : "text-zinc-500 dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
+                    }`}>
                       {feature.description}
                     </p>
                   </div>
@@ -110,11 +108,9 @@ export function FeaturesSidebar({ mobileMenuOpen, setMobileMenuOpen, onFeatureCl
           </div>
         </ScrollArea>
         
-        <div className="p-4 border-t border-black dark:border-zinc-800 font-mono text-xs">
-          <div className="p-3 border border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-black dark:text-white">
-            <p className="font-bold uppercase tracking-wider mb-1">Methodology Help</p>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400">Access documentation or verify statistical tests in your workspace.</p>
-          </div>
+        <div className="p-3 border-t border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[10px] text-zinc-500">
+          <p className="font-bold text-black dark:text-white uppercase mb-0.5">WRITEWISE INTEGRITY SUITE</p>
+          <p>Deterministic stats · APA formatting · Verified claims</p>
         </div>
       </div>
     </div>
