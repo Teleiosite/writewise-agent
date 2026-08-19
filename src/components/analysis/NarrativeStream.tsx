@@ -15,27 +15,54 @@ function cleanNarrativeText(raw: string): string {
   if (!raw) return '';
   let text = raw;
 
-  // Handle case where text is wrapped in JSON quotes or contains literal \n
-  if (text.startsWith('"') && text.endsWith('"') && text.length > 2) {
+  // ── Step 1: If the whole text looks like a JSON string, parse it ──────────
+  // Old SSE format sent data like: "CHAPTER FOUR...\n\n4.1..." (a JSON string literal)
+  // Try to JSON.parse only if it starts+ends with "
+  const trimmed = text.trim();
+  if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
     try {
-      text = JSON.parse(text);
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed === 'string') text = parsed;
     } catch {
-      text = text.slice(1, -1);
+      /* not a valid JSON string – continue cleaning below */
     }
   }
 
-  // If text contains literal escaped newlines "\n", convert them to real newlines
-  if (text.includes('\\n')) {
-    text = text.replace(/\\n/g, '\n');
-  }
-
-  // Remove literal escaped quotes \"
+  // ── Step 2: Convert literal escape sequences left by JSON string fragments ─
+  // Old frontend accumulated chunks as raw JSON string literals: "chunk1""chunk2"
+  // so \n appears as TWO characters: backslash + n
+  text = text.replace(/\\n/g, '\n');
+  text = text.replace(/\\t/g, '\t');
   text = text.replace(/\\"/g, '"');
+  text = text.replace(/\\\\/g, '\\');
 
-  // Remove artifact quotes like `"""` or `""`
-  text = text.replace(/"""/g, '').replace(/""/g, '');
+  // ── Step 3: Remove chunk-boundary quote artifacts (""" and "") ────────────
+  text = text.replace(/"""+/g, ' ');   // triple+ quotes → space
+  text = text.replace(/""/g, '');       // double quotes → nothing
 
-  return text;
+  // ── Step 4: Strip lone quote chars at the very start / end ────────────────
+  text = text.replace(/^"+/, '').replace(/"+$/, '');
+
+  // ── Step 5: Per-line quote-prefix cleanup ─────────────────────────────────
+  // Chunks often add a lone " at the start of a line (boundary artifact).
+  // Strip a leading " only when it's clearly not part of real content
+  // (i.e., the rest of the line is NOT a sentence with another closing quote).
+  text = text
+    .split('\n')
+    .map(line => {
+      // If line is ONLY quotes, blank it
+      if (/^"+$/.test(line.trim())) return '';
+      // Strip lone leading quote that is clearly an artifact
+      // (line starts with " and the next char is not a space that would indicate
+      // it's real quoted speech)
+      return line.replace(/^"([^"])/, '$1');
+    })
+    .join('\n');
+
+  // ── Step 6: Collapse 3+ consecutive blank lines into 2 ───────────────────
+  text = text.replace(/\n{3,}/g, '\n\n');
+
+  return text.trim();
 }
 
 // ─── Markdown → APA-Formatted Academic HTML Renderer ──────────────────────────
@@ -47,7 +74,9 @@ function renderMarkdown(rawMd: string): string {
   let i = 0;
 
   while (i < lines.length) {
-    const line = lines[i].trim();
+    // Trim and strip any remaining stray leading " artifact before matching
+    const rawLine = lines[i];
+    const line = rawLine.trim().replace(/^"+/, '');
 
     // ── Table Title (e.g., Table 4.1: Demographic Characteristics...) ──
     const tableTitleMatch = line.match(/^(Table\s+\d+\.\d+[:.]?\s*)(.*)/i);
