@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (provider === 'Gemini') {
-      const model = requestedModel || 'gemini-3.1-flash-preview';
+      const model = requestedModel || 'gemini-2.5-flash';
       
       const callGemini = async (version: 'v1' | 'v1beta'): Promise<Response> => {
         const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`;

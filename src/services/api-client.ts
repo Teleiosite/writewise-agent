@@ -18,7 +18,7 @@ async function callGeminiDirect(
   messages: Msg[],
   version: "v1" | "v1beta" = "v1"
 ): Promise<NormalizedAIResponse> {
-  const m = model.trim() || "gemini-3.1-flash-preview";
+  const m = model.trim() || "gemini-2.5-flash";
   const encodedKey = encodeURIComponent(apiKey.trim());
   const url = `https://generativelanguage.googleapis.com/${version}/models/${m}:generateContent?key=${encodedKey}`;
 
@@ -158,7 +158,7 @@ export async function callChatGptApi(
   try {
     if (apiProvider && apiKey) {
       if (apiProvider === "Gemini") {
-        return await callGeminiDirect(apiKey, apiModel ?? "gemini-3.1-flash-preview", messages);
+        return await callGeminiDirect(apiKey, apiModel ?? "gemini-2.5-flash", messages);
       }
       return await callViaProxy(apiProvider, apiKey, apiModel, messages);
     }

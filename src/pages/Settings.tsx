@@ -34,11 +34,11 @@ const PROVIDERS: Record<string, ProviderMeta> = {
     code: "GEM",
     docsUrl: "https://aistudio.google.com/apikey",
     models: [
-      { value: "gemini-3.1-flash-preview",      label: "Gemini 3.1 Flash (Preview) · Recommended" },
-      { value: "gemini-3.1-flash-lite-preview", label: "Gemini 3.1 Flash-Lite (Preview)" },
-      { value: "gemini-2.5-flash",              label: "Gemini 2.5 Flash (Stable)" },
-      { value: "gemini-2.5-pro",                label: "Gemini 2.5 Pro (Experimental)" },
-      { value: "gemini-1.5-flash",              label: "Gemini 1.5 Flash (Legacy)" },
+      { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (Fast · Recommended · Free)" },
+      { value: "gemini-2.5-pro",   label: "Gemini 2.5 Pro (Most Capable)" },
+      { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+      { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+      { value: "gemini-1.5-pro",   label: "Gemini 1.5 Pro" },
     ],
   },
   Claude: {
