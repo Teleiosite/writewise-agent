@@ -39,11 +39,11 @@ RUN npm install -g ts-node typescript
 COPY --from=frontend-builder /app/dist /var/www/writewise
 
 # Copy the Node API server entrypoint
-COPY server.js ./server.js
+COPY server.cjs ./server.cjs
 
 EXPOSE 3001
 
-CMD ["node", "server.js"]
+CMD ["node", "server.cjs"]
 
 # ─── Final: Nginx serves static files, proxies /api and /stats ───────────────
 # (Nginx container defined in docker-compose.yml)
