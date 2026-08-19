@@ -1,6 +1,6 @@
 /**
- * server.js — Express wrapper for WriteWise Vercel API handlers
- * Replaces Vercel Serverless Functions for self-hosted Oracle Cloud deployment.
+ * server.js — Express wrapper for WriteWise API handlers
+ * ES Module version — runs via `tsx server.js` in Docker.
  *
  * Routes:
  *   POST /api/generate-narrative  → api/generate-narrative.ts
@@ -10,24 +10,19 @@
  *   GET  /health                  → 200 OK
  */
 
-require('ts-node').register({
-  transpileOnly: true,
-  compilerOptions: { module: 'commonjs', esModuleInterop: true }
-});
+import express from 'express';
+import cors from 'cors';
 
-const express = require('express');
-const cors = require('cors');
-
-// Import Vercel API handlers (ts-node transpiles on the fly)
-const generateNarrative = require('./api/generate-narrative').default;
-const chat              = require('./api/chat').default;
-const generateSyntax    = require('./api/generate-syntax').default;
-const detectCodebook    = require('./api/detect-codebook').default;
+// Dynamic imports let tsx transpile TypeScript handlers on the fly
+const { default: generateNarrative } = await import('./api/generate-narrative.ts');
+const { default: chat }              = await import('./api/chat.ts');
+const { default: generateSyntax }    = await import('./api/generate-syntax.ts');
+const { default: detectCodebook }    = await import('./api/detect-codebook.ts');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
 
-// ─── Middleware ────────────────────────────────────────────────────────────────
+// ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '50mb' }));
 
@@ -36,12 +31,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'writewise-api', ts: new Date().toISOString() });
 });
 
-// ─── API Routes ───────────────────────────────────────────────────────────────
-/**
- * Adapter: wraps a Vercel handler (VercelRequest, VercelResponse) to Express
- * req/res objects. The Vercel types are duck-compatible with Express for our
- * use case — body, method, headers are identical.
- */
+// ─── Adapter: Vercel handler → Express ────────────────────────────────────────
 function adapt(handler) {
   return async (req, res) => {
     try {
@@ -55,6 +45,7 @@ function adapt(handler) {
   };
 }
 
+// ─── Routes ───────────────────────────────────────────────────────────────────
 app.post('/api/generate-narrative', adapt(generateNarrative));
 app.post('/api/chat',               adapt(chat));
 app.post('/api/generate-syntax',    adapt(generateSyntax));

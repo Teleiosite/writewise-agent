@@ -33,17 +33,17 @@ COPY api/ ./api/
 COPY tsconfig.json tsconfig.node.json ./
 
 # Install ts-node for running TypeScript directly
-RUN npm install -g ts-node typescript
+RUN npm install -g tsx typescript
 
 # Copy built frontend static files to serve
 COPY --from=frontend-builder /app/dist /var/www/writewise
 
 # Copy the Node API server entrypoint
-COPY server.cjs ./server.cjs
+COPY server.js ./server.js
 
 EXPOSE 3001
 
-CMD ["node", "server.cjs"]
+CMD ["tsx", "server.js"]
 
 # ─── Final: Nginx serves static files, proxies /api and /stats ───────────────
 # (Nginx container defined in docker-compose.yml)

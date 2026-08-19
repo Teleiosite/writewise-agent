@@ -2,13 +2,14 @@
   "name": "writewise",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node server.cjs"
+    "start": "tsx server.js"
   },
   "engines": {
     "node": "^20.19.0"
