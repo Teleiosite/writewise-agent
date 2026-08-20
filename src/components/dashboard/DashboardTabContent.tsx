@@ -2,7 +2,6 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { WritingEditor } from "@/components/WritingEditor";
 import { ChatAssistant } from "@/components/ChatAssistant";
-import { WritingStats } from "@/components/WritingStats";
 import DataAnalysis from "@/pages/DataAnalysis";
 
 interface DashboardTabContentProps {
@@ -70,10 +69,6 @@ export function DashboardTabContent({
             </Card>
           </div>
         </div>
-      </TabsContent>
-      
-      <TabsContent value="stats">
-        <WritingStats projectName={projectName} />
       </TabsContent>
 
       {/* Embedded Data Analysis Engine */}

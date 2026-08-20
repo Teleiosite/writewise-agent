@@ -62,14 +62,12 @@ export function EditorHeader({
     { label: "Editor", value: "editor", icon: <Layout className="h-3.5 w-3.5" /> },
     { label: "Data Analysis", value: "data-analysis", icon: <FlaskConical className="h-3.5 w-3.5" /> },
     { label: "Assistance", value: "assistant", icon: <MessageSquare className="h-3.5 w-3.5" /> },
-    { label: "Analytics", value: "stats", icon: <BarChart2 className="h-3.5 w-3.5" /> },
   ];
 
   const secondaryNav = [
     { label: "Citations", value: "citations", action: toggleCitationsPanel, icon: <BookOpen className="h-3.5 w-3.5" /> },
     { label: "PDF Reader", value: "pdf-reader", action: togglePdfReaderPanel, icon: <FileText className="h-3.5 w-3.5" /> },
     { label: "PDF Chat", value: "pdf-chat", action: togglePdfChatPanel, icon: <MessageSquare className="h-3.5 w-3.5" /> },
-    { label: "Goals", value: "goals", value_internal: "goals", icon: <Target className="h-3.5 w-3.5" /> },
   ];
 
   return (
