@@ -25,8 +25,8 @@ export default function FAQ() {
       answer: "WriteWise computes SHA-256 cryptographic hashes for every uploaded dataset on your local browser using the Web Crypto API — your raw data never leaves your machine unencrypted. An append-only audit log records analysis events. We do not store raw participant survey records on AI servers. For institutional deployments, a GDPR Data Processing Agreement is available."
     },
     {
-      question: "Do I need my own API key?",
-      answer: "Yes — WriteWise requires you to bring your own API key (Google Gemini, OpenAI GPT-4o, Anthropic Claude, or DeepSeek) for the AI narrative generation step. This is intentional: it ensures your data goes directly from your browser to your chosen AI provider, without an intermediary storing your research. You add your key once in Settings and it is stored locally in your browser — it never touches WriteWise servers. The Python statistics engine runs independently of AI and requires no key."
+      question: "Do I need my own API key to use WriteWise?",
+      answer: "No — WriteWise includes a default high-speed Google Gemini 2.5 Flash AI compute engine on all accounts at zero extra charge. You can upload data, execute Python statistical analyses, generate SPSS syntax, and stream Chapter 4 & 5 narratives immediately. If you want to use external premium models (such as Anthropic Claude 3.5 Sonnet, OpenAI GPT-4o, DeepSeek, or Grok), you can easily connect your personal API key in Settings with zero compute markup."
     },
     {
       question: "Which AI models can I use for narrative generation?",

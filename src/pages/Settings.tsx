@@ -8,7 +8,8 @@ import {
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
-import { CheckCircle2, Key, Cpu, ExternalLink, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle2, Key, Cpu, ExternalLink, Trash2, Sparkles, ShieldCheck } from "lucide-react";
 
 interface ProviderMeta {
   label: string;
@@ -18,24 +19,13 @@ interface ProviderMeta {
 }
 
 const PROVIDERS: Record<string, ProviderMeta> = {
-  OpenAI: {
-    label: "OpenAI",
-    code: "GPT",
-    docsUrl: "https://platform.openai.com/api-keys",
-    models: [
-      { value: "gpt-4o-mini",   label: "GPT-4o Mini (fast · recommended)" },
-      { value: "gpt-4o",        label: "GPT-4o (most capable)" },
-      { value: "gpt-4-turbo",   label: "GPT-4 Turbo" },
-      { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo (legacy)" },
-    ],
-  },
   Gemini: {
     label: "Google Gemini",
     code: "GEM",
     docsUrl: "https://aistudio.google.com/apikey",
     models: [
-      { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (Fast · Recommended · Free)" },
-      { value: "gemini-2.5-pro",   label: "Gemini 2.5 Pro (Most Capable)" },
+      { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (Fast · Recommended · Default)" },
+      { value: "gemini-2.5-pro",   label: "Gemini 2.5 Pro (Deep Reasoning)" },
       { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
       { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
       { value: "gemini-1.5-pro",   label: "Gemini 1.5 Pro" },
@@ -46,18 +36,20 @@ const PROVIDERS: Record<string, ProviderMeta> = {
     code: "ANT",
     docsUrl: "https://console.anthropic.com/settings/keys",
     models: [
-      { value: "claude-3-5-haiku-20241022",  label: "Claude 3.5 Haiku (fast · recommended)" },
-      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet (most capable)" },
-      { value: "claude-3-haiku-20240307",    label: "Claude 3 Haiku (legacy)" },
+      { value: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet (Most Capable Academic Prose)" },
+      { value: "claude-3-5-haiku-20241022",  label: "Claude 3.5 Haiku (Fast)" },
+      { value: "claude-3-haiku-20240307",    label: "Claude 3 Haiku (Legacy)" },
     ],
   },
-  Grok: {
-    label: "xAI Grok",
-    code: "GROK",
-    docsUrl: "https://console.x.ai",
+  OpenAI: {
+    label: "OpenAI",
+    code: "GPT",
+    docsUrl: "https://platform.openai.com/api-keys",
     models: [
-      { value: "grok-2-latest", label: "Grok 2 (recommended)" },
-      { value: "grok-beta",     label: "Grok Beta (legacy)" },
+      { value: "gpt-4o",        label: "GPT-4o (Multimodal & Analytical)" },
+      { value: "gpt-4o-mini",   label: "GPT-4o Mini (Fast)" },
+      { value: "gpt-4-turbo",   label: "GPT-4 Turbo" },
+      { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo (Legacy)" },
     ],
   },
   DeepSeek: {
@@ -65,15 +57,24 @@ const PROVIDERS: Record<string, ProviderMeta> = {
     code: "DS",
     docsUrl: "https://platform.deepseek.com/api_keys",
     models: [
-      { value: "deepseek-chat",     label: "DeepSeek Chat (recommended)" },
-      { value: "deepseek-reasoner", label: "DeepSeek Reasoner (CoT)" },
+      { value: "deepseek-chat",     label: "DeepSeek Chat (Recommended)" },
+      { value: "deepseek-reasoner", label: "DeepSeek Reasoner (Chain-of-Thought)" },
+    ],
+  },
+  Grok: {
+    label: "xAI Grok",
+    code: "GROK",
+    docsUrl: "https://console.x.ai",
+    models: [
+      { value: "grok-2-latest", label: "Grok 2 (Recommended)" },
+      { value: "grok-beta",     label: "Grok Beta (Legacy)" },
     ],
   },
 };
 
 export default function Settings() {
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { user } = useAuth();
 
   const [apiProvider, setApiProvider] = React.useState("");
   const [apiModel, setApiModel]       = React.useState("");
@@ -86,21 +87,45 @@ export default function Settings() {
 
   const isGeminiKeyFormatValid = apiProvider === "Gemini" ? apiKey.trim().startsWith("AIza") : true;
 
+  // Load settings on mount (from Supabase if user exists, else fallback to localStorage)
   React.useEffect(() => {
-    const savedProvider = localStorage.getItem("apiProvider") ?? "";
-    const savedModel    = localStorage.getItem("apiModel")    ?? "";
-    const savedKey      = localStorage.getItem("apiKey")      ?? "";
-    setApiProvider(savedProvider);
-    setApiModel(savedModel);
-    setApiKey(savedKey);
-  }, []);
+    const loadSettings = async () => {
+      let savedProvider = localStorage.getItem("apiProvider") ?? "";
+      let savedModel    = localStorage.getItem("apiModel")    ?? "";
+      let savedKey      = localStorage.getItem("apiKey")      ?? "";
+
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('user_api_settings')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+          if (data && !error) {
+            savedProvider = data.provider || savedProvider;
+            savedModel = data.model || savedModel;
+            savedKey = data.api_key || savedKey;
+          }
+        } catch {
+          // fallback to localStorage
+        }
+      }
+
+      setApiProvider(savedProvider);
+      setApiModel(savedModel);
+      setApiKey(savedKey);
+    };
+
+    loadSettings();
+  }, [user]);
 
   const handleProviderChange = (value: string) => {
     setApiProvider(value);
     setApiModel(PROVIDERS[value]?.models[0]?.value ?? "");
   };
 
-  const handleClearSettings = () => {
+  const handleClearSettings = async () => {
     localStorage.removeItem("apiProvider");
     localStorage.removeItem("apiModel");
     localStorage.removeItem("apiKey");
@@ -108,7 +133,22 @@ export default function Settings() {
     setApiModel("");
     setApiKey("");
     setTestStatus({ status: "idle" });
-    toast({ title: "Settings cleared", description: "Your AI configuration has been removed." });
+
+    if (user) {
+      try {
+        await supabase
+          .from('user_api_settings')
+          .delete()
+          .eq('user_id', user.id);
+      } catch {
+        // ignore
+      }
+    }
+
+    toast({ 
+      title: "Custom Key Cleared", 
+      description: "Workspace reverted to WriteWise default Google Gemini engine." 
+    });
   };
 
   const handleTestConnection = async () => {
@@ -127,14 +167,9 @@ export default function Settings() {
       const { testAiConnection } = await import("@/services/api-client");
       const result = await testAiConnection(apiProvider, apiKey, apiModel);
       
-      let displayMessage = result.message;
-      if (!result.success && result.message.includes("limit: 0") && apiModel.includes("2.0")) {
-        displayMessage += "\n\n💡 TIP: Your account may have a '0' rate limit for Gemini 2.0. Switch to 'Gemini 1.5 Flash' above.";
-      }
-
       setTestStatus({
         status: result.success ? "success" : "error",
-        message: displayMessage
+        message: result.message
       });
 
       if (!result.success) {
@@ -145,8 +180,8 @@ export default function Settings() {
         });
       } else {
         toast({
-          title: "Success",
-          description: "Your API key is valid and working!",
+          title: "Connection Verified",
+          description: `Your ${PROVIDERS[apiProvider]?.label || apiProvider} key is authenticated and working!`,
         });
       }
     } catch (err: any) {
@@ -154,7 +189,7 @@ export default function Settings() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!apiProvider || !apiKey || !apiModel) {
@@ -167,20 +202,40 @@ export default function Settings() {
     }
 
     setIsSubmitting(true);
-    localStorage.setItem("apiProvider", apiProvider.trim());
-    localStorage.setItem("apiModel",    apiModel.trim());
-    localStorage.setItem("apiKey",      apiKey.trim());
-    setApiKey(apiKey.trim());
+    const cleanProvider = apiProvider.trim();
+    const cleanModel = apiModel.trim();
+    const cleanKey = apiKey.trim();
+
+    localStorage.setItem("apiProvider", cleanProvider);
+    localStorage.setItem("apiModel",    cleanModel);
+    localStorage.setItem("apiKey",      cleanKey);
+
+    if (user) {
+      try {
+        await supabase
+          .from('user_api_settings')
+          .upsert({
+            user_id: user.id,
+            provider: cleanProvider,
+            model: cleanModel,
+            api_key: cleanKey,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id' });
+      } catch (err: any) {
+        console.warn('Supabase sync warning:', err);
+      }
+    }
+
     setIsSubmitting(false);
 
     toast({
-      title: "Settings saved",
-      description: `Using ${PROVIDERS[apiProvider]?.label} · ${apiModel}`,
+      title: "AI Engine Configured",
+      description: `Active model: ${PROVIDERS[cleanProvider]?.label ?? cleanProvider} · ${cleanModel}`,
     });
   };
 
+  const isCustomConfigured = !!(apiKey && apiProvider);
   const selectedProvider = PROVIDERS[apiProvider];
-  const isConfigured = !!(localStorage.getItem("apiProvider") && localStorage.getItem("apiKey"));
 
   return (
     <HomeLayout showWelcomeBanner={false}>
@@ -189,20 +244,20 @@ export default function Settings() {
         {/* Header */}
         <div className="border-b border-black dark:border-zinc-800 pb-4">
           <span className="mono-badge mb-2">Workspace Configuration</span>
-          <h1 className="text-2xl font-extrabold tracking-tight text-black dark:text-white mt-1">AI Engine Settings</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-black dark:text-white mt-1">AI Engine & Model Routing</h1>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
             Configure the LLM engine for Python narrative generation, literature synthesis, and statistical explanations.
           </p>
         </div>
 
-        {/* Current status badge */}
-        {isConfigured && (
+        {/* Current status banner */}
+        {isCustomConfigured ? (
           <div className="flex items-center gap-3 p-4 border border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-mono text-xs">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span className="uppercase tracking-wider font-bold">
-              Active Engine: {PROVIDERS[localStorage.getItem("apiProvider")!]?.label ?? localStorage.getItem("apiProvider")}
+              Custom Key Active: {PROVIDERS[apiProvider]?.label ?? apiProvider}
               {" · "}
-              <code className="text-zinc-300 dark:text-zinc-700">{localStorage.getItem("apiModel")}</code>
+              <code className="text-zinc-300 dark:text-zinc-700">{apiModel}</code>
             </span>
             <Button
               variant="ghost"
@@ -211,13 +266,30 @@ export default function Settings() {
               onClick={handleClearSettings}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Clear
+              Revert to Default
             </Button>
+          </div>
+        ) : (
+          <div className="p-4 border border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-xs space-y-1.5">
+            <div className="flex items-center gap-2 font-bold text-black dark:text-white uppercase">
+              <Sparkles className="h-4 w-4" />
+              <span>Default Active Engine: Google Gemini 2.5 Flash</span>
+            </div>
+            <p className="text-[11px] font-sans text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Your workspace is automatically connected to WriteWise's complimentary hosted Gemini 2.5 Flash engine. No API key setup is required to run statistical analyses or write dissertation chapters.
+            </p>
           </div>
         )}
 
         {/* Config form */}
         <form onSubmit={handleSubmit} className="space-y-6 p-6 border border-black dark:border-zinc-800 bg-white dark:bg-black">
+          <div>
+            <span className="mono-badge-outline mb-2">Bring Your Own Key (Optional)</span>
+            <h2 className="text-sm font-bold uppercase font-mono tracking-wider text-black dark:text-white">Connect Custom Provider</h2>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+              Want to use Anthropic Claude 3.5 Sonnet, OpenAI GPT-4o, DeepSeek, or Grok? Select your provider below.
+            </p>
+          </div>
 
           {/* Provider selector */}
           <div className="space-y-2">
@@ -272,90 +344,93 @@ export default function Settings() {
           )}
 
           {/* API Key */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-mono uppercase tracking-wider font-bold flex items-center gap-1.5 text-black dark:text-white">
-                <Key className="h-4 w-4" />
-                3. API Credentials
-              </label>
-              {selectedProvider && (
-                <a
-                  href={selectedProvider.docsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono text-zinc-600 dark:text-zinc-400 flex items-center gap-1 hover:underline uppercase"
-                >
-                  Get API Key
-                  <ExternalLink className="h-3 w-3" />
-                </a>
+          {apiProvider && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-mono uppercase tracking-wider font-bold flex items-center gap-1.5 text-black dark:text-white">
+                  <Key className="h-4 w-4" />
+                  3. {selectedProvider?.label} API Key
+                </label>
+                {selectedProvider?.docsUrl && (
+                  <a
+                    href={selectedProvider.docsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-mono text-zinc-500 hover:text-black dark:hover:text-white flex items-center gap-1"
+                  >
+                    Get API Key <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+              <Input
+                type="password"
+                placeholder={apiProvider === "Gemini" ? "AIzaSy..." : "sk-..."}
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value);
+                  setTestStatus({ status: "idle" });
+                }}
+                className="font-mono text-xs rounded-none border-black dark:border-zinc-800 bg-white dark:bg-black focus:ring-1 focus:ring-black dark:focus:ring-white"
+              />
+              {!isGeminiKeyFormatValid && (
+                <p className="text-[11px] font-mono text-amber-600 dark:text-amber-400">
+                  Google Gemini keys typically start with "AIza". Check your key from Google AI Studio.
+                </p>
               )}
             </div>
-            <Input
-              id="apiKey"
-              type="password"
-              placeholder={selectedProvider ? `Paste ${selectedProvider.label} API Key...` : "Select a provider first"}
-              value={apiKey}
-              onChange={(e) => {
-                setApiKey(e.target.value);
-                setTestStatus({ status: "idle" });
-              }}
-              disabled={!apiProvider}
-              className="rounded-none border-black dark:border-zinc-800 font-mono text-xs focus:ring-1 focus:ring-black dark:focus:ring-white bg-white dark:bg-black"
-            />
-            {!isGeminiKeyFormatValid && (
-              <p className="text-xs text-orange-600 font-mono">
-                Note: Google Gemini API keys typically begin with "AIza".
-              </p>
-            )}
-            {testStatus.status === "error" && (
-              <div className="p-3 border border-red-600 bg-red-50 dark:bg-red-950/40 text-xs text-red-900 dark:text-red-200 font-mono">
-                <p className="font-bold uppercase">Connection Failure:</p>
-                <p className="mt-1 whitespace-pre-wrap">{testStatus.message}</p>
-              </div>
-            )}
-            <p className="text-[11px] text-zinc-500 font-mono">
-              Your API keys are stored strictly in client browser memory (localStorage) and never transmitted to third-party databases.
-            </p>
-          </div>
+          )}
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-2 font-mono">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={testStatus.status === "testing" || !apiProvider || !apiKey}
-              onClick={handleTestConnection}
-              className="flex-1 rounded-none border-black dark:border-zinc-800 text-xs uppercase tracking-wider"
+          {/* Test Status Banner */}
+          {testStatus.status !== "idle" && (
+            <div
+              className={`p-3 border font-mono text-xs whitespace-pre-line ${
+                testStatus.status === "testing"
+                  ? "border-zinc-400 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+                  : testStatus.status === "success"
+                  ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200"
+                  : "border-red-600 bg-red-50 dark:bg-red-950 text-red-800 dark:text-red-200"
+              }`}
             >
-              {testStatus.status === "testing" ? "Testing..." : 
-               testStatus.status === "success" ? "Verified ✓" : 
-               "Test Connection"}
-            </Button>
-            
-            <Button
-              type="submit"
-              disabled={isSubmitting || !apiProvider || !apiKey || !apiModel}
-              className="flex-1 rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 text-xs uppercase tracking-wider border border-black dark:border-white"
-            >
-              {isSubmitting ? "Saving..." : "Save Settings"}
-            </Button>
-          </div>
+              {testStatus.status === "testing" && "Testing API connection with selected model..."}
+              {testStatus.status === "success" && (testStatus.message || "Connection verified successfully!")}
+              {testStatus.status === "error" && (testStatus.message || "Connection failed. Please check your credentials.")}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          {apiProvider && (
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleTestConnection}
+                disabled={testStatus.status === "testing" || !apiKey}
+                className="rounded-none border-black dark:border-zinc-800 font-mono text-xs uppercase tracking-wider flex-1"
+              >
+                Test Connection
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !apiKey}
+                className="rounded-none bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-mono text-xs uppercase tracking-wider border border-black dark:border-white flex-1"
+              >
+                Save Configuration
+              </Button>
+            </div>
+          )}
         </form>
 
-        {/* Auth section */}
-        <div className="border border-black dark:border-zinc-800 p-6 bg-white dark:bg-black font-sans">
-          <span className="mono-badge mb-2">Account Management</span>
-          <h2 className="text-lg font-bold text-black dark:text-white mt-1">Session & Authentication</h2>
-          <p className="my-2 text-xs text-zinc-600 dark:text-zinc-400">
-            You are currently authenticated in WriteWise Workspace.
+        {/* Security & Data Integrity Note */}
+        <div className="p-4 border border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-xs space-y-2">
+          <div className="flex items-center gap-2 font-bold uppercase text-black dark:text-white">
+            <ShieldCheck className="h-4 w-4" />
+            <span>Academic Data Integrity Guarantee</span>
+          </div>
+          <p className="text-[11px] font-sans text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            WriteWise never sends raw participant survey rows or identifiable dataset rows to any LLM. Only aggregated, Python-computed statistical summary metrics (means, standard deviations, F-statistics, r-coefficients) are provided to the model strictly for Chapter 4 & 5 academic prose formulation.
           </p>
-          <Button 
-            onClick={logout} 
-            variant="outline" 
-            className="rounded-none border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 font-mono text-xs uppercase tracking-wider"
-          >
-            Log Out Account
-          </Button>
         </div>
+
       </div>
     </HomeLayout>
   );

@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
 import { 
   ArrowRight, ShieldCheck, Cpu, Code2, FileCheck, CheckCircle2, 
-  FlaskConical, Terminal, ExternalLink, Scale, Check, X
+  FlaskConical, Terminal, ExternalLink, Scale, Check, X, Sparkles, BookOpen, Key
 } from "lucide-react";
 
 export default function Landing() {
@@ -43,12 +43,12 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 border-b border-black dark:border-zinc-800 bg-grid-pattern">
+      <section className="relative py-20 md:py-28 border-b border-black dark:border-zinc-800 bg-grid-pattern">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 text-left">
           
-          <div className="mono-badge mb-8">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Academic Research Operating System</span>
+          <div className="mono-badge mb-8 inline-flex items-center gap-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-black dark:text-white" />
+            <span>Academic Research &amp; Verification Operating System</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-black dark:text-white mb-8 leading-[1.05]">
@@ -74,29 +74,33 @@ export default function Landing() {
             </a>
           </div>
 
-          {/* Product Screenshots */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
-            <div className="border border-black dark:border-zinc-800 overflow-hidden">
-              <div className="px-4 py-2 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[11px] text-zinc-500 uppercase tracking-wider flex items-center justify-between">
-                <span>Analysis Workspace</span>
-                <span className="text-black dark:text-white font-bold">LIVE</span>
+          {/* Product UI Visualizations */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+            <div className="border border-black dark:border-zinc-800 overflow-hidden bg-white dark:bg-black shadow-sm">
+              <div className="px-4 py-2.5 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[11px] text-zinc-500 uppercase tracking-wider flex items-center justify-between">
+                <span>01 / Statistical Workspace</span>
+                <span className="text-black dark:text-white font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> PYTHON ENGINE
+                </span>
               </div>
               <img
                 src="/screenshot-dashboard.png"
-                alt="WriteWise statistical analysis workspace showing Python-computed regression results and SPSS syntax"
-                className="w-full object-cover object-top"
+                alt="WriteWise statistical analysis workspace showing Python-computed regression results, APA 7th tables, and SPSS syntax"
+                className="w-full object-cover object-top h-[320px] sm:h-[380px]"
                 loading="lazy"
               />
             </div>
-            <div className="border border-black dark:border-zinc-800 overflow-hidden">
-              <div className="px-4 py-2 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[11px] text-zinc-500 uppercase tracking-wider flex items-center justify-between">
-                <span>Supervisor Verification Portal</span>
-                <span className="text-black dark:text-white font-bold">PUBLIC URL</span>
+            <div className="border border-black dark:border-zinc-800 overflow-hidden bg-white dark:bg-black shadow-sm">
+              <div className="px-4 py-2.5 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[11px] text-zinc-500 uppercase tracking-wider flex items-center justify-between">
+                <span>02 / Supervisor Verification Portal</span>
+                <span className="text-black dark:text-white font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-500"></span> 1-CLICK PUBLIC LINK
+                </span>
               </div>
               <img
                 src="/screenshot-verify.png"
-                alt="WriteWise supervisor verification portal showing dataset SHA-256, tests run, and SPSS reproducibility syntax"
-                className="w-full object-cover object-top"
+                alt="WriteWise supervisor verification portal showing dataset SHA-256 fingerprint, tests run, and SPSS reproducibility syntax"
+                className="w-full object-cover object-top h-[320px] sm:h-[380px]"
                 loading="lazy"
               />
             </div>
@@ -107,7 +111,7 @@ export default function Landing() {
             <div className="p-6">
               <div className="font-mono text-xs text-zinc-500 mb-2 uppercase">01 / Engine</div>
               <div className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
-                <Cpu className="w-4 h-4" /> Python SciPy & Pandas
+                <Cpu className="w-4 h-4" /> Python SciPy &amp; Pandas
               </div>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-2">Deterministic stats computation — zero LLM numeric guesswork.</p>
             </div>
@@ -121,7 +125,7 @@ export default function Landing() {
             <div className="p-6">
               <div className="font-mono text-xs text-zinc-500 mb-2 uppercase">03 / Output</div>
               <div className="font-bold text-sm text-black dark:text-white flex items-center gap-2">
-                <FileCheck className="w-4 h-4" /> Chapter 4 & 5 Narrative
+                <FileCheck className="w-4 h-4" /> Chapter 4 &amp; 5 Narrative
               </div>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-2">Structured prose generated exclusively from verified numbers.</p>
             </div>
@@ -140,9 +144,9 @@ export default function Landing() {
       {/* Manifesto Section */}
       <section id="manifesto" className="py-20 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
         <div className="max-w-5xl mx-auto px-4 sm:px-8">
-          <div className="mono-badge-outline mb-6">Manifesto</div>
+          <div className="mono-badge-outline mb-6">Academic Manifesto</div>
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-8 tracking-tight">
-            The core rule: <span className="font-serif-italic font-normal">Python computes. AI explains.</span>
+            Designed to be shown to supervisors — <span className="font-serif-italic font-normal">not hidden from them.</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-slate-800 dark:text-zinc-200">
             <div className="space-y-4 text-sm leading-relaxed">
@@ -158,7 +162,7 @@ export default function Landing() {
                 WriteWise enforces strict technical separation between data computation and narrative generation.
               </p>
               <p>
-                Python handles the math. The AI model only receives structured JSON statistical results — never raw survey rows. Every generated table includes reproducible SPSS syntax so any supervisor can verify every claim.
+                Python handles the math. The AI model only receives structured JSON statistical results — never raw participant rows. Every generated table includes reproducible SPSS syntax so any supervisor can verify every claim.
               </p>
             </div>
           </div>
@@ -168,15 +172,15 @@ export default function Landing() {
       {/* 5-Step Workflow */}
       <section id="how-it-works" className="py-24 border-b border-black dark:border-zinc-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-8">
-          <div className="mono-badge-outline mb-4">Workflow</div>
+          <div className="mono-badge-outline mb-4">Pipeline</div>
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-12 tracking-tight">
             From raw data to <span className="font-serif-italic font-normal">verifiable</span> chapters
           </h2>
 
           <div className="space-y-0 border-t border-b border-black dark:border-zinc-800 divide-y divide-black dark:divide-zinc-800">
             {[
-              { num: "01", title: "Dataset Ingestion & Client Hashing", desc: "Upload Excel (.xlsx), CSV, or SPSS (.sav) data. SHA-256 fingerprint computed in browser." },
-              { num: "02", title: "Codebook & Variable Role Assignment", desc: "Define nominal, ordinal, or scale variables and designate IV/DV roles." },
+              { num: "01", title: "Dataset Ingestion & Client-Side Hashing", desc: "Upload Excel (.xlsx), CSV, or SPSS (.sav) data. SHA-256 cryptographic fingerprint computed in browser." },
+              { num: "02", title: "Codebook & Variable Role Assignment", desc: "Define nominal, ordinal, or scale variables and designate IV/DV research roles." },
               { num: "03", title: "Deterministic Python Computation", desc: "SciPy computes exact descriptives, Cronbach's Alpha, Pearson correlation, and linear regression." },
               { num: "04", title: "SPSS Syntax Code Export", desc: "Download exact SPSS syntax matching your analysis for 1-click supervisor verification." },
               { num: "05", title: "AI Academic Narrative Stream", desc: "Selected AI model writes Chapter 4 (Results) & Chapter 5 (Discussion) using ONLY verified outputs." }
@@ -196,56 +200,12 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Social Proof Strip */}
-      <section className="py-16 border-b border-black dark:border-zinc-800 bg-white dark:bg-black overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-8">
-          <div className="mono-badge-outline mb-8 mx-auto w-fit">From researchers who switched</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: "My supervisor asked how I generated such clean results tables with reproducible syntax. I told them about WriteWise. Now our whole lab uses it.",
-                name: "PhD Candidate",
-                role: "Faculty of Business, Social Sciences",
-                initial: "A"
-              },
-              {
-                quote: "I submitted my Chapter 4 with a verification link. My supervisor clicked it, saw the Python computation log, and approved on the spot. First time that's happened.",
-                name: "Master's Researcher",
-                role: "Educational Psychology Dissertation",
-                initial: "M"
-              },
-              {
-                quote: "I wasted three weeks trying to interpret SPSS output tables. WriteWise explained every test in plain language — and gave me the exact SPSS commands to replicate it.",
-                name: "Doctoral Student",
-                role: "Management & Organizational Studies",
-                initial: "D"
-              }
-            ].map((t, i) => (
-              <div key={i} className="border border-black dark:border-zinc-800 p-6 flex flex-col gap-4 bg-white dark:bg-black">
-                <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300 flex-1">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-                  <div className="w-8 h-8 bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-mono font-bold text-xs shrink-0">
-                    {t.initial}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-xs text-black dark:text-white">{t.name}</div>
-                    <div className="text-[11px] text-zinc-500 font-mono">{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison Table */}
+      {/* Architectural Comparison Table */}
       <section id="comparison" className="py-24 border-b border-black dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
         <div className="max-w-5xl mx-auto px-4 sm:px-8">
           <div className="mono-badge-outline mb-4">Architectural Comparison</div>
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-12 tracking-tight">
-            Built differently from standard AI writing tools
+            How WriteWise compares across academic tools
           </h2>
 
           <div className="border border-black dark:border-zinc-800 overflow-x-auto bg-white dark:bg-black">
@@ -253,27 +213,32 @@ export default function Landing() {
               <thead>
                 <tr className="border-b border-black dark:border-zinc-800 bg-black text-white dark:bg-white dark:text-black font-mono uppercase tracking-wider">
                   <th className="p-4">Capability</th>
-                  <th className="p-4">WriteWise</th>
-                  <th className="p-4">ChatGPT / Gemini</th>
-                  <th className="p-4">SPSS</th>
+                  <th className="p-4 bg-zinc-800 dark:bg-zinc-200">WriteWise</th>
+                  <th className="p-4">ChatGPT</th>
+                  <th className="p-4">IBM SPSS</th>
                   <th className="p-4">Grammarly</th>
+                  <th className="p-4">Jenni AI / SciSpace</th>
+                  <th className="p-4">Zotero</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black dark:divide-zinc-800 font-mono">
                 {[
-                  { feature: "Deterministic Stats (Python)", ww: true, gpt: false, spss: true, gram: false },
-                  { feature: "Reproducible SPSS Syntax Export", ww: true, gpt: false, spss: true, gram: false },
-                  { feature: "Chapter 4 & 5 Academic Prose", ww: true, gpt: true, spss: false, gram: false },
-                  { feature: "Dataset SHA-256 Fingerprint", ww: true, gpt: false, spss: false, gram: false },
-                  { feature: "Append-Only Audit Provenance", ww: true, gpt: false, spss: false, gram: false },
-                  { feature: "Supervisor Verification Link", ww: true, gpt: false, spss: false, gram: false }
+                  { feature: "Deterministic Stats (Python)", ww: "✓ Exact", gpt: "× Hallucinated", spss: "✓ Exact", gram: "× No", jenni: "× No", zotero: "× No" },
+                  { feature: "Reproducible SPSS Syntax Export", ww: "✓ 1-Click", gpt: "× No", spss: "✓ Yes", gram: "× No", jenni: "× No", zotero: "× No" },
+                  { feature: "Chapter 4 & 5 Academic Prose", ww: "✓ Verified Stats", gpt: "⚠️ Unverified", spss: "× No", gram: "× No", jenni: "⚠️ Generic", zotero: "× No" },
+                  { feature: "Supervisor Verification Link", ww: "✓ Public URL", gpt: "× No", spss: "× No", gram: "× No", jenni: "× No", zotero: "× No" },
+                  { feature: "Dataset SHA-256 Fingerprint", ww: "✓ Client-side", gpt: "× No", spss: "× No", gram: "× No", jenni: "× No", zotero: "× No" },
+                  { feature: "Citation & Reference Management", ww: "✓ APA / MLA", gpt: "⚠️ Often Fake", spss: "× No", gram: "⚠️ Basic", jenni: "✓ Yes", zotero: "✓ Yes" },
+                  { feature: "Default Free AI Compute (No Key Needed)", ww: "✓ Gemini 2.5", gpt: "✓ Tiered", spss: "× No", gram: "✓ Limited", jenni: "✓ Limited", zotero: "✓ Free" }
                 ].map((row, idx) => (
                   <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-zinc-900">
                     <td className="p-4 font-sans font-semibold text-black dark:text-white">{row.feature}</td>
-                    <td className="p-4 font-bold text-black dark:text-white">✓ YES</td>
-                    <td className="p-4 text-zinc-400">{row.gpt ? "PARTIAL" : "× NO"}</td>
-                    <td className="p-4 text-zinc-400">{row.spss ? "✓ YES" : "× NO"}</td>
-                    <td className="p-4 text-zinc-400">{row.gram ? "✓ YES" : "× NO"}</td>
+                    <td className="p-4 font-bold text-black dark:text-white bg-zinc-50 dark:bg-zinc-950">{row.ww}</td>
+                    <td className="p-4 text-zinc-400">{row.gpt}</td>
+                    <td className="p-4 text-zinc-400">{row.spss}</td>
+                    <td className="p-4 text-zinc-400">{row.gram}</td>
+                    <td className="p-4 text-zinc-400">{row.jenni}</td>
+                    <td className="p-4 text-zinc-400">{row.zotero}</td>
                   </tr>
                 ))}
               </tbody>
@@ -289,7 +254,7 @@ export default function Landing() {
           Analysis-based pricing
         </h2>
         <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-12 max-w-lg">
-          Priced on completed statistical analyses — not word counts.
+          Priced on completed statistical analyses — not arbitrary word count limits.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -301,6 +266,7 @@ export default function Landing() {
               desc: "For exploring initial dataset analyses",
               features: [
                 "3 statistical analyses / month",
+                "Default Google Gemini 2.5 Flash compute",
                 "Python SciPy compute engine",
                 "SPSS syntax generation",
                 "Chapter 4 & 5 drafting",
@@ -316,7 +282,7 @@ export default function Landing() {
               desc: "For Master's & PhD dissertation candidates",
               features: [
                 "Unlimited statistical analyses",
-                "Multi-AI router (Claude, GPT-4o, Gemini)",
+                "Multi-AI router (Claude 3.5 Sonnet, GPT-4o)",
                 "Academic DOCX & PDF Export",
                 "Dataset SHA-256 authentication",
                 "Supervisor 1-click verification links",
@@ -375,7 +341,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <Logo size="sm" />
-            <span className="text-zinc-500">© {new Date().getFullYear()} WriteWise Agent. All rights reserved.</span>
+            <span className="text-zinc-500">© {new Date().getFullYear()} WriteWise Agent. Built for research integrity.</span>
           </div>
           <div className="flex items-center gap-6 text-zinc-600 dark:text-zinc-400">
             <Link to="/privacy" className="hover:text-black dark:hover:text-white">Privacy</Link>

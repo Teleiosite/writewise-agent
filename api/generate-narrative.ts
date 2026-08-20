@@ -14,8 +14,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Accept either `stats` (new) or `stats_json` (legacy) to maintain backwards compatibility
     const statsPayload = stats ?? stats_json;
 
-    if (!statsPayload) return res.status(400).json({ error: 'stats or stats_json is required' });
-    if (!provider || !apiKey) return res.status(400).json({ error: 'provider and apiKey are required' });
+    let effectiveProvider = provider;
+    let effectiveKey = apiKey;
+    let effectiveModel = model;
+
+    // Fallback to server-hosted default Gemini key if client did not supply one
+    if (!effectiveKey || !effectiveKey.trim()) {
+      const defaultKey = process.env.DEFAULT_GEMINI_KEY || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+      if (defaultKey) {
+        effectiveProvider = 'Gemini';
+        effectiveKey = defaultKey;
+        effectiveModel = effectiveModel || 'gemini-2.5-flash';
+      } else {
+        return res.status(400).json({ 
+          error: 'No AI API key provided. Please configure your API key in Settings (or ask administrator to set DEFAULT_GEMINI_KEY).' 
+        });
+      }
+    }
+
+    if (!effectiveProvider || !effectiveKey) {
+      return res.status(400).json({ error: 'provider and apiKey are required' });
+    }
 
     const systemPrompt = buildSystemPrompt(context, codebook);
     const userPrompt = buildUserPrompt(statsPayload);
@@ -25,18 +44,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    if (provider === 'Gemini') {
-      await streamGemini(apiKey, model || 'gemini-1.5-pro', systemPrompt, userPrompt, res);
-    } else if (provider === 'OpenAI') {
-      await streamOpenAICompatible('https://api.openai.com/v1', apiKey, model || 'gpt-4o', systemPrompt, userPrompt, res);
-    } else if (provider === 'Claude') {
-      await streamClaude(apiKey, model || 'claude-3-5-sonnet-20241022', systemPrompt, userPrompt, res);
-    } else if (provider === 'DeepSeek') {
-      await streamOpenAICompatible('https://api.deepseek.com/v1', apiKey, model || 'deepseek-chat', systemPrompt, userPrompt, res);
-    } else if (provider === 'Grok') {
-      await streamOpenAICompatible('https://api.x.ai/v1', apiKey, model || 'grok-2-latest', systemPrompt, userPrompt, res);
+    if (effectiveProvider === 'Gemini') {
+      await streamGemini(effectiveKey, effectiveModel || 'gemini-2.5-flash', systemPrompt, userPrompt, res);
+    } else if (effectiveProvider === 'OpenAI') {
+      await streamOpenAICompatible('https://api.openai.com/v1', effectiveKey, effectiveModel || 'gpt-4o', systemPrompt, userPrompt, res);
+    } else if (effectiveProvider === 'Claude') {
+      await streamClaude(effectiveKey, effectiveModel || 'claude-3-5-sonnet-20241022', systemPrompt, userPrompt, res);
+    } else if (effectiveProvider === 'DeepSeek') {
+      await streamOpenAICompatible('https://api.deepseek.com/v1', effectiveKey, effectiveModel || 'deepseek-chat', systemPrompt, userPrompt, res);
+    } else if (effectiveProvider === 'Grok') {
+      await streamOpenAICompatible('https://api.x.ai/v1', effectiveKey, effectiveModel || 'grok-2-latest', systemPrompt, userPrompt, res);
     } else {
-      return res.status(400).json({ error: `Unsupported provider: ${provider}` });
+      return res.status(400).json({ error: `Unsupported provider: ${effectiveProvider}` });
     }
   } catch (error: any) {
     console.error('Narrative generation error:', error);

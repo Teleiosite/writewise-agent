@@ -28,6 +28,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VerifyAnalysis from "./pages/VerifyAnalysis";
 import ClaimAuditorPage from "./pages/ClaimAuditorPage";
+import AcademicIntegrity from "./pages/AcademicIntegrity";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,8 @@ const App = () => {
                 <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
                 <Route path="/data-analysis" element={<PrivateRoute><DataAnalysis /></PrivateRoute>} />
                 <Route path="/claim-auditor" element={<PrivateRoute><ClaimAuditorPage /></PrivateRoute>} />
+                <Route path="/academic-integrity" element={<AcademicIntegrity />} />
+                <Route path="/integrity" element={<AcademicIntegrity />} />
                 <Route path="/verify" element={<VerifyAnalysis />} />
                 <Route path="/verify/:token" element={<VerifyAnalysis />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

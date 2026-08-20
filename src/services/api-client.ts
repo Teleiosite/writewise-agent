@@ -163,7 +163,13 @@ export async function callChatGptApi(
       return await callViaProxy(apiProvider, apiKey, apiModel, messages);
     }
 
-    return await callPollinationsApi(messages);
+    // When user has no custom API key, route to WriteWise backend (uses server's default hosted Gemini key)
+    try {
+      return await callViaProxy("Gemini", "", apiModel ?? "gemini-2.5-flash", messages);
+    } catch {
+      // Free anonymous fallback
+      return await callPollinationsApi(messages);
+    }
   } catch (error) {
     handleError(error, "AI Request Error", "Failed to communicate with the AI service");
     throw error;

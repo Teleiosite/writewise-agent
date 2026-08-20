@@ -9,8 +9,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { provider: rawProvider, apiKey: rawKey, messages, model: requestedModel } = req.body;
 
-    const provider = (rawProvider ?? '').trim();
-    const apiKey   = (rawKey ?? '').trim();
+    let provider = (rawProvider ?? '').trim();
+    let apiKey   = (rawKey ?? '').trim();
+    let model    = requestedModel;
+
+    // Fallback to server-hosted default Gemini key if client did not supply one
+    if (!apiKey) {
+      const defaultKey = process.env.DEFAULT_GEMINI_KEY || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+      if (defaultKey) {
+        provider = 'Gemini';
+        apiKey = defaultKey;
+        model = model || 'gemini-2.5-flash';
+      } else {
+        return res.status(400).json({ error: 'Missing provider or API key. Configure in Settings or set DEFAULT_GEMINI_KEY.' });
+      }
+    }
     
     if (!provider || !apiKey) {
       return res.status(400).json({ error: 'Missing provider or API key' });
