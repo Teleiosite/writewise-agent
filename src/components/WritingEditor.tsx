@@ -18,6 +18,7 @@ function EditorContent({ projectName }: { projectName: string }) {
     showCitationsPanel, 
     toggleCitationsPanel,
     showPdfReaderPanel, 
+    togglePdfReaderPanel,
     showAnalysisPanel,
     addContentToActiveSection,
     insertCitation 
@@ -38,11 +39,6 @@ function EditorContent({ projectName }: { projectName: string }) {
       {/* Left Sidebar: Clean Document Structure Navigation */}
       <div className="md:col-span-3 h-full">
         <EditorSidebar />
-        {showPdfReaderPanel && (
-          <div className="mt-4">
-            <PdfReaderPanel onAddContent={addContentToActiveSection} />
-          </div>
-        )}
       </div>
 
       {/* Main Manuscript Canvas */}
@@ -72,6 +68,19 @@ function EditorContent({ projectName }: { projectName: string }) {
               onInsertBibliography={(bib) => {
                 addContentToActiveSection('\n\n### References\n\n' + bib + '\n');
               }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Dialog for PDF Research & Chat Suite (Spacious 2-Column Split View) */}
+      <Dialog open={showPdfReaderPanel} onOpenChange={togglePdfReaderPanel}>
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 border border-black dark:border-white bg-white dark:bg-black rounded-none shadow-none font-sans overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden">
+            <PdfReaderPanel 
+              onAddContent={(content) => {
+                addContentToActiveSection(content);
+              }} 
             />
           </div>
         </DialogContent>
