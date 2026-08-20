@@ -45,21 +45,30 @@ export function CitationSearch({ onCitationsFound, onAddSingleCitation }: Citati
         combinedResults = await searchCrossref(query, 12);
       } else if (source === 'openalex') {
         combinedResults = await searchOpenAlex(query, 12);
+      } else if (source === 'semanticscholar') {
+        const { searchSemanticScholar } = await import('@/services/citationEngine');
+        combinedResults = await searchSemanticScholar(query, 12);
+      } else if (source === 'pubmed') {
+        const { searchEuropePMC } = await import('@/services/citationEngine');
+        combinedResults = await searchEuropePMC(query, 12);
       } else if (source === 'arxiv') {
         combinedResults = await searchArxiv(query, 10);
       } else {
         // Search all indices concurrently
-        const [cr, oa, ax] = await Promise.all([
-          searchCrossref(query, 6),
-          searchOpenAlex(query, 6),
-          searchArxiv(query, 4)
+        const { searchSemanticScholar, searchEuropePMC } = await import('@/services/citationEngine');
+        const [cr, oa, s2, pmc, ax] = await Promise.all([
+          searchCrossref(query, 5),
+          searchOpenAlex(query, 5),
+          searchSemanticScholar(query, 5),
+          searchEuropePMC(query, 4),
+          searchArxiv(query, 3)
         ]);
 
         // Deduplicate by title similarity or DOI
         const seenDois = new Set<string>();
         const seenTitles = new Set<string>();
 
-        [...cr, ...oa, ...ax].forEach(item => {
+        [...cr, ...oa, ...s2, ...pmc, ...ax].forEach(item => {
           const normTitle = item.title.toLowerCase().replace(/[^a-z0-9]/g, '');
           const normDoi = item.doi?.toLowerCase();
 
@@ -131,7 +140,7 @@ export function CitationSearch({ onCitationsFound, onAddSingleCitation }: Citati
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <Input
-              placeholder="Search 350M+ papers by keyword, title, author, or topic..."
+              placeholder="Search 350M+ papers across Crossref, OpenAlex, Semantic Scholar, PubMed..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-10 rounded-none border-black dark:border-zinc-800 text-xs font-mono bg-white dark:bg-black focus:ring-1 focus:ring-black dark:focus:ring-white"
@@ -148,19 +157,21 @@ export function CitationSearch({ onCitationsFound, onAddSingleCitation }: Citati
 
         {/* Database Index Filter */}
         <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500 pt-1">
-          <div className="flex items-center gap-1.5 overflow-x-auto">
-            <span>Source:</span>
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <span>Index:</span>
             {[
-              { id: 'all', label: 'All Indices (350M+)' },
-              { id: 'crossref', label: 'Crossref' },
-              { id: 'openalex', label: 'OpenAlex' },
+              { id: 'all', label: 'All Global (350M+)' },
+              { id: 'crossref', label: 'Crossref (150M)' },
+              { id: 'openalex', label: 'OpenAlex (250M)' },
+              { id: 'semanticscholar', label: 'Semantic Scholar' },
+              { id: 'pubmed', label: 'PubMed / Europe PMC' },
               { id: 'arxiv', label: 'arXiv Preprints' },
             ].map(tab => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setSource(tab.id as any)}
-                className={`px-2 py-0.5 border text-[10px] uppercase tracking-wider transition-all ${
+                className={`px-2 py-0.5 border text-[10px] uppercase tracking-wider transition-all whitespace-nowrap ${
                   source === tab.id
                     ? 'border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold'
                     : 'border-transparent hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-600 dark:text-zinc-400'
@@ -177,7 +188,7 @@ export function CitationSearch({ onCitationsFound, onAddSingleCitation }: Citati
               variant="outline"
               size="sm"
               onClick={handleAddAll}
-              className="h-6 text-[10px] font-mono uppercase tracking-wider rounded-none border-black dark:border-zinc-800 px-2"
+              className="h-6 text-[10px] font-mono uppercase tracking-wider rounded-none border-black dark:border-zinc-800 px-2 shrink-0"
             >
               + Add All ({results.length})
             </Button>
@@ -209,6 +220,11 @@ export function CitationSearch({ onCitationsFound, onAddSingleCitation }: Citati
           </Button>
         </div>
       </form>
+
+      {/* Google Scholar & ResearchGate Bridge Tip */}
+      <div className="px-3 py-2 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-[10px] text-zinc-600 dark:text-zinc-400 flex items-center justify-between gap-2">
+        <span>💡 <strong>Google Scholar &amp; ResearchGate Sync:</strong> Click "Cite" on Google Scholar/ResearchGate, copy the BibTeX/RIS, and paste it into the <strong>BibTeX &amp; RIS Sync</strong> tab above for instant 1-click import!</span>
+      </div>
 
       {/* Results List */}
       {results.length > 0 && (

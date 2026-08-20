@@ -431,6 +431,97 @@ export async function searchArxiv(query: string, maxResults: number = 8): Promis
 }
 
 /**
+ * 4. Search Semantic Scholar Graph API (210M+ papers with TLDR & citation counts)
+ */
+export async function searchSemanticScholar(query: string, limit: number = 8): Promise<AcademicCitation[]> {
+  try {
+    const encoded = encodeURIComponent(query.trim());
+    const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded}&limit=${limit}&fields=title,authors,year,venue,publicationVenue,openAccessPdf,citationCount,externalIds,abstract`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Semantic Scholar API error: ${res.status}`);
+
+    const data = await res.json();
+    const papers = data.data || [];
+
+    return papers.map((p: any) => {
+      const authors: Author[] = (p.authors || []).map((a: any) => {
+        const parts = (a.name || '').trim().split(' ');
+        return {
+          name: a.name,
+          family: parts[parts.length - 1] || '',
+          given: parts.slice(0, -1).join(' ') || ''
+        };
+      });
+
+      return {
+        id: `s2-${p.paperId || Math.random().toString(36).substring(2, 9)}`,
+        title: p.title || 'Untitled Paper',
+        authors: authors.length > 0 ? authors : [{ name: 'Anonymous' }],
+        year: p.year ? String(p.year) : String(new Date().getFullYear()),
+        source: p.publicationVenue?.name || p.venue || 'Academic Journal',
+        type: 'journal' as const,
+        doi: p.externalIds?.DOI || undefined,
+        url: p.externalIds?.DOI ? `https://doi.org/${p.externalIds.DOI}` : (p.externalIds?.ArXiv ? `https://arxiv.org/abs/${p.externalIds.ArXiv}` : undefined),
+        pdfUrl: p.openAccessPdf?.url || undefined,
+        abstract: p.abstract || undefined,
+        citationCount: p.citationCount || 0,
+        sourceDatabase: 'OpenAlex' as const
+      };
+    });
+  } catch (err) {
+    console.error('Semantic Scholar search error:', err);
+    return [];
+  }
+}
+
+/**
+ * 5. Search Europe PMC API (44M+ PubMed & life sciences literature)
+ */
+export async function searchEuropePMC(query: string, pageSize: number = 8): Promise<AcademicCitation[]> {
+  try {
+    const encoded = encodeURIComponent(query.trim());
+    const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${encoded}&format=json&pageSize=${pageSize}&resultType=core`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Europe PMC error: ${res.status}`);
+
+    const data = await res.json();
+    const list = data.resultList?.result || [];
+
+    return list.map((item: any) => {
+      const authorStr = item.authorString || '';
+      const authors: Author[] = authorStr.split(',').map((name: string) => {
+        const trimmed = name.trim();
+        const parts = trimmed.split(' ');
+        return {
+          name: trimmed,
+          family: parts[0] || '',
+          given: parts.slice(1).join(' ') || ''
+        };
+      });
+
+      return {
+        id: `epmc-${item.id || Math.random().toString(36).substring(2, 9)}`,
+        title: item.title?.replace(/\.$/, '') || 'Untitled Medical Paper',
+        authors: authors.length > 0 ? authors : [{ name: 'Anonymous' }],
+        year: item.pubYear ? String(item.pubYear) : String(new Date().getFullYear()),
+        source: item.journalTitle || item.bookTitle || 'Biomedical Literature',
+        volume: item.journalVolume || undefined,
+        issue: item.issue || undefined,
+        pages: item.pageInfo || undefined,
+        type: item.pubType === 'book' ? 'book' : 'journal',
+        doi: item.doi || undefined,
+        url: item.doi ? `https://doi.org/${item.doi}` : (item.pmid ? `https://pubmed.ncbi.nlm.nih.gov/${item.pmid}` : undefined),
+        citationCount: item.citedByCount || 0,
+        sourceDatabase: 'Crossref' as const
+      };
+    });
+  } catch (err) {
+    console.error('Europe PMC search error:', err);
+    return [];
+  }
+}
+
+/**
  * 4. Resolve DOI directly via doi.org Content Negotiation
  * Accepts any DOI e.g. "10.1038/s41586-020-2649-2" or URL
  */
