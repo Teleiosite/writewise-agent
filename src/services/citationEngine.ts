@@ -260,10 +260,11 @@ export function generateCompleteBibliography(citations: AcademicCitation[], styl
  * 1. Search Crossref REST API (150M+ DOIs)
  * Free public API with comprehensive journal metadata.
  */
-export async function searchCrossref(query: string, rows: number = 10): Promise<AcademicCitation[]> {
+export async function searchCrossref(query: string, rows: number = 10, page: number = 1): Promise<AcademicCitation[]> {
   try {
     const encoded = encodeURIComponent(query.trim());
-    const url = `https://api.crossref.org/works?query=${encoded}&rows=${rows}&sort=relevance`;
+    const offset = Math.max(0, (page - 1) * rows);
+    const url = `https://api.crossref.org/works?query=${encoded}&rows=${rows}&offset=${offset}&sort=relevance`;
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'WriteWise-Academic-Workspace/1.0 (mailto:academic-support@writewise.app)'
@@ -320,10 +321,10 @@ export async function searchCrossref(query: string, rows: number = 10): Promise<
  * 2. Search OpenAlex API (250M+ Works with open-access PDF links)
  * Free, blazing fast, public scholarly index.
  */
-export async function searchOpenAlex(query: string, perPage: number = 10): Promise<AcademicCitation[]> {
+export async function searchOpenAlex(query: string, perPage: number = 10, page: number = 1): Promise<AcademicCitation[]> {
   try {
     const encoded = encodeURIComponent(query.trim());
-    const url = `https://api.openalex.org/works?search=${encoded}&per-page=${perPage}`;
+    const url = `https://api.openalex.org/works?search=${encoded}&page=${page}&per-page=${perPage}`;
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'WriteWise-Academic-Workspace/1.0 (mailto:academic-support@writewise.app)'
@@ -372,10 +373,11 @@ export async function searchOpenAlex(query: string, perPage: number = 10): Promi
 /**
  * 3. Search arXiv API (2.4M+ Preprints in AI, CS, Math, Quant Finance)
  */
-export async function searchArxiv(query: string, maxResults: number = 8): Promise<AcademicCitation[]> {
+export async function searchArxiv(query: string, maxResults: number = 8, page: number = 1): Promise<AcademicCitation[]> {
   try {
     const encoded = encodeURIComponent(query.trim());
-    const url = `https://export.arxiv.org/api/query?search_query=all:${encoded}&start=0&max_results=${maxResults}&sortBy=relevance`;
+    const start = Math.max(0, (page - 1) * maxResults);
+    const url = `https://export.arxiv.org/api/query?search_query=all:${encoded}&start=${start}&max_results=${maxResults}&sortBy=relevance`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`arXiv API error: ${res.status}`);
 
@@ -433,10 +435,11 @@ export async function searchArxiv(query: string, maxResults: number = 8): Promis
 /**
  * 4. Search Semantic Scholar Graph API (210M+ papers with TLDR & citation counts)
  */
-export async function searchSemanticScholar(query: string, limit: number = 8): Promise<AcademicCitation[]> {
+export async function searchSemanticScholar(query: string, limit: number = 8, page: number = 1): Promise<AcademicCitation[]> {
   try {
     const encoded = encodeURIComponent(query.trim());
-    const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded}&limit=${limit}&fields=title,authors,year,venue,publicationVenue,openAccessPdf,citationCount,externalIds,abstract`;
+    const offset = Math.max(0, (page - 1) * limit);
+    const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded}&offset=${offset}&limit=${limit}&fields=title,authors,year,venue,publicationVenue,openAccessPdf,citationCount,externalIds,abstract`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Semantic Scholar API error: ${res.status}`);
 
@@ -477,10 +480,10 @@ export async function searchSemanticScholar(query: string, limit: number = 8): P
 /**
  * 5. Search Europe PMC API (44M+ PubMed & life sciences literature)
  */
-export async function searchEuropePMC(query: string, pageSize: number = 8): Promise<AcademicCitation[]> {
+export async function searchEuropePMC(query: string, pageSize: number = 8, page: number = 1): Promise<AcademicCitation[]> {
   try {
     const encoded = encodeURIComponent(query.trim());
-    const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${encoded}&format=json&pageSize=${pageSize}&resultType=core`;
+    const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${encoded}&format=json&page=${page}&pageSize=${pageSize}&resultType=core`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Europe PMC error: ${res.status}`);
 

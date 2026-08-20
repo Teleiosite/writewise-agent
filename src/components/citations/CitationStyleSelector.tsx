@@ -23,19 +23,21 @@ const STYLES_META: { id: CitationStyle; label: string; desc: string }[] = [
 ];
 
 export function CitationStyleSelector({ selectedStyle, onStyleChange }: CitationStyleSelectorProps) {
+  const current = STYLES_META.find(s => s.id === selectedStyle);
+
   return (
     <div className="flex items-center gap-2 font-mono text-xs">
-      <span className="text-zinc-500 uppercase tracking-wider text-[10px] hidden sm:inline">Style:</span>
+      <span className="text-zinc-500 uppercase tracking-wider text-[10px] hidden sm:inline">Citation Style:</span>
       <Select value={selectedStyle} onValueChange={(val) => onStyleChange(val as CitationStyle)}>
-        <SelectTrigger className="w-[180px] h-8 rounded-none border-black dark:border-zinc-800 text-xs font-mono bg-white dark:bg-black font-bold">
-          <SelectValue placeholder="Select Style" />
+        <SelectTrigger className="w-[190px] h-9 rounded-none border border-black dark:border-zinc-700 text-xs font-mono bg-white dark:bg-black font-bold px-3 focus:ring-1 focus:ring-black dark:focus:ring-white">
+          <span className="truncate">{current?.label || selectedStyle}</span>
         </SelectTrigger>
-        <SelectContent className="rounded-none border-black dark:border-zinc-800 font-mono text-xs bg-white dark:bg-black">
+        <SelectContent className="w-[280px] rounded-none border border-black dark:border-zinc-800 font-mono text-xs bg-white dark:bg-black shadow-lg">
           {STYLES_META.map((style) => (
-            <SelectItem key={style.id} value={style.id} className="cursor-pointer py-2">
-              <div className="flex flex-col">
-                <span className="font-bold">{style.label}</span>
-                <span className="text-[10px] text-zinc-500">{style.desc}</span>
+            <SelectItem key={style.id} value={style.id} className="cursor-pointer py-2.5 px-3">
+              <div className="flex flex-col text-left">
+                <span className="font-bold text-xs text-black dark:text-white">{style.label}</span>
+                <span className="text-[10px] text-zinc-500 font-sans mt-0.5 leading-tight">{style.desc}</span>
               </div>
             </SelectItem>
           ))}
