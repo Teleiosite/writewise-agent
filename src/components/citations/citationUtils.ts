@@ -1,19 +1,38 @@
+import { 
+  AcademicCitation, 
+  CitationStyle, 
+  InTextStyle, 
+  formatReference, 
+  formatInTextCitation, 
+  generateCompleteBibliography 
+} from "@/services/citationEngine";
 
-import { CitationType, CitationStyle } from "./types";
-
-export const formatCitation = (citation: CitationType, style: CitationStyle): string => {
-  switch (style) {
-    case "APA":
-      return `${citation.authors.join(", ")} (${citation.year}). ${citation.title}. ${citation.source}.${citation.doi ? ` https://doi.org/${citation.doi}` : ""}`;
-    case "MLA":
-      return `${citation.authors.join(", ")}. "${citation.title}." ${citation.source}, ${citation.year}.`;
-    case "Chicago":
-      return `${citation.authors.join(" and ")}. "${citation.title}." ${citation.source} (${citation.year}).`;
-    case "Harvard":
-      return `${citation.authors.join(", ")} ${citation.year}, '${citation.title}', ${citation.source}.`;
-    default:
-      return `${citation.authors.join(", ")} (${citation.year}). ${citation.title}. ${citation.source}.`;
-  }
+export const formatCitation = (citation: AcademicCitation, style: CitationStyle = "APA"): string => {
+  return formatReference(citation, style);
 };
 
-export const citationStyles: CitationStyle[] = ["APA", "MLA", "Chicago", "Harvard"];
+export const formatInText = (
+  citation: AcademicCitation, 
+  style: CitationStyle = "APA", 
+  mode: InTextStyle = "parenthetical",
+  pageNumber?: string
+): string => {
+  return formatInTextCitation(citation, style, mode, pageNumber);
+};
+
+export const formatAllReferences = (
+  citations: AcademicCitation[], 
+  style: CitationStyle = "APA"
+): string => {
+  return generateCompleteBibliography(citations, style);
+};
+
+export const citationStyles: CitationStyle[] = [
+  "APA", 
+  "MLA", 
+  "Chicago", 
+  "Harvard", 
+  "IEEE", 
+  "Vancouver", 
+  "Nature"
+];

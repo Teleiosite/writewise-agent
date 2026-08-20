@@ -1,17 +1,9 @@
+import { AcademicCitation, CitationStyle, InTextStyle, AcademicWorkType } from '@/services/citationEngine';
 
-export type CitationType = {
-  id: string;
-  title: string;
-  authors: string[];
-  year: string;
-  source: string;
-  type: "journal" | "book" | "conference" | "website";
-  url?: string;
-  doi?: string;
-};
-
-export type CitationStyle = "APA" | "MLA" | "Chicago" | "Harvard";
+export type CitationType = AcademicCitation;
+export type { CitationStyle, InTextStyle, AcademicWorkType };
 
 export interface CitationManagerProps {
   onInsertCitation: (citation: string) => void;
+  onInsertBibliography?: (bibliography: string) => void;
 }
