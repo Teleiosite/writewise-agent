@@ -14,7 +14,8 @@ import {
   AlignLeft, 
   AlignCenter, 
   AlignRight, 
-  Type
+  Type,
+  FileCode
 } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -57,7 +58,7 @@ export function EditorToolbar() {
     isAutoSaving,
   } = useEditor();
   
-  const [, setIsExporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const isOnline = useOnlineStatus();
   
   const handleExport = async (format: string) => {
@@ -96,6 +97,7 @@ export function EditorToolbar() {
               variant="outline" 
               size="sm" 
               onClick={() => handleExport("docx")} 
+              disabled={isExporting}
               className="h-7 text-xs font-mono uppercase tracking-wider rounded-none border-black dark:border-zinc-800 gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
@@ -104,7 +106,19 @@ export function EditorToolbar() {
             <Button 
               variant="outline" 
               size="sm" 
+              onClick={() => handleExport("latex")} 
+              disabled={isExporting}
+              className="h-7 text-xs font-mono uppercase tracking-wider rounded-none border-black dark:border-zinc-800 gap-1.5 bg-zinc-50 dark:bg-zinc-950 font-bold"
+              title="Download Overleaf-ready LaTeX Package (.zip with main.tex & references.bib)"
+            >
+              <FileCode className="w-3.5 h-3.5" />
+              LaTeX (.ZIP)
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
               onClick={() => handleExport("pdf")} 
+              disabled={isExporting}
               className="h-7 text-xs font-mono uppercase tracking-wider rounded-none border-black dark:border-zinc-800 gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
