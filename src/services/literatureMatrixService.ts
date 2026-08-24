@@ -182,7 +182,7 @@ No markdown backticks.`;
       year,
       source: item.source || "Journal of Academic Research",
       type: "journal",
-      sourceDatabase: "Verified Index"
+      sourceDatabase: "OpenAlex"
     };
 
     return {
