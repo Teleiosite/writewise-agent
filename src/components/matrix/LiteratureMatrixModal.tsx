@@ -112,7 +112,7 @@ export function LiteratureMatrixModal({
               </h2>
             </div>
             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-sans">
-              Auto-extracts sample size $(N)$, statistical methodology, empirical coefficients, and research gaps from 350M+ papers.
+              Auto-extracts sample size (N), statistical methodology, empirical coefficients, and research gaps from 350M+ papers.
             </p>
           </div>
 
