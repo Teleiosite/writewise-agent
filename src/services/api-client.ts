@@ -1,4 +1,3 @@
-
 import { handleError } from "@/utils/errorHandling";
 
 export interface NormalizedAIResponse {
@@ -30,7 +29,7 @@ async function callGeminiDirect(
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "x-goog-api-key": apiKey.trim() // Pass in header too for extra reliability
+        "x-goog-api-key": apiKey.trim()
       },
       body: JSON.stringify({
         ...(systemMsg && { systemInstruction: { parts: [{ text: systemMsg }] } }),
@@ -69,7 +68,7 @@ async function callGeminiDirect(
   }
 }
 
-// ─── Proxy Call (OpenAI, Claude, etc) ────────────────────────────────────────
+// ─── Proxy Call (OpenAI, Claude, Hosted Gemini) ──────────────────────────────
 async function callViaProxy(
   provider: string,
   apiKey: string,
@@ -98,23 +97,6 @@ async function callViaProxy(
   }
 
   return (await response.json()) as NormalizedAIResponse;
-}
-
-// ─── Pollinations (Free Fallback) ────────────────────────────────────────────
-async function callPollinationsApi(messages: Msg[]): Promise<NormalizedAIResponse> {
-  const response = await fetch("https://text.pollinations.ai/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages, model: "openai", private: true }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Pollinations API error: ${response.status}`);
-  }
-
-  const text = await response.text();
-  if (!text.trim()) throw new Error("Pollinations returned an empty response.");
-  return { choices: [{ message: { content: text.trim() } }] };
 }
 
 // ─── DIAGNOSTICS: Test simple connection ─────────────────────────────────────
@@ -163,15 +145,11 @@ export async function callChatGptApi(
       return await callViaProxy(apiProvider, apiKey, apiModel, messages);
     }
 
-    // When user has no custom API key, route to WriteWise backend (uses server's default hosted Gemini key)
-    try {
-      return await callViaProxy("Gemini", "", apiModel ?? "gemini-2.5-flash", messages);
-    } catch {
-      // Free anonymous fallback
-      return await callPollinationsApi(messages);
-    }
-  } catch (error) {
-    handleError(error, "AI Request Error", "Failed to communicate with the AI service");
+    // Route unkeyed requests to WriteWise backend (uses server's default hosted Gemini key)
+    return await callViaProxy("Gemini", "", apiModel ?? "gemini-2.5-flash", messages);
+  } catch (error: any) {
+    console.error("AI Request Error:", error);
+    handleError(error, "AI Request Error", error.message || "Failed to communicate with AI compute engine");
     throw error;
   }
 }
