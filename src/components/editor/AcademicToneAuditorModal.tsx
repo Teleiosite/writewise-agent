@@ -1,15 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, AlertTriangle, CheckCircle2, Sparkles, 
-  ArrowRight, Copy, Check, Loader2, RefreshCw, BookOpen 
+  ArrowRight, Copy, Check, Loader2, RefreshCw, BookOpen, Info
 } from "lucide-react";
 import { toast } from "sonner";
 import { 
   auditAcademicTone, 
   ToneAuditResult 
 } from "@/services/academicToneAuditor";
+
+/** Strips all HTML tags and decodes common HTML entities to plain text */
+function stripHtml(html: string): string {
+  // Use DOMParser to safely convert HTML → plain text
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    // Add line breaks for block elements so paragraphs/rows stay readable
+    doc.querySelectorAll("p, div, tr, br, li, th, td").forEach(el => {
+      el.insertAdjacentText("afterend", " ");
+    });
+    const text = doc.body?.innerText || doc.body?.textContent || "";
+    // Collapse excessive whitespace
+    return text.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+  } catch {
+    // Regex fallback
+    return html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+}
+
+function looksLikeHtml(text: string): boolean {
+  const trimmed = text.trimStart();
+  return trimmed.startsWith("<") && /<[a-z][\s>]/i.test(trimmed);
+}
 
 interface AcademicToneAuditorModalProps {
   isOpen: boolean;
@@ -28,17 +62,21 @@ export function AcademicToneAuditorModal({
   const [result, setResult] = useState<ToneAuditResult | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Auto-strip HTML if the pasted content is raw HTML (e.g. from "Copy for Word")
+  const wasHtml = useMemo(() => looksLikeHtml(currentText), [currentText]);
+  const cleanText = useMemo(() => wasHtml ? stripHtml(currentText) : currentText, [currentText, wasHtml]);
+
   useEffect(() => {
-    if (isOpen && currentText.trim()) {
+    if (isOpen && cleanText.trim()) {
       runAudit();
     }
-  }, [isOpen, currentText]);
+  }, [isOpen, cleanText]);
 
   const runAudit = async () => {
     setIsAuditing(true);
     try {
       toast.info("Scanning for generic AI phrases & Turnitin flags...");
-      const auditRes = await auditAcademicTone(currentText);
+      const auditRes = await auditAcademicTone(cleanText);
       setResult(auditRes);
       toast.success(`Academic Rigor Audit complete: Score ${auditRes.rigorScore}%`);
     } catch (err: any) {
@@ -189,11 +227,18 @@ export function AcademicToneAuditorModal({
                 <div className="border border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-4 space-y-2 flex flex-col">
                   <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-500 flex items-center justify-between">
                     <span>Draft Input Text</span>
-                    <span className="text-[10px]">{currentText.split(/\s+/).length} words</span>
+                    <span className="text-[10px]">{cleanText.split(/\s+/).filter(Boolean).length} words</span>
                   </div>
-                  <div className="flex-1 text-xs font-sans text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto pr-1">
-                    {currentText}
+                {/* HTML stripped notice */}
+                {wasHtml && (
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 px-2 py-1.5 mb-2">
+                    <Info className="w-3 h-3 shrink-0" />
+                    HTML detected (from "Copy for Word"). Tags stripped automatically — auditing plain text.
                   </div>
+                )}
+                <div className="flex-1 text-xs font-sans text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto pr-1">
+                  {cleanText}
+                </div>
                 </div>
 
                 {/* Enhanced Oxford/Harvard Academic Text */}
