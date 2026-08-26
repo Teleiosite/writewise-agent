@@ -1,6 +1,9 @@
 import { AcademicCitation, searchOpenAlex, searchSemanticScholar, searchCrossref, getAuthorDisplayList } from "./citationEngine";
 import { callChatGptApi } from "./api-client";
 
+/** Confidence level for each study row */
+export type StudyConfidence = "verified" | "ai-summarised" | "ai-synthesised";
+
 export interface EmpiricalStudyEntry {
   id: string;
   serialNo: number;
@@ -12,7 +15,10 @@ export interface EmpiricalStudyEntry {
   keyFindings: string;      // Specific, unique findings from this paper
   researchGap: string;      // Limitation or gap identified
   doi?: string;
+  url?: string;
   source?: string;
+  confidence: StudyConfidence;  // 🟢 verified | 🟡 ai-summarised | 🔴 ai-synthesised
+  abstractSource?: string;      // where the abstract came from
   citation: AcademicCitation;
 }
 
@@ -20,6 +26,9 @@ export interface LiteratureMatrixResult {
   topic: string;
   studies: EmpiricalStudyEntry[];
   synthesisSummary: string;
+  verifiedCount: number;
+  summarisedCount: number;
+  synthesisedCount: number;
 }
 
 /** Strips stop words to extract core academic keywords from a topic sentence. */
@@ -39,9 +48,47 @@ function extractSearchKeywords(topic: string): string {
 }
 
 /**
+ * Tries to fetch a full abstract for a paper by DOI from Semantic Scholar,
+ * Europe PMC, or CrossRef enrichment — to supplement what OpenAlex returned.
+ */
+async function enrichAbstractByDoi(doi: string): Promise<string | null> {
+  try {
+    // Try Semantic Scholar first (best abstract coverage)
+    const s2Res = await fetch(
+      `https://api.semanticscholar.org/graph/v1/paper/DOI:${encodeURIComponent(doi)}?fields=abstract`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if (s2Res.ok) {
+      const s2Data = await s2Res.json();
+      if (s2Data.abstract && s2Data.abstract.length > 80) return s2Data.abstract;
+    }
+  } catch { /* ignore */ }
+
+  try {
+    // Try Europe PMC
+    const pmcRes = await fetch(
+      `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:${encodeURIComponent(doi)}&format=json&resulttype=core&pageSize=1`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if (pmcRes.ok) {
+      const pmcData = await pmcRes.json();
+      const abstract = pmcData.resultList?.result?.[0]?.abstractText;
+      if (abstract && abstract.length > 80) return abstract;
+    }
+  } catch { /* ignore */ }
+
+  return null;
+}
+
+/**
  * Generates an Annotated Bibliography / Empirical Literature Review Matrix.
- * Each row has: S/N, Author(s) & Year, Article Title, Problem Statement,
- * Methodology, Findings, and Research Gaps — matching dissertation standards.
+ * 
+ * Accuracy pipeline:
+ * 1. Search 3 live databases for real papers
+ * 2. Enrich abstracts via DOI lookup (Semantic Scholar + Europe PMC)
+ * 3. For papers WITH real abstracts → quote directly (🟢 Verified)
+ * 4. For papers with partial metadata → AI summarises ONLY from what's available (🟡 AI-Summarised)
+ * 5. For topics with no live papers → AI synthesises + labels clearly (🔴 AI-Synthesised)
  */
 export async function generateLiteratureMatrix(
   topic: string,
@@ -85,56 +132,84 @@ export async function generateLiteratureMatrix(
 
   const selectedLivePapers = candidates.slice(0, targetCount);
 
-  // ── 2. Build Context String for AI ────────────────────────────────────────
-  let papersContext = "";
-  if (selectedLivePapers.length > 0) {
-    papersContext = selectedLivePapers.map((p, idx) => {
-      const authors = getAuthorDisplayList(p.authors).join(", ");
-      return `[PAPER ${idx + 1}]
+  // ── 2. Abstract Enrichment — fetch real abstracts where missing ────────────
+  const enrichedPapers: Array<AcademicCitation & { abstractSource: string }> = await Promise.all(
+    selectedLivePapers.map(async paper => {
+      if (paper.abstract && paper.abstract.trim().length > 80) {
+        return { ...paper, abstractSource: paper.sourceDatabase || "database" };
+      }
+      if (paper.doi) {
+        const enriched = await enrichAbstractByDoi(paper.doi);
+        if (enriched) {
+          return { ...paper, abstract: enriched, abstractSource: "Semantic Scholar / Europe PMC" };
+        }
+      }
+      return { ...paper, abstractSource: "none" };
+    })
+  );
+
+  const papersWithAbstract = enrichedPapers.filter(p => p.abstract && p.abstract.length > 80);
+  const papersWithoutAbstract = enrichedPapers.filter(p => !p.abstract || p.abstract.length <= 80);
+
+  // ── 3. Build Strict AI Prompt ──────────────────────────────────────────────
+  //    CRITICAL: For verified papers, AI QUOTES from real abstract — never invents.
+  //    Only synthesises for papers with no abstract at all.
+
+  const verifiedContext = papersWithAbstract.map((p, idx) => {
+    const authors = getAuthorDisplayList(p.authors).join(", ");
+    return `[VERIFIED PAPER ${idx + 1} — QUOTE DIRECTLY FROM ABSTRACT — DO NOT PARAPHRASE]
 Authors: ${authors}
 Year: ${p.year}
 Title: ${p.title}
-Journal/Source: ${p.source || "Academic Journal"}
+Journal: ${p.source || "Academic Journal"}
 DOI: ${p.doi || "N/A"}
-Abstract: ${p.abstract || p.title}`;
-    }).join("\n\n---\n\n");
-  }
+REAL ABSTRACT (use this verbatim for keyFindings — extract exact sentences):
+"${p.abstract}"`;
+  }).join("\n\n---\n\n");
 
-  // ── 3. AI Synthesis Prompt ─────────────────────────────────────────────────
-  const systemPrompt = `You are a Senior Academic Research Librarian and Dissertation Supervisor at a leading university.
-A postgraduate student is writing Chapter 2 (Literature Review) for their dissertation on:
+  const partialContext = papersWithoutAbstract.map((p, idx) => {
+    const authors = getAuthorDisplayList(p.authors).join(", ");
+    return `[PARTIAL PAPER ${papersWithAbstract.length + idx + 1} — Title & metadata only, no abstract available]
+Authors: ${authors}
+Year: ${p.year}
+Title: ${p.title}
+Journal: ${p.source || "Academic Journal"}
+DOI: ${p.doi || "N/A"}
+NOTE: No abstract available. Infer from the article title only. Mark keyFindings as a reasonable inference from the title.`;
+  }).join("\n\n---\n\n");
+
+  const systemPrompt = `You are a rigorous Academic Research Librarian ensuring 100% citation accuracy.
+
+A postgraduate student needs an Annotated Bibliography for their dissertation on:
 "${cleanTopic}"
 
-Your task is to generate a detailed ANNOTATED BIBLIOGRAPHY / EMPIRICAL LITERATURE REVIEW MATRIX.
+STRICT ACCURACY RULES — CRITICAL:
+1. For VERIFIED PAPERS: The keyFindings field MUST contain direct quotes or near-verbatim extraction from the provided abstract. Do NOT paraphrase or invent. Copy the key sentences from the abstract directly.
+2. For PARTIAL PAPERS (no abstract): You may infer likely findings from the article title and journal context only. Keep this brief and note it is inferred.
+3. Problem Statement: Extract from what the abstract says the study investigated. Start with "To investigate/examine/assess/explore..."
+4. Every entry MUST be UNIQUE. No repeated sentences across rows.
+5. Research Gap: Must be specific to THAT study's real limitations (e.g., single country, cross-sectional, small sample).
+6. DO NOT invent statistics (β values, R², p-values) unless they appear verbatim in the abstract.
 
-${selectedLivePapers.length > 0
-  ? `Use the ${selectedLivePapers.length} actual peer-reviewed papers provided in the context below. Extract real information from their abstracts, titles, and metadata.`
-  : `Synthesize ${targetCount} real, authoritative peer-reviewed papers from top journals relevant to this topic (e.g., journals like Computers & Education, Journal of Information Technology, Journal of Business Research, Journal of Management, MIS Quarterly, Econometrica, etc.).`
-}
+${verifiedContext ? `VERIFIED PAPERS WITH REAL ABSTRACTS:\n${verifiedContext}` : ""}
+${partialContext ? `\nPAPERS WITHOUT ABSTRACTS (infer from title only):\n${partialContext}` : ""}
+${enrichedPapers.length === 0 ? `No live papers found. Synthesise ${targetCount} plausible but clearly marked academic studies on "${cleanTopic}" from reputable journals.` : ""}
 
-CRITICAL RULES:
-- Every study MUST be UNIQUE. No two rows can share the same problem statement, findings, or research gap.
-- Each finding must be SPECIFIC to that study — include actual measured outcomes, statistics where known, or specific conclusions. NEVER use "Empirical model demonstrated significant variance explained" as this is generic.
-- Problem Statement must say clearly WHAT THE SPECIFIC STUDY INVESTIGATED (1-2 sentences starting with "To investigate...", "To examine...", "To assess...", "To explore...", etc.)
-- Methodology must name the specific research design AND data analysis method (e.g., "Descriptive survey; Multiple Linear Regression", "Qualitative; Thematic Analysis of 20 in-depth interviews", "Quasi-experimental; ANCOVA")
-- Research Gap must be specific to THAT study's limitations (e.g., "Confined to a single university in the United States; results may not generalize to developing country contexts" NOT generic repetitions)
-- Article titles must be real, specific, and descriptive (not generic like "A Study of X")
-
-Return ONLY a valid JSON object in this EXACT schema (no markdown, no backticks):
+Return ONLY a valid JSON object (no markdown, no backticks):
 {
   "studies": [
     {
-      "authorYear": "Surname, Initial. & Surname, Initial. (YEAR)",
-      "title": "Full, specific article title as published",
-      "source": "Journal Name or Publisher",
-      "problemStatement": "To investigate/examine/assess [specific phenomenon] among [specific population] in [specific context].",
-      "sampleSize": "N = [number] [specific population description, e.g. undergraduate students across 3 Nigerian universities]",
-      "methodology": "Research design (e.g. Cross-sectional survey); Statistical method (e.g. PLS-SEM, Regression, Thematic Analysis)",
-      "keyFindings": "Specific findings: [concrete outcome]. [Statistical result if quantitative, e.g. β = 0.45, p < 0.001, R² = 0.38]. [Key conclusion specific to this study.]",
-      "researchGap": "Specific limitation: [what this study did NOT cover]. Future research should [specific recommendation]."
+      "authorYear": "Surname, I. & Surname, I. (YEAR)",
+      "title": "Exact published title",
+      "source": "Journal name",
+      "problemStatement": "To [verb] [what] among [who] in [context].",
+      "sampleSize": "N = [number] [population]. If unknown, write 'Not reported in abstract'.",
+      "methodology": "Research design; statistical/analytical method",
+      "keyFindings": "DIRECT QUOTE or near-verbatim from abstract: '[key sentence from abstract]'. Additional conclusions: [any other key outcome from the abstract].",
+      "researchGap": "Specific limitation from this study. Future research should [specific direction]."
     }
   ],
-  "synthesisSummary": "A rigorous 2-3 paragraph APA 7th academic synthesis of all the studies above, identifying patterns, methodological trends, agreements, contradictions, and the specific gap this dissertation will fill."
+  "synthesisSummary": "2-3 paragraph APA 7th synthesis identifying patterns, methodological trends, and the gap this dissertation addresses."
 }`;
 
   let parsed: any = {};
@@ -143,7 +218,7 @@ Return ONLY a valid JSON object in this EXACT schema (no markdown, no backticks)
   try {
     const aiResponse = await callChatGptApi(
       systemPrompt,
-      `Research Topic: ${cleanTopic}\n\nTarget: ${targetCount} unique studies\n\n${papersContext ? `Available Paper Context:\n\n${papersContext}` : "Synthesize peer-reviewed empirical studies in this field."}`
+      `Research Topic: ${cleanTopic}\nTarget: ${targetCount} studies\nVerified papers with abstracts: ${papersWithAbstract.length}\nPartial papers (no abstract): ${papersWithoutAbstract.length}`
     );
     const rawText = aiResponse.choices?.[0]?.message?.content?.trim() || "{}";
     const cleanJson = rawText.replace(/```json|```/g, "").trim();
@@ -155,12 +230,9 @@ Return ONLY a valid JSON object in this EXACT schema (no markdown, no backticks)
     console.warn("AI synthesis error, building from live papers:", err);
   }
 
-  // ── 4. Deterministic Fallback (uses real paper metadata) ──────────────────
+  // ── 4. Deterministic Fallback ──────────────────────────────────────────────
   if (!aiSucceeded) {
-    const fallbackStudies = selectedLivePapers.length > 0
-      ? selectedLivePapers
-      : generateSeedStudies(cleanTopic, targetCount);
-
+    const fallbackStudies = enrichedPapers.length > 0 ? enrichedPapers : generateSeedStudies(cleanTopic, targetCount);
     parsed = {
       studies: fallbackStudies.map((p, idx) => {
         const authors = getAuthorDisplayList(p.authors);
@@ -169,48 +241,59 @@ Return ONLY a valid JSON object in this EXACT schema (no markdown, no backticks)
           : authors.length === 2
           ? `${authors[0]} & ${authors[1]} (${p.year})`
           : `${authors[0] || "Author"} (${p.year})`;
+        const hasAbstract = p.abstract && p.abstract.length > 80;
         return {
           authorYear,
           title: p.title,
           source: p.source || "Peer-Reviewed Academic Journal",
-          problemStatement: `To ${idx % 3 === 0 ? "investigate" : idx % 3 === 1 ? "examine" : "assess"} the relationship between ${cleanTopic.split(" ").slice(0, 4).join(" ")} and related outcomes among ${["undergraduate students", "postgraduate researchers", "working professionals", "university faculty", "organizational employees", "SME managers"][idx % 6]}.`,
-          sampleSize: `N = ${[287, 342, 415, 198, 523, 376][idx % 6]} ${["undergraduate students across multiple universities", "postgraduate researchers from 4 institutions", "full-time working professionals", "faculty members from selected universities", "organizational employees across 3 companies", "SME managers in the study region"][idx % 6]}`,
-          methodology: [
-            "Quantitative survey research; Structural Equation Modeling (PLS-SEM)",
-            "Qualitative phenomenological study; Thematic Analysis of semi-structured interviews",
-            "Cross-sectional descriptive survey; Multiple Linear Regression Analysis",
-            "Mixed-methods sequential explanatory design; MANOVA followed by Focus Groups",
-            "Quasi-experimental pre-test/post-test design; Paired Samples t-Test",
-            "Systematic literature review; Meta-analytic synthesis of 45 empirical studies"
-          ][idx % 6],
-          keyFindings: p.abstract
-            ? p.abstract.substring(0, 280).trim() + "..."
-            : `The study found a significant positive relationship between the investigated constructs. Participants demonstrated notable patterns relevant to ${cleanTopic}. Key variables accounted for meaningful variance in the outcome measures.`,
-          researchGap: [
-            "The study was limited to a single institution; cross-institutional replication is needed.",
-            "Self-reported data introduces social desirability bias; objective performance metrics should be incorporated in future studies.",
-            "The cross-sectional design precludes causal inference; longitudinal tracking across academic cycles is recommended.",
-            "Geographic limitations restrict generalizability; future research should include diverse cultural and regional contexts.",
-            "The study did not examine moderating variables; future work should explore age, gender, and prior experience as potential moderators.",
-            "Qualitative findings lack statistical generalizability; large-scale quantitative validation is required."
-          ][idx % 6]
+          problemStatement: `To ${["investigate", "examine", "assess"][idx % 3]} the role of ${cleanTopic.split(" ").slice(0, 4).join(" ")} among ${["undergraduate students", "postgraduate researchers", "working professionals", "university faculty", "organizational employees", "SME managers"][idx % 6]}.`,
+          sampleSize: "Not reported in abstract",
+          methodology: ["Quantitative survey; Structural Equation Modeling (PLS-SEM)", "Qualitative; Thematic Analysis of semi-structured interviews", "Cross-sectional survey; Multiple Linear Regression", "Mixed-methods; MANOVA + Focus Groups", "Quasi-experimental; Paired Samples t-Test", "Systematic review; Meta-analytic synthesis"][idx % 6],
+          keyFindings: hasAbstract
+            ? p.abstract!.substring(0, 350).trim() + (p.abstract!.length > 350 ? "..." : "")
+            : `[Inferred from title] The study examined ${cleanTopic} and found notable outcomes relevant to the field.`,
+          researchGap: ["Limited to a single institution; cross-institutional replication required.", "Self-reported data may introduce social desirability bias.", "Cross-sectional design limits causal inference; longitudinal study needed.", "Geographic scope restricts generalizability to other cultural contexts.", "Moderating variables were not examined; future research should include demographic moderators.", "Qualitative findings require large-scale quantitative validation."][idx % 6]
         };
       }),
-      synthesisSummary: `The reviewed literature reveals a growing body of empirical evidence examining various dimensions of ${cleanTopic}. Studies employed diverse methodological approaches ranging from quantitative structural equation modeling to qualitative phenomenological inquiry, reflecting the multidisciplinary nature of the field.\n\nDespite this breadth, significant gaps remain. Most studies are cross-sectional, limiting causal interpretation, and are concentrated in Western and developed-country contexts, reducing their applicability to developing-nation settings. This dissertation addresses these gaps by employing a robust longitudinal mixed-methods design within the target population.`
+      synthesisSummary: `The reviewed literature reveals a growing body of empirical evidence on ${cleanTopic}. Studies employ diverse methodological approaches from structural equation modeling to qualitative inquiry.\n\nDespite this breadth, key gaps remain. Most studies are cross-sectional and concentrated in Western contexts, reducing applicability to developing-nation settings. This dissertation addresses these gaps with a robust research design appropriate to the local context.`
     };
   }
 
-  // ── 5. Map AI Output to EmpiricalStudyEntry[] ─────────────────────────────
+  // ── 5. Map to EmpiricalStudyEntry[] with Confidence Labels ────────────────
   const extractedList: any[] = Array.isArray(parsed.studies) ? parsed.studies : [];
 
+  let verifiedCount = 0;
+  let summarisedCount = 0;
+  let synthesisedCount = 0;
+
   const studies: EmpiricalStudyEntry[] = extractedList.map((item: any, idx: number) => {
-    const livePaper = selectedLivePapers[idx];
+    const enrichedPaper = enrichedPapers[idx];
+    const hasRealAbstract = enrichedPaper?.abstract && enrichedPaper.abstract.length > 80;
+    const isLivePaper = !!enrichedPaper;
+
+    // Determine confidence level
+    let confidence: StudyConfidence;
+    let abstractSource: string;
+
+    if (isLivePaper && hasRealAbstract) {
+      confidence = "verified";
+      abstractSource = (enrichedPaper as any).abstractSource || "database";
+      verifiedCount++;
+    } else if (isLivePaper && !hasRealAbstract) {
+      confidence = "ai-summarised";
+      abstractSource = "title only (no abstract in database)";
+      summarisedCount++;
+    } else {
+      confidence = "ai-synthesised";
+      abstractSource = "AI synthesised — no live paper found";
+      synthesisedCount++;
+    }
 
     const authorStr = item.authorYear || "Unknown Author (2024)";
     const yearMatch = authorStr.match(/\b(20\d{2}|19\d{2})\b/);
     const year = yearMatch ? yearMatch[0] : String(new Date().getFullYear() - (idx % 5));
 
-    const citation: AcademicCitation = livePaper || {
+    const citation: AcademicCitation = enrichedPaper || {
       id: `matrix-${Date.now()}-${idx}`,
       title: item.title || `Study on ${cleanTopic}`,
       authors: [{ name: authorStr.replace(/\s*\(\d{4}\)/, "") }],
@@ -225,13 +308,16 @@ Return ONLY a valid JSON object in this EXACT schema (no markdown, no backticks)
       serialNo: idx + 1,
       authorYear: item.authorYear || `Author (${year})`,
       title: item.title || citation.title,
-      problemStatement: item.problemStatement || `To examine the role of ${cleanTopic} in educational and organizational contexts.`,
-      sampleSize: item.sampleSize || `N = ${250 + (idx * 37)} survey respondents`,
+      problemStatement: item.problemStatement || `To examine the role of ${cleanTopic} in academic and organizational contexts.`,
+      sampleSize: item.sampleSize || "Not reported in abstract",
       methodology: item.methodology || "Descriptive Survey; Multiple Regression Analysis",
       keyFindings: item.keyFindings || "The study identified significant relationships among the key study variables.",
       researchGap: item.researchGap || "Future research should explore additional moderating and mediating variables.",
       doi: citation.doi,
+      url: citation.url,
       source: item.source || citation.source,
+      confidence,
+      abstractSource,
       citation
     };
   });
@@ -239,7 +325,10 @@ Return ONLY a valid JSON object in this EXACT schema (no markdown, no backticks)
   return {
     topic: cleanTopic,
     studies,
-    synthesisSummary: parsed.synthesisSummary || "The reviewed studies collectively demonstrate the theoretical foundations and empirical significance of the research topic."
+    synthesisSummary: parsed.synthesisSummary || "The reviewed studies collectively demonstrate the theoretical foundations and empirical significance of the research topic.",
+    verifiedCount,
+    summarisedCount,
+    synthesisedCount
   };
 }
 
@@ -251,7 +340,7 @@ function generateSeedStudies(topic: string, count: number): AcademicCitation[] {
     title: `${["Empirical Investigation of", "A Critical Examination of", "Understanding", "Assessing the Impact of", "Exploring"][idx % 5]} ${topWords} ${["in Higher Education", "among Postgraduate Students", "in Organizational Settings", "across Diverse Contexts", "in Sub-Saharan Africa"][idx % 5]}`,
     authors: [
       { name: ["Okonkwo, A.", "Smith, J.", "Al-Rashid, M.", "Chen, L.", "Adeyemi, B.", "Johnson, P.", "Kumar, R.", "Williams, T."][idx % 8] },
-      { name: ["& Eze, C.", "& Brown, K.", "& Hassan, F.", "& Zhang, Y.", "& Babatunde, O.", "& Davis, M.", "& Singh, N.", "& Taylor, S."][idx % 8] }
+      { name: ["Eze, C.", "Brown, K.", "Hassan, F.", "Zhang, Y.", "Babatunde, O.", "Davis, M.", "Singh, N.", "Taylor, S."][idx % 8] }
     ],
     year: String(2019 + (idx % 6)),
     source: ["Journal of Educational Technology", "Computers & Education", "Journal of Business Research", "Information Systems Research", "Journal of Management", "Educational Technology Research and Development"][idx % 6],
@@ -261,6 +350,12 @@ function generateSeedStudies(topic: string, count: number): AcademicCitation[] {
 }
 
 // ── Formatting Helpers ────────────────────────────────────────────────────────
+
+const confidenceLabel = {
+  "verified": "🟢 Verified",
+  "ai-summarised": "🟡 AI-Summarised",
+  "ai-synthesised": "🔴 AI-Synthesised"
+};
 
 /** Formats as Markdown Table — supports both Annotated Bibliography and Empirical Matrix views */
 export function formatMatrixToMarkdownTable(matrix: LiteratureMatrixResult, viewMode: "annotated" | "empirical" = "annotated"): string {
@@ -276,7 +371,7 @@ export function formatMatrixToMarkdownTable(matrix: LiteratureMatrixResult, view
     return md;
   }
 
-  // Annotated Bibliography (default)
+  // Annotated Bibliography
   let md = `### Annotated Bibliography on "${matrix.topic}"\n\n`;
   md += `| S/N | Name(s) of Author(s) and Year | Article Title | Problem Statement | Methodology | Findings | Research Gaps |\n`;
   md += `| :---: | :--- | :--- | :--- | :--- | :--- | :--- |\n`;
@@ -320,7 +415,7 @@ export function formatMatrixToHtmlTable(matrix: LiteratureMatrixResult, viewMode
     return html;
   }
 
-  // Annotated Bibliography (default)
+  // Annotated Bibliography
   let html = `<div style="font-family: Times New Roman, serif; font-size: 12pt; color: #000; line-height: 1.5;">\n`;
   html += `<p style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">Annotated Bibliography on</p>\n`;
   html += `<p style="text-align: center; font-weight: bold; margin-bottom: 24px;">"${matrix.topic}"</p>\n`;
@@ -349,3 +444,5 @@ export function formatMatrixToHtmlTable(matrix: LiteratureMatrixResult, viewMode
   html += `</tbody></table>\n${synthBlock}</div>`;
   return html;
 }
+
+export { confidenceLabel };

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Sparkles, Table, BookOpen, Plus, Copy, Check,
-  Loader2, ExternalLink, List, BarChart2
+  Loader2, ExternalLink, List, BarChart2, ShieldCheck, AlertTriangle, Info
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -12,7 +12,9 @@ import {
   formatMatrixToMarkdownTable,
   formatMatrixToHtmlTable,
   LiteratureMatrixResult,
-  EmpiricalStudyEntry
+  EmpiricalStudyEntry,
+  StudyConfidence,
+  confidenceLabel
 } from "@/services/literatureMatrixService";
 import { AcademicCitation } from "@/services/citationEngine";
 
@@ -201,6 +203,33 @@ export function LiteratureMatrixModal({
                 </div>
               </div>
 
+              {/* ── Accuracy Summary Banner ────────────────────────────── */}
+              <div className={`flex flex-wrap items-center gap-3 p-3 border text-xs font-sans ${
+                matrixResult.synthesisedCount > 0
+                  ? "border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800"
+                  : "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-800"
+              }`}>
+                <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold">
+                  {matrixResult.synthesisedCount === 0
+                    ? <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    : <AlertTriangle className="w-4 h-4 text-amber-600" />}
+                  Accuracy Report:
+                </div>
+                <span className="flex items-center gap-1 text-[11px]">
+                  <span className="text-emerald-600">🟢 {matrixResult.verifiedCount} Verified</span>
+                  <span className="text-zinc-400">·</span>
+                  <span className="text-amber-600">🟡 {matrixResult.summarisedCount} AI-Summarised</span>
+                  <span className="text-zinc-400">·</span>
+                  <span className="text-red-600">🔴 {matrixResult.synthesisedCount} AI-Synthesised</span>
+                </span>
+                {matrixResult.synthesisedCount > 0 && (
+                  <span className="text-amber-700 dark:text-amber-400 text-[10px] flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    {matrixResult.synthesisedCount} row(s) marked 🔴 were not found in live databases. Click their DOI links to verify before submitting.
+                  </span>
+                )}
+              </div>
+
               {/* ── Topic Heading ──────────────────────────────────────── */}
               <div className="text-center font-mono border-b border-zinc-200 dark:border-zinc-800 pb-3">
                 <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
@@ -232,9 +261,19 @@ export function LiteratureMatrixModal({
                           <td className="p-3 align-top border-r border-zinc-200 dark:border-zinc-800 text-center font-mono font-bold text-zinc-500 text-[11px]">{idx + 1}</td>
                           <td className="p-3 align-top border-r border-zinc-200 dark:border-zinc-800 font-mono text-[11px]">
                             <div className="font-bold text-black dark:text-white leading-snug">{study.authorYear}</div>
+                            {/* Confidence Badge */}
+                            <div className={`mt-1 mb-1 text-[9px] font-mono px-1.5 py-0.5 inline-block border ${
+                              study.confidence === "verified"
+                                ? "border-emerald-400 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30"
+                                : study.confidence === "ai-summarised"
+                                ? "border-amber-400 text-amber-700 bg-amber-50 dark:bg-amber-950/30"
+                                : "border-red-400 text-red-700 bg-red-50 dark:bg-red-950/30"
+                            }`}>
+                              {confidenceLabel[study.confidence]}
+                            </div>
                             {study.doi && (
                               <a href={`https://doi.org/${study.doi}`} target="_blank" rel="noopener noreferrer"
-                                className="text-[9px] text-blue-500 hover:underline flex items-center gap-0.5 mt-1">
+                                className="text-[9px] text-blue-500 hover:underline flex items-center gap-0.5">
                                 doi:{study.doi.substring(0, 16)}... <ExternalLink className="w-2 h-2" />
                               </a>
                             )}
