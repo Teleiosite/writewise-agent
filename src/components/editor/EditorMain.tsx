@@ -1,6 +1,5 @@
 import { useEditor } from "@/contexts/editor";
 import { EditorContent } from "./EditorContent";
-import { EditorToolbar } from "./EditorToolbar";
 import { EditorCitationsPanel } from "./EditorCitationsPanel";
 import { EditorPdfPanel } from "./EditorPdfPanel";
 import { EditorPdfChatPanel } from "./EditorPdfChatPanel";
@@ -30,8 +29,6 @@ export function EditorMain({ projectName }: EditorMainProps) {
 
   return (
     <div className="flex flex-col bg-white dark:bg-black border border-black dark:border-zinc-800 rounded-none shadow-none relative font-sans">
-      <EditorToolbar />
-
       <div className="bg-white dark:bg-black">
         <EditorCitationsPanel 
           onInsertCitation={insertCitation}

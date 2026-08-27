@@ -77,7 +77,7 @@ export function EditorHeader({
   ];
 
   return (
-    <div className="flex flex-col border-b border-black dark:border-zinc-800 bg-white dark:bg-black px-4 py-2 print:hidden sticky top-0 z-50 font-sans shadow-none">
+    <div className="flex flex-col border-b border-black dark:border-zinc-800 bg-white dark:bg-black px-4 py-2 print:hidden font-sans shadow-none">
       {/* Top Row: Title and Icons */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5 md:gap-3">

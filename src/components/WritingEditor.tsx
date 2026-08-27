@@ -38,7 +38,7 @@ function EditorContent({ projectName }: { projectName: string }) {
     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)] transition-all duration-500 font-sans">
       {/* Left Sidebar: Document Structure Navigation */}
       <div className="md:col-span-3">
-        <div className="sticky top-[92px]">
+        <div className="sticky top-[148px]">
           <EditorSidebar />
         </div>
       </div>
@@ -53,7 +53,7 @@ function EditorContent({ projectName }: { projectName: string }) {
       {/* Right AI Assistant Guidance Panel */}
       {showAnalysisPanel && (
         <div className="md:col-span-3 animate-in slide-in-from-right duration-300">
-          <div className="sticky top-[92px]">
+          <div className="sticky top-[148px]">
             <TextAnalysis />
           </div>
         </div>

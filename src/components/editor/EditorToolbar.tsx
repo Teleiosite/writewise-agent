@@ -271,10 +271,10 @@ export function EditorToolbar() {
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // RENDER — sticky top-[92px] = sticks just below the EditorHeader (≈88-92px tall)
+  // RENDER — full-width top ribbon
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="flex flex-col bg-white dark:bg-black border-b border-black dark:border-zinc-800 sticky top-[92px] z-20 font-sans print:hidden select-none shadow-sm">
+    <div className="flex flex-col bg-white dark:bg-black border-b border-black dark:border-zinc-800 font-sans print:hidden select-none shadow-sm w-full">
 
       {/* ── TOP BAR ─────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 gap-2 bg-zinc-50/60 dark:bg-zinc-950/60">
@@ -317,7 +317,7 @@ export function EditorToolbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="rounded-none border border-black dark:border-zinc-800 font-mono text-xs z-50 bg-white dark:bg-black">
               <DropdownMenuLabel className="text-[10px] uppercase text-zinc-500">Download Format</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handleExport("docx")} className="cursor-pointer gap-2">
+              <DropdownMenuItem onClick={() => handleExport("docx")} className="cursor-pointer gap-2 font-bold">
                 <FileText className="w-3.5 h-3.5 text-blue-600" /> Microsoft Word (.DOCX)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport("latex")} className="cursor-pointer gap-2 font-bold">
@@ -325,6 +325,12 @@ export function EditorToolbar() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport("pdf")} className="cursor-pointer gap-2">
                 <Download className="w-3.5 h-3.5 text-rose-600" /> Formatted PDF (.PDF)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("md")} className="cursor-pointer gap-2">
+                <FileText className="w-3.5 h-3.5 text-amber-600" /> Markdown (.MD)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("txt")} className="cursor-pointer gap-2">
+                <FileText className="w-3.5 h-3.5 text-zinc-500" /> Plain Text (.TXT)
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => window.print()} className="cursor-pointer gap-2">

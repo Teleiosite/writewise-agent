@@ -8,6 +8,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { EditorProvider, useEditor } from "@/contexts/editor";
 import { EditorHeader } from "./editor/EditorHeader";
+import { EditorToolbar } from "./editor/EditorToolbar";
 import { LiteratureMatrixModal } from "./matrix/LiteratureMatrixModal";
 import { DefenseDeckModal } from "./defense/DefenseDeckModal";
 import { AcademicToneAuditorModal } from "./editor/AcademicToneAuditorModal";
@@ -52,31 +53,40 @@ function DashboardWithModals({
   const [showSupervisorEmailModal, setShowSupervisorEmailModal] = useState(false);
 
   return (
-    // min-h-screen: page-level scroll (the natural document flow)
     <div className={`mx-auto animate-fadeIn min-h-screen bg-white dark:bg-gray-950 ${(activeTab === 'editor' || activeTab === 'data-analysis') ? 'max-w-full px-0' : 'max-w-7xl px-4'}`}>
-      {/* EditorHeader is sticky top-0 z-50 — stays at top on scroll */}
-      <EditorHeader 
-        title={projectName}
-        showCitationsPanel={showCitationsPanel}
-        showPdfReaderPanel={showPdfReaderPanel}
-        showPdfChatPanel={showPdfChatPanel}
-        toggleCitationsPanel={toggleCitationsPanel}
-        togglePdfReaderPanel={togglePdfReaderPanel}
-        togglePdfChatPanel={togglePdfChatPanel}
-        onClose={onClose}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        showAnalysisPanel={showAnalysisPanel}
-        analysisTab={analysisTab}
-        toggleAnalysisPanel={toggleAnalysisPanel}
-        onOpenLiteratureMatrix={() => setShowMatrixModal(true)}
-        onOpenDefenseDeck={() => setShowDefenseDeckModal(true)}
-        onOpenAcademicToneAuditor={() => setShowToneAuditorModal(true)}
-        onOpenSupervisorEmail={() => setShowSupervisorEmailModal(true)}
-      />
+      
+      {/* Pinned Top Workspace Header + Editor Ribbon */}
+      <div className="sticky top-0 z-40 bg-white dark:bg-black shadow-sm">
+        <EditorHeader 
+          title={projectName}
+          showCitationsPanel={showCitationsPanel}
+          showPdfReaderPanel={showPdfReaderPanel}
+          showPdfChatPanel={showPdfChatPanel}
+          toggleCitationsPanel={toggleCitationsPanel}
+          togglePdfReaderPanel={togglePdfReaderPanel}
+          togglePdfChatPanel={togglePdfChatPanel}
+          onClose={onClose}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          showAnalysisPanel={showAnalysisPanel}
+          analysisTab={analysisTab}
+          toggleAnalysisPanel={toggleAnalysisPanel}
+          onOpenLiteratureMatrix={() => setShowMatrixModal(true)}
+          onOpenDefenseDeck={() => setShowDefenseDeckModal(true)}
+          onOpenAcademicToneAuditor={() => setShowToneAuditorModal(true)}
+          onOpenSupervisorEmail={() => setShowSupervisorEmailModal(true)}
+        />
+
+        {/* The entire ribbon appears when on the Editor tab, disappears on other tabs */}
+        {activeTab === 'editor' && (
+          <div className="animate-in fade-in-50 duration-200">
+            <EditorToolbar />
+          </div>
+        )}
+      </div>
 
       {isMobile && (
-        <Alert className="my-4">
+        <Alert className="my-4 mx-4">
           <Info className="h-4 w-4" />
           <AlertTitle>Mobile View</AlertTitle>
           <AlertDescription>
@@ -85,7 +95,6 @@ function DashboardWithModals({
         </Alert>
       )}
 
-      {/* No mt-4 margin — toolbar sticky positioning handles the spacing */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <DashboardTabContent 
           activeTab={activeTab}
