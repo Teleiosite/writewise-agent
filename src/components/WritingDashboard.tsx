@@ -52,7 +52,9 @@ function DashboardWithModals({
   const [showSupervisorEmailModal, setShowSupervisorEmailModal] = useState(false);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-950">
+    // min-h-screen: page-level scroll (the natural document flow)
+    <div className={`mx-auto animate-fadeIn min-h-screen bg-white dark:bg-gray-950 ${(activeTab === 'editor' || activeTab === 'data-analysis') ? 'max-w-full px-0' : 'max-w-7xl px-4'}`}>
+      {/* EditorHeader is sticky top-0 z-50 — stays at top on scroll */}
       <EditorHeader 
         title={projectName}
         showCitationsPanel={showCitationsPanel}
@@ -74,7 +76,7 @@ function DashboardWithModals({
       />
 
       {isMobile && (
-        <Alert className="mx-4 mt-2 shrink-0">
+        <Alert className="my-4">
           <Info className="h-4 w-4" />
           <AlertTitle>Mobile View</AlertTitle>
           <AlertDescription>
@@ -83,19 +85,17 @@ function DashboardWithModals({
         </Alert>
       )}
 
-      {/* flex-1 min-h-0 = fills remaining height without overflowing */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-          <DashboardTabContent 
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            projectName={projectName}
-            onClose={onClose}
-            template={template}
-            activeFeature={activeFeature}
-          />
-        </Tabs>
-      </div>
+      {/* No mt-4 margin — toolbar sticky positioning handles the spacing */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <DashboardTabContent 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          projectName={projectName}
+          onClose={onClose}
+          template={template}
+          activeFeature={activeFeature}
+        />
+      </Tabs>
 
       {/* Feature 1: Automated Empirical Literature Matrix (Chapter 2) */}
       <LiteratureMatrixModal

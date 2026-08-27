@@ -29,10 +29,10 @@ export function EditorMain({ projectName }: EditorMainProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-black border border-black dark:border-zinc-800 rounded-none overflow-hidden shadow-none relative font-sans">
+    <div className="flex flex-col bg-white dark:bg-black border border-black dark:border-zinc-800 rounded-none shadow-none relative font-sans">
       <EditorToolbar />
 
-      <div className="flex-1 overflow-y-auto bg-white dark:bg-black custom-scrollbar">
+      <div className="bg-white dark:bg-black">
         <EditorCitationsPanel 
           onInsertCitation={insertCitation}
           show={showCitationsPanel}

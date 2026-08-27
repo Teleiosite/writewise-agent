@@ -35,15 +35,16 @@ function EditorContent({ projectName }: { projectName: string }) {
   }, [addContentToActiveSection]);
 
   return (
-    // h-full fills the viewport pane from DashboardTabContent; overflow-hidden prevents page scroll
-    <div className="grid grid-cols-1 md:grid-cols-12 h-full bg-gray-50/50 dark:bg-gray-900/10 font-sans overflow-hidden">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)] transition-all duration-500 font-sans">
       {/* Left Sidebar: Document Structure Navigation */}
-      <div className="md:col-span-3 h-full overflow-y-auto border-r border-zinc-200 dark:border-zinc-800">
-        <EditorSidebar />
+      <div className="md:col-span-3">
+        <div className="sticky top-[92px]">
+          <EditorSidebar />
+        </div>
       </div>
 
       {/* Main Manuscript Canvas */}
-      <div className={`${showAnalysisPanel ? 'md:col-span-6' : 'md:col-span-9'} h-full transition-all duration-500 ease-in-out`}>
+      <div className={`${showAnalysisPanel ? 'md:col-span-6' : 'md:col-span-9'} min-h-[800px] transition-all duration-500 ease-in-out`}>
         <EditorMain 
           projectName={projectName} 
         />
@@ -51,8 +52,8 @@ function EditorContent({ projectName }: { projectName: string }) {
 
       {/* Right AI Assistant Guidance Panel */}
       {showAnalysisPanel && (
-        <div className="md:col-span-3 h-full overflow-y-auto animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-zinc-800">
-          <div className="p-4">
+        <div className="md:col-span-3 animate-in slide-in-from-right duration-300">
+          <div className="sticky top-[92px]">
             <TextAnalysis />
           </div>
         </div>
@@ -110,7 +111,7 @@ export function WritingEditor({
   setActiveTab
 }: WritingEditorProps) {
   return (
-    <div className="h-full w-full animate-fadeIn overflow-hidden">
+    <div className="w-full animate-fadeIn overflow-x-hidden">
       <EditorContent 
         projectName={projectName} 
       />

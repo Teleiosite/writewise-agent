@@ -226,21 +226,31 @@ export function EditorToolbar() {
     }
   }, []);
 
-  // ── Find and replace ─────────────────────────────────────────────────────────
+  // ── Find and replace — operates directly on the contenteditable DOM ──────
   const handleFindReplace = useCallback(() => {
     if (!findQuery.trim()) { toast.error("Enter a search term."); return; }
-    const current = getCurrentSectionContent();
-    const raw = current.replace(/<[^>]+>/g, " ");
-    if (!raw.toLowerCase().includes(findQuery.toLowerCase())) {
-      toast.error(`"${findQuery}" not found in this section.`); return;
+    const editorEl = document.querySelector<HTMLElement>('[contenteditable="true"]');
+    if (!editorEl) { toast.error("Click inside the document first."); return; }
+
+    const escapedQuery = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, 'gi');
+
+    // Search visible text (innerText strips HTML so we get real occurrence count)
+    const visibleText = editorEl.innerText || '';
+    const matches = visibleText.match(regex) || [];
+
+    if (matches.length === 0) {
+      toast.error(`"${findQuery}" not found in this section.`);
+      return;
     }
-    const regex = new RegExp(findQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-    const count = (raw.match(regex) || []).length;
-    const updated = current.replace(regex, replaceQuery);
-    updateSectionContent(updated);
-    toast.success(`Replaced ${count} occurrence(s) of "${findQuery}"`);
+
+    // Replace in innerHTML — replaces text nodes not crossing tag boundaries
+    editorEl.innerHTML = editorEl.innerHTML.replace(regex, replaceQuery);
+    editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+    toast.success(`Replaced ${matches.length} occurrence(s) of "${findQuery}"`);
     setShowFindReplace(false);
-  }, [findQuery, replaceQuery, getCurrentSectionContent, updateSectionContent]);
+  }, [findQuery, replaceQuery]);
+
 
   // ── Manuscript stats ─────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -261,10 +271,10 @@ export function EditorToolbar() {
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // RENDER
+  // RENDER — sticky top-[92px] = sticks just below the EditorHeader (≈88-92px tall)
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="flex flex-col bg-white dark:bg-black border-b border-black dark:border-zinc-800 shrink-0 font-sans print:hidden select-none shadow-sm">
+    <div className="flex flex-col bg-white dark:bg-black border-b border-black dark:border-zinc-800 sticky top-[92px] z-20 font-sans print:hidden select-none shadow-sm">
 
       {/* ── TOP BAR ─────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 gap-2 bg-zinc-50/60 dark:bg-zinc-950/60">
