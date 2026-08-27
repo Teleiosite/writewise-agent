@@ -35,14 +35,15 @@ function EditorContent({ projectName }: { projectName: string }) {
   }, [addContentToActiveSection]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/10 min-h-[calc(100vh-80px)] transition-all duration-500 font-sans">
-      {/* Left Sidebar: Clean Document Structure Navigation */}
-      <div className="md:col-span-3 h-full">
+    // h-full fills the viewport pane from DashboardTabContent; overflow-hidden prevents page scroll
+    <div className="grid grid-cols-1 md:grid-cols-12 h-full bg-gray-50/50 dark:bg-gray-900/10 font-sans overflow-hidden">
+      {/* Left Sidebar: Document Structure Navigation */}
+      <div className="md:col-span-3 h-full overflow-y-auto border-r border-zinc-200 dark:border-zinc-800">
         <EditorSidebar />
       </div>
 
       {/* Main Manuscript Canvas */}
-      <div className={`${showAnalysisPanel ? 'md:col-span-6' : 'md:col-span-9'} h-full min-h-[800px] transition-all duration-500 ease-in-out`}>
+      <div className={`${showAnalysisPanel ? 'md:col-span-6' : 'md:col-span-9'} h-full transition-all duration-500 ease-in-out`}>
         <EditorMain 
           projectName={projectName} 
         />
@@ -50,14 +51,14 @@ function EditorContent({ projectName }: { projectName: string }) {
 
       {/* Right AI Assistant Guidance Panel */}
       {showAnalysisPanel && (
-        <div className="md:col-span-3 h-full animate-in slide-in-from-right duration-300">
-          <div className="sticky top-6">
+        <div className="md:col-span-3 h-full overflow-y-auto animate-in slide-in-from-right duration-300 border-l border-zinc-200 dark:border-zinc-800">
+          <div className="p-4">
             <TextAnalysis />
           </div>
         </div>
       )}
 
-      {/* Modal Dialog for Citation Suite (Full Width, No Sidebar Squishing) */}
+      {/* Modal Dialog for Citation Suite */}
       <Dialog open={showCitationsPanel} onOpenChange={toggleCitationsPanel}>
         <DialogContent className="max-w-4xl p-0 border border-black dark:border-white bg-white dark:bg-black rounded-none shadow-none font-sans overflow-hidden max-h-[90vh] flex flex-col">
           <div className="overflow-y-auto flex-1 p-2 sm:p-4">
@@ -73,7 +74,7 @@ function EditorContent({ projectName }: { projectName: string }) {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Dialog for PDF Research & Chat Suite (Spacious 2-Column Split View) */}
+      {/* Modal Dialog for PDF Research & Chat Suite */}
       <Dialog open={showPdfReaderPanel} onOpenChange={togglePdfReaderPanel}>
         <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 border border-black dark:border-white bg-white dark:bg-black rounded-none shadow-none font-sans overflow-hidden flex flex-col">
           <div className="flex-1 overflow-hidden">
@@ -109,7 +110,7 @@ export function WritingEditor({
   setActiveTab
 }: WritingEditorProps) {
   return (
-    <div className="w-full animate-fadeIn overflow-x-hidden">
+    <div className="h-full w-full animate-fadeIn overflow-hidden">
       <EditorContent 
         projectName={projectName} 
       />

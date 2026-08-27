@@ -22,8 +22,9 @@ export function DashboardTabContent({
   setActiveTab
 }: DashboardTabContentProps) {
   return (
-    <div className="w-full font-sans">
-      <TabsContent value="editor">
+    <div className="w-full h-full font-sans">
+      {/* Editor tab — h-full so EditorMain's flex layout fills the viewport pane */}
+      <TabsContent value="editor" className="h-full m-0 p-0 data-[state=inactive]:hidden">
         <WritingEditor 
           onClose={onClose} 
           projectName={projectName} 
@@ -35,8 +36,9 @@ export function DashboardTabContent({
         />
       </TabsContent>
       
-      <TabsContent value="assistant">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Assistance tab — max-width container, own scroll */}
+      <TabsContent value="assistant" className="m-0 data-[state=inactive]:hidden overflow-y-auto h-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 py-6">
           <div className="md:col-span-2">
             <ChatAssistant />
           </div>
@@ -71,8 +73,8 @@ export function DashboardTabContent({
         </div>
       </TabsContent>
 
-      {/* Embedded Data Analysis Engine */}
-      <TabsContent value="data-analysis">
+      {/* Data Analysis tab — own scroll */}
+      <TabsContent value="data-analysis" className="m-0 data-[state=inactive]:hidden overflow-y-auto h-full">
         <DataAnalysis embedded onBack={() => setActiveTab('editor')} />
       </TabsContent>
     </div>

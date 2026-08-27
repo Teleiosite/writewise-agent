@@ -52,7 +52,7 @@ function DashboardWithModals({
   const [showSupervisorEmailModal, setShowSupervisorEmailModal] = useState(false);
 
   return (
-    <div className={`mx-auto animate-fadeIn min-h-screen bg-white dark:bg-gray-950 ${(activeTab === 'editor' || activeTab === 'data-analysis') ? 'max-w-full px-0' : 'max-w-7xl px-4'}`}>
+    <div className="h-screen flex flex-col overflow-hidden bg-white dark:bg-gray-950">
       <EditorHeader 
         title={projectName}
         showCitationsPanel={showCitationsPanel}
@@ -74,7 +74,7 @@ function DashboardWithModals({
       />
 
       {isMobile && (
-        <Alert className="my-4">
+        <Alert className="mx-4 mt-2 shrink-0">
           <Info className="h-4 w-4" />
           <AlertTitle>Mobile View</AlertTitle>
           <AlertDescription>
@@ -83,8 +83,9 @@ function DashboardWithModals({
         </Alert>
       )}
 
-      <div className="mt-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      {/* flex-1 min-h-0 = fills remaining height without overflowing */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           <DashboardTabContent 
             activeTab={activeTab}
             setActiveTab={setActiveTab}
