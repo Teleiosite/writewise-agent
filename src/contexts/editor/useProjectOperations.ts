@@ -20,10 +20,7 @@ export function useProjectOperations(projectName: string) {
           id: 'main',
           title: projectName || 'Manuscript',
           content: domContent,
-          order: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          project_id: ''
+          order: 0
         }];
       } else {
         // If all sections have empty content, populate the first section with DOM content
