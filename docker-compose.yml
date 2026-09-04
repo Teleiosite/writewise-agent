@@ -31,6 +31,7 @@ services:
     depends_on:
       - writewise-api
       - writewise-stats
+      - obscura
     networks:
       - writewise-net
 
@@ -52,6 +53,8 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OBSCURA_CDP_URL=ws://obscura:9222
+      - OBSCURA_ENABLED=true
     volumes:
       - static-files:/var/www/writewise
     expose:
@@ -90,7 +93,29 @@ services:
       timeout: 10s
       retries: 3
 
-  # ── 4. Certbot (optional — for HTTPS / Let's Encrypt) ─────────────────────
+  # ── 4. Obscura — Headless browser for open-access full-text extraction ──────
+  obscura:
+    image: h4ckf0r0day/obscura:latest
+    container_name: writewise-obscura
+    restart: unless-stopped
+    command: serve --port 9222 --stealth --workers 4
+    expose:
+      - "9222"
+    networks:
+      - writewise-net
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 128m
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9222/json/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── 5. Certbot (optional — for HTTPS / Let's Encrypt) ─────────────────────
   certbot:
     image: certbot/certbot:latest
     container_name: writewise-certbot

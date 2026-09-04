@@ -18,6 +18,9 @@ const { default: generateNarrative } = await import('./api/generate-narrative.ts
 const { default: chat }              = await import('./api/chat.ts');
 const { default: generateSyntax }    = await import('./api/generate-syntax.ts');
 const { default: detectCodebook }    = await import('./api/detect-codebook.ts');
+const { default: researchSearch }    = await import('./api/research-search.ts');
+const { default: researchFulltext }  = await import('./api/research-fulltext.ts');
+const { default: researchSynth }     = await import('./api/research-synthesise.ts');
 
 const app = express();
 const PORT = process.env.API_PORT || 3001;
@@ -50,6 +53,11 @@ app.post('/api/generate-narrative', adapt(generateNarrative));
 app.post('/api/chat',               adapt(chat));
 app.post('/api/generate-syntax',    adapt(generateSyntax));
 app.post('/api/detect-codebook',    adapt(detectCodebook));
+
+// ─── Research Pipeline ────────────────────────────────────────────────────────
+app.post('/api/research/search',     adapt(researchSearch));
+app.post('/api/research/fetch-fulltext', adapt(researchFulltext));
+app.post('/api/research/synthesise', adapt(researchSynth));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {

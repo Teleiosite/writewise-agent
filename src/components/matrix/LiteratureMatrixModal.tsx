@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Sparkles, Table, BookOpen, Plus, Copy, Check,
-  Loader2, ExternalLink, List, BarChart2, ShieldCheck, AlertTriangle, Info
+  Loader2, ExternalLink, List, BarChart2, ShieldCheck, AlertTriangle, Info,
+  Database, Zap
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -17,6 +18,7 @@ import {
   confidenceLabel
 } from "@/services/literatureMatrixService";
 import { AcademicCitation } from "@/services/citationEngine";
+import { ResearchPipelinePanel } from "@/components/research/ResearchPipelinePanel";
 
 type ViewMode = "annotated" | "empirical";
 
@@ -41,6 +43,7 @@ export function LiteratureMatrixModal({
   const [matrixResult, setMatrixResult] = useState<LiteratureMatrixResult | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("annotated");
   const [copied, setCopied] = useState(false);
+  const [modalMode, setModalMode] = useState<'classic' | 'pipeline'>('pipeline');
 
   const handleGenerate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -107,12 +110,52 @@ export function LiteratureMatrixModal({
               </h2>
             </div>
             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-sans">
-              Generates a supervisor-ready literature review from 350M+ scholarly papers. Toggle between two formats below.
+              Generates a supervisor-ready literature review from 350M+ scholarly papers.
             </p>
           </div>
 
+          {/* Mode switcher */}
+          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-1 shrink-0">
+            <button
+              onClick={() => setModalMode('pipeline')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                modalMode === 'pipeline'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+              }`}
+            >
+              <Database className="w-3.5 h-3.5" />
+              Research Pipeline
+              <span className="text-[9px] px-1 py-0.5 rounded bg-emerald-500 text-white font-bold">NEW</span>
+            </button>
+            <button
+              onClick={() => setModalMode('classic')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                modalMode === 'classic'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 shadow-sm'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Classic AI Matrix
+            </button>
+          </div>
+        </div>
+
+        {/* ── Research Pipeline Mode ────────────────────────────────────── */}
+        {modalMode === 'pipeline' && (
+          <ResearchPipelinePanel
+            onInsertToEditor={(content) => { onInsertToChapter(content); }}
+            className="flex-1 overflow-hidden"
+          />
+        )}
+
+        {/* ── Classic Matrix Mode ───────────────────────────────────────── */}
+        {modalMode === 'classic' && (
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {/* Classic header actions */}
           {matrixResult && (
-            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex items-center gap-2 flex-wrap shrink-0">
               {onAddCitationsToLibrary && (
                 <Button variant="outline" size="sm" onClick={handleAddAllCitations}
                   className="h-8 rounded-none border-black dark:border-zinc-700 font-mono text-[10px] uppercase tracking-wider bg-white dark:bg-black hover:bg-zinc-100 dark:hover:bg-zinc-900 gap-1">
@@ -130,9 +173,8 @@ export function LiteratureMatrixModal({
               </Button>
             </div>
           )}
-        </div>
 
-        {/* ── Search Bar ───────────────────────────────────────────────── */}
+          {/* ── Search Bar ───────────────────────────────────────────────── */}
         <form onSubmit={handleGenerate}
           className="p-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
           <Input
@@ -376,7 +418,9 @@ export function LiteratureMatrixModal({
               </div>
             </div>
           )}
+          </div>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
